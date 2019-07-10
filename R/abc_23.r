@@ -297,6 +297,7 @@ plot_abc2 <- function(res){
          geom_point(aes(x=res$Current_Status[1],y=res$alpha),color=2)+
          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio,color=BRP))+
          theme_bw()+
+         xlab("Catch/max Catch")+ylab(expression(alpha))+         
          theme(legend.position="top"))
 
     (g.catch <- ccdata %>% ggplot() +
@@ -343,6 +344,7 @@ plot_abc3 <- function(res){
          geom_point(aes(x=res$Current_Status[1],y=res$alpha),color=2)+
          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio,color=BRP))+
          theme_bw()+
+         xlab("Catch/max Catch")+ylab(expression(alpha))+
          theme(legend.position="top"))
 
     (g.catch <- ccdata %>% ggplot() +
