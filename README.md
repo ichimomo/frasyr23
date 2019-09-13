@@ -14,7 +14,7 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
    - 問題があってインストールできないと言われたパッケージを手動でインストールしてみる（install.packages("パッケージ名")
    - 古いパッケージが残っていてそれを削除できないためにインストールできない場合もあるみたい．以下のサイトを参考に古いパッケージのファイルを消し，それを手動でインストールしてから再トライ http://www.thirtyfive.info/entry/2017/07/28/R%E3%81%AEplyr%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8%E3%81%8C%E8%AA%AD%E3%81%BF%E8%BE%BC%E3%82%81%E3%81%AA%E3%81%84%E5%95%8F%E9%A1%8C%E3%81%AE%E5%AF%BE%E5%87%A6
 
-# 主な関数と使い方
+# 主な関数
 - 2系の計算
    - calc_abc2 ABCの計算
    - plot_abc2 結果のプロット
@@ -23,6 +23,7 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
    - calc_abc3 ABCの計算
    - plot_abc3 結果のプロット
 
+# Rコード例
 ```
 help(calc_abc2) # helpを見ると引数の説明などが見れます
 
@@ -41,19 +42,29 @@ abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)
 ## dataにCPUEが入っていても無視します
 abc3_ex <- calc_abc3(data_example)
 graph3_ex <- plot_abc3(abc3_ex)
+	  
+```
 
-# 2系（アカガレイデータ
-data(data_aka)
+# 実データの解析例とグラフ
+	
+```
+# アカガレイデータの呼び出し
+  
+data(data_aka)	
+# 2系
 abc2_aka <- calc_abc2(data_aka)
 graph2_aka <- plot_abc2(abc2_aka)
 # グラフをセーブする場合
 # ggsave(graph2_aka[[2]],file="aka2.png")
-  	   	
+```
+![](tools/aka2.png)	
+	
+```	  	   	
 abc3_aka <- calc_abc3(data_aka)
 graph3_aka <- plot_abc3(abc3_aka)
 # グラフをセーブする場合
 # ggsave(graph3_aka[[2]],file="aka3.png")
 	  
 ```
-![](tools/aka2.png)	
+
 ![](tools/aka3.png)	
