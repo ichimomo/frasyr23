@@ -9,29 +9,29 @@
 #'　
 #' 
 
+col.BRP <- c("#00533E","#edb918","#C73C2E")
+
 "_PACKAGE"
 
 #' 2系のABC計算用の関数
 #' 
-#' @param ccdata year,cpue,catchのデータフレーム
-#' @param BT  initial target level
-#' @param PL  BL = PL*BT
-#' @param PB  BB = PB*BT
-#' @param tune.par  tuning parameters: (beta, delta, lambda)   
-#' @param AAV if this value is given, given value is used
-#' @param n.catch  period for averaging the past catches
+#' @param ccdata year,cpue,catchのデータフレーム（ラベルは小文字でyear, cpue, catchとする）
+#' @param BT  目標水準のレベル（デフォルト=0.8)
+#' @param PL  目標水準の何割を限界水準にするか（BL = PL*BT、デフォルトは0.7）
+#' @param PB  目標水準の何割を禁漁水準にするか（BB = PB*BT、デフォルトは0）
+#' @param tune.par  c(beta, delta, lambda) に対応するチューニングパラメータ。デフォルトの値はc(0.5,0.4,0.4)
+#' @param AAV default:"auto", "auto"の場合、CPUEのAAVを内部で計算した値を使う。明示的に数値を与える場合は、その数字が使われる
+#' @param n.catch 過去の漁獲量を平均する年数（デフォルトの値は5）
 #'
 #'
 #' @examples
 #' library(frasyr23)
-#' catch <- c(10,5,10,3,2,1,3)
-#' cpue <- c(11,10,2,3,2,5,2)
-#' example_data <- data.frame(year=1:7,cpue=cpue,catch=catch)
+#' catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
+#' cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
+#' example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch) 
 #'
 #' # 2系
 #' example_abc2 <- calc_abc2(example_data)
-#' example_abc2$ABC
-#' # $ABC=1.894191
 #' graph_abc2 <- plot_abc2(example_abc2)
 #'
 #' @export
@@ -43,7 +43,7 @@ calc_abc2 <- function(
   PL=0.7,   #  BL = PL*BT
   PB=0.0,   #  BB = PB*BT
   tune.par = c(0.5,0.4,0.4), #  tuning parameters: (beta, delta, lambda)   
-  AAV=NULL,
+  AAV="auto", # 
   n.catch=5   #  period for averaging the past catches
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
@@ -76,8 +76,16 @@ calc_abc2 <- function(
     
     icum.cpue <- function(x) sD*qnorm(x,0,1)+mD   # inverse function from D to CPUE
   
-
-    if(is.null(AAV)) if (lambda > 0) AAV <- aav.f(cpue) else AAV <- 0
+    if (lambda > 0){
+        if(AAV=="auto"){
+            AAV <- aav.f(cpue)
+        }
+        else{
+            AAV <- AAV
+        }}
+    else{
+            AAV <- 0
+        }
 
 #    k <- ifelse(cD > BB, beta+(cD <= BL)*delta*exp(lambda*log(AAV^2+1))*(BL-cD)/(cD-BB), Inf)    #  calculation of k
 #    ABC <- ifelse(cD > BB & cpue[n] > 0, mean.catch*exp(k*(cD-BT)), 0)    # calculation of ABC
@@ -86,14 +94,27 @@ calc_abc2 <- function(
     ABC <- mean.catch * alpha
     
     Obs_BRP <- c(icum.cpue(BT), icum.cpue(BL), icum.cpue(BB))
-    Obs_percent <- icum.cpue(seq(from=0.1,to=0.9,by=0.1))
+    Obs_percent <- icum.cpue(c(0.05,seq(from=0.1,to=0.9,by=0.1),0.95))
     Current_Status <- c(D[n],cpue[n])
     names(Current_Status) <- c("Level","CPUE")
 
     names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
-    
+
+    cat("---------------------\n")
+    cat(stringr::str_c("Target CPUE value and Level: ",round(Obs_BRP[1],2)," and ", round(BRP[1],2) ,"\n",
+                       "Limit CPUE value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
+                       "Last year's CPUE value and Level: ",round(cpue[n],3)," and ",
+                       round(D[n],3),"\n",
+                       "AAV of CPUE: ",round(AAV,3),"\n",                       
+                       "alpha: ",round(alpha,3),"\n",
+                       "Average catch: ",round(mean.catch,3),"\n",
+                       "ABC in ",max(ccdata$year,na.rm=T)+2,": ",round(ABC,3),"\n"))
+    cat("---------------------\n")
+
     output <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Current_Status,
-                   AAV=AAV,tune.par=tune.par,ABC=ABC,arglist=arglist,mean.catch=mean.catch,Obs_percent=Obs_percent,
+                   AAV=AAV,tune.par=tune.par,ABC=ABC,arglist=arglist,
+                   mean.catch=mean.catch,Obs_percent=Obs_percent,
+                   D=D,
                    alpha=alpha)
 
   return(output)
@@ -119,7 +140,8 @@ type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0
     #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC    
 }
 
-type2_func_wrapper <- function(DL,...){
+type2_func_wrapper <- function(DL,type=NULL,...){
+    if(type=="%") DL <- DL/100
     purrr::map_dbl(DL,type2_func,...)    
 }
 
@@ -136,14 +158,12 @@ type2_func_wrapper <- function(DL,...){
 #' @examples
 #' 
 #' library(frasyr23)
-#' 
-#' catch <- c(10,5,10,3,2,1,3)
-#' cpue <- c(11,10,2,3,2,5,2)
-#' example_data <- data.frame(year=1:7,cpue=cpue,catch=catch)
+#'
+#' catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
+#' cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
+#' example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch) 
 #'
 #' example_abc3 <- calc_abc3(example_data)
-#' example_abc3$ABC
-#' # [1] 2.658756
 #' graph_abc3 <- plot_abc3(example_abc3)
 #'
 #' @export
@@ -151,10 +171,14 @@ type2_func_wrapper <- function(DL,...){
 
 calc_abc3 <- function(
   ccdata,   # data frame for year, CPUE, and catch
-  BT=0.1,   # initial target level
-  PL=2,   #  BL = PL*BT
-  PB=10,   #  BB = PB*BT
-  tune.par = c(1.5,2), #  tuning parameters: (beta, delta, lambda)   
+#  BT=0.1,   # initial target level
+#  PL=2,   #  BL = PL*BT
+#  PB=10,   #  BB = PB*BT
+  #  tune.par = c(1.5,2), #  tuning parameters: (beta, delta, lambda)
+  BT=0.05,   # initial target level
+  PL=8,   #  BL = PL*BT
+  PB=20,   #  BB = PB*BT
+  tune.par = c(3.5,3.5), #  tuning parameters: (beta, delta, lambda)     
   n.catch=5   #  period for averaging the past catches
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
@@ -190,6 +214,16 @@ calc_abc3 <- function(
     Current_Status <- c(D[n],catch[n])
     names(Current_Status) <- c("Level","Catch")
     names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
+
+    cat("---------------------\n")    
+    cat(stringr::str_c("Target catch value and Level: ",round(Obs_BRP[1],2)," and ", round(BRP[1],2) ,"\n",
+                       "Limit catch value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
+                       "Last year's catch value and Level: ",round(catch[n],3)," and ",
+                       round(D[n],3),"\n",
+                       "alpha: ",round(alpha,3),"\n",
+                       "Average catch: ",round(mean.catch,3),"\n",
+                       "ABC in ",max(ccdata$year,na.rm=T)+2,": ",round(ABC,3),"\n"))
+    cat("---------------------\n")    
     
     output <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Current_Status,
                    tune.par=tune.par,ABC=ABC,arglist=arglist,mean.catch=mean.catch,
@@ -198,7 +232,8 @@ calc_abc3 <- function(
   return(output)
 }
 
-type3_func <- function(cD,BT=0.1,PL=2,PB=10,tune.par=c(0.5,0.5)){
+type3_func <- function(cD,#BT=0.1,PL=2,PB=10,tune.par=c(0.5,0.5)){
+                       BT=0.05,PL=8,PB=20,tune.par=c(3.5,3.5)){
     beta <- tune.par[1]   # velocity to go to BT
     delta <- tune.par[2]   # correction factor when D <= BL
     BT <- BT      # Btarget
@@ -212,7 +247,8 @@ type3_func <- function(cD,BT=0.1,PL=2,PB=10,tune.par=c(0.5,0.5)){
     return(alpha)
 }
 
-type3_func_wrapper <- function(DL,...){
+type3_func_wrapper <- function(DL,type=NULL,...){
+    if(type=="%") DL <- DL/100
     purrr::map_dbl(DL,type3_func,...)    
 }
 
@@ -261,55 +297,70 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #' 
 
-plot_abc2 <- function(res){
+plot_abc2 <- function(res,stock.name=NULL){
     # plot
     ccdata <- res$arglist$ccdata    
     years <- ccdata$year
     last.year <- rev(years)[1]
     data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
                          catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
-                         type=c(rep(str_c(res$arglist$n.catch,"年平均"),5),"ABC"))
+                         type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),5),"ABC"))
     data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
                        value_ratio=res$BRP)
     
-    data_percent <- tibble(x=rep(min(years),9),
+    data_percent <- tibble(x=rep(max(years)+2,11),
                                y=res$Obs_percent,
-                               label=str_c(seq(from=0.1,to=0.9,by=0.1)*100,"%"))        
-    (g.cpue <- ccdata %>% ggplot() +
+                               label=str_c(c(0.05,seq(from=0.1,to=0.9,by=0.1),0.95)*100,"%"))        
+    g.cpue <- ccdata %>% ggplot() +
          geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
          geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-         geom_path(aes(x=year,y=cpue))+
-         theme_bw()+ylab("資源量指数")+
-         ylim(0,NA)+
-         theme(legend.position="top"))
+         geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,label="(CPUE水準)"),size=4)+         
+        geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
+        scale_color_manual(values=rev(c(col.BRP)))+                
+         geom_path(aes(x=year,y=cpue),size=1)+
+         theme_bw()+ylab("資源量指数")+xlab("年")+
+        ylim(0,NA)+theme_custom()+
+         ggtitle("CPUEのトレンドとABC")+                  
+         theme(legend.position="top")
+
 
     BT <- res$arglist$BT
     PL <- res$arglist$PL
     PB <- res$arglist$PB
     tune.par <- res$arglist$tune.par
-    
-    (g.hcr <- ggplot(data=data.frame(X=c(0,1.2)), aes(x=X)) +
-         stat_function(fun=type2_func_wrapper,
-                       args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,AAV=res$AAV),color="gray")+
-         stat_function(fun=type2_func_wrapper,
-                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,AAV=res$AAV),color="black")+         
-         geom_point(aes(x=res$Current_Status[1],y=res$alpha),color=2)+
-         geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio,color=BRP))+
-         theme_bw()+
-         xlab("Catch/max Catch")+ylab(expression(alpha))+         
-         theme(legend.position="top"))
 
-    (g.catch <- ccdata %>% ggplot() +
-         geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-         geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+     
-         geom_path(aes(x=year,y=catch))+
-         theme_bw()+ylab("漁獲量")+
-         ylim(0,NA)+     
-         theme(legend.position="top"))
+    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+         stat_function(fun=type2_func_wrapper,
+                       args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,AAV=res$AAV,type="%"),
+                       color="gray")+
+         stat_function(fun=type2_func_wrapper,
+                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,AAV=res$AAV,type="%"),
+                       color="black",size=1)+         
+         geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
+        geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
+        scale_color_manual(values=rev(c(col.BRP)))+                        
+         theme_bw()+theme_custom()+
+         ggtitle("漁獲管理規則")+                           
+         xlab("CPUE水準(%)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+         
+         theme(legend.position="top")
 
-    graph.all <- gridExtra::grid.arrange(g.cpue,g.hcr,g.catch,ncol=3)
-    graph.all
+    g.catch <- ccdata %>% ggplot() +
+        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+        geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+        scale_color_manual(values=c(1,2))+
+        # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
+#                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
+#         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
+#                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+         
+         geom_path(aes(x=year,y=catch),size=1)+
+        ylab("漁獲量")+xlab("年")+
+        ggtitle("漁獲量のトレンドとABC")+                                   
+        ylim(0,NA)+ theme_custom()+    
+        theme(legend.position="top")
+
+    graph.component <- list(g.cpue,g.hcr,g.catch)
+    graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr,g.catch,ncol=3,top=stock.name)
+    return(list(graph.component=graph.component,graph.combined=graph.combined))
 }
 
 
@@ -320,7 +371,7 @@ plot_abc2 <- function(res){
 #' @export
 #' 
 
-plot_abc3 <- function(res){
+plot_abc3 <- function(res,stock.name=NULL){
     # plot
     ccdata <- res$arglist$ccdata    
     years <- ccdata$year
@@ -331,33 +382,50 @@ plot_abc3 <- function(res){
     
     data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
                        value_ratio=res$BRP)
+    data_percent <- tibble(x=rep(min(years),10),
+                           y=max(ccdata$catch)*1:10/10,
+                           label=str_c(1:10/10*100,"%"))        
+        
     BT <- res$arglist$BT
     PL <- res$arglist$PL
     PB <- res$arglist$PB
     tune.par <- res$arglist$tune.par
     
-    (g.hcr <- ggplot(data=data.frame(X=c(0,1.2)), aes(x=X)) +
+    (g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+#         stat_function(fun=type3_func_wrapper,
+#                       args=list(BT=BT,PL=10,PB=PB,tune.par=tune.par,type="%")
+#                      ,color="gray")+
          stat_function(fun=type3_func_wrapper,
-                       args=list(BT=BT,PL=10,PB=PB,tune.par=tune.par),color="gray")+
-         stat_function(fun=type3_func_wrapper,
-                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par),color="black")+         
-         geom_point(aes(x=res$Current_Status[1],y=res$alpha),color=2)+
-         geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio,color=BRP))+
-         theme_bw()+
-         xlab("Catch/max Catch")+ylab(expression(alpha))+
+                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,type="%")
+                      ,color="black",size=1)+         
+         geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=1)+
+    geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
+    scale_color_manual(values=rev(col.BRP))+    
+         theme_bw()+theme_custom()+
+    xlab("漁獲量/最大漁獲量(%)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
+    ggtitle("漁獲管理規則")+
          theme(legend.position="top"))
 
     (g.catch <- ccdata %>% ggplot() +
-         geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-         geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+     
-         geom_path(aes(x=year,y=catch))+
-         theme_bw()+ylab("漁獲量")+
-         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+         
-         ylim(0,NA)+     
+        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+        geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+#         geom_point(data=dplyr::filter(data_catch,type=="ABC"),
+#                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
+#         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
+#                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+     
+         geom_path(aes(x=year,y=catch),size=1)+
+         geom_text(data=data_percent,aes(x=x,y=y,label=label))+
+         geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,label="(漁獲量水準)"),size=4)+
+         theme_bw()+ylab("漁獲量")+xlab("年")+theme_custom()+
+    geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
+        scale_color_manual(values=c(1,2,rev(col.BRP)))+             
+         ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
+         ggtitle("漁獲量のトレンドとABC")+         
          theme(legend.position="top"))
 
-    graph.all <- gridExtra::grid.arrange(g.hcr,g.catch,ncol=2)
-    graph.all
+    graph.component <- list(g.hcr,g.catch)
+    graph.combined <- gridExtra::grid.arrange(g.hcr,g.catch,ncol=2,top=stock.name)
+    return(list(graph.component=graph.component,graph.combined=graph.combined))    
 }
 
 
@@ -441,4 +509,18 @@ abc_t23_proto1 <- function(
   return(output)
 }
 
+ 
+#' グラフ出力用のテーマ
+#'
+#' @export
+#'
+#' 
 
+theme_custom <- function(){
+    theme_bw(base_size=12) +
+    theme(panel.grid = element_blank(),
+          axis.text.x=element_text(size=11,color="black"),
+          axis.text.y=element_text(size=11,color="black"),
+          axis.line.x=element_line(size= 0.3528),
+          axis.line.y=element_line(size= 0.3528))
+}

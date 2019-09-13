@@ -4,8 +4,8 @@
 \alias{calc_abc3}
 \title{3系のABC計算用の関数}
 \usage{
-calc_abc3(ccdata, BT = 0.1, PL = 2, PB = 10, tune.par = c(1.5, 2),
-  n.catch = 5)
+calc_abc3(ccdata, BT = 0.05, PL = 8, PB = 20, tune.par = c(3.5,
+  3.5), n.catch = 5)
 }
 \arguments{
 \item{BT}{initial target level}
@@ -27,13 +27,11 @@ calc_abc3(ccdata, BT = 0.1, PL = 2, PB = 10, tune.par = c(1.5, 2),
 
 library(frasyr23)
 
-catch <- c(10,5,10,3,2,1,3)
-cpue <- c(11,10,2,3,2,5,2)
-example_data <- data.frame(year=1:7,cpue=cpue,catch=catch)
+catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
+cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
+example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch) 
 
 example_abc3 <- calc_abc3(example_data)
-example_abc3$ABC
-# [1] 2.658756
 graph_abc3 <- plot_abc3(example_abc3)
 
 }

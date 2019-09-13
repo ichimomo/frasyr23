@@ -4,7 +4,7 @@
 \alias{plot_abc3}
 \title{3系のABC計算結果のをプロットするための関数}
 \usage{
-plot_abc3(res)
+plot_abc3(res, stock.name = NULL)
 }
 \arguments{
 \item{res}{calc_abc3の返り値}

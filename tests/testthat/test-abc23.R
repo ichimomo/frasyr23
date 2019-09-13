@@ -13,7 +13,7 @@ test_that("type23 check",{
     expect_equal(round(example_abc2$ABC,6), 1.894191)
 
     # 3系
-    example_abc3 <- calc_abc3(example_data)
+    example_abc3 <- calc_abc3(example_data,BT=0.1,PL=2,PB=10,tune.par=c(1.5,2))
     graph_abc3 <- plot_abc3(example_abc3)
     expect_equal(round(example_abc3$ABC,6), 2.658756)
 
