@@ -314,7 +314,7 @@ plot_abc2 <- function(res,stock.name=NULL){
     g.cpue <- ccdata %>% ggplot() +
          geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
          geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-         geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,label="(資源水準)"),size=4)+         
+         geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,label="(資源量水準)"),size=4)+         
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
         scale_color_manual(values=rev(c(col.BRP)))+                
          geom_path(aes(x=year,y=cpue),size=1)+
