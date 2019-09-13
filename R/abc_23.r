@@ -318,9 +318,9 @@ plot_abc2 <- function(res,stock.name=NULL){
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
         scale_color_manual(values=rev(c(col.BRP)))+                
          geom_path(aes(x=year,y=cpue),size=1)+
-         theme_bw()+ylab("資源量指数")+xlab("年")+
+         theme_bw()+ylab("資源量指標値")+xlab("年")+
         ylim(0,NA)+theme_custom()+
-         ggtitle("資源量指数のトレンド")+                  
+         ggtitle("資源量指標値のトレンド")+                  
          theme(legend.position="top")
 
 
