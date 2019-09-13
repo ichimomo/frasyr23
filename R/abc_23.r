@@ -314,13 +314,13 @@ plot_abc2 <- function(res,stock.name=NULL){
     g.cpue <- ccdata %>% ggplot() +
          geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
          geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-         geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,label="(CPUE水準)"),size=4)+         
+         geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,label="(資源水準)"),size=4)+         
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
         scale_color_manual(values=rev(c(col.BRP)))+                
          geom_path(aes(x=year,y=cpue),size=1)+
          theme_bw()+ylab("資源量指数")+xlab("年")+
         ylim(0,NA)+theme_custom()+
-         ggtitle("CPUEのトレンドとABC")+                  
+         ggtitle("資源量指数のトレンド")+                  
          theme(legend.position="top")
 
 
@@ -341,7 +341,7 @@ plot_abc2 <- function(res,stock.name=NULL){
         scale_color_manual(values=rev(c(col.BRP)))+                        
          theme_bw()+theme_custom()+
          ggtitle("漁獲管理規則")+                           
-         xlab("CPUE水準(%)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+         
+         xlab("資源量水準(%)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+         
          theme(legend.position="top")
 
     g.catch <- ccdata %>% ggplot() +
@@ -402,7 +402,7 @@ plot_abc3 <- function(res,stock.name=NULL){
     geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
     scale_color_manual(values=rev(col.BRP))+    
          theme_bw()+theme_custom()+
-    xlab("漁獲量/最大漁獲量(%)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
+    xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
     ggtitle("漁獲管理規則")+
          theme(legend.position="top"))
 
