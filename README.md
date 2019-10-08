@@ -49,7 +49,6 @@ graph3_ex <- plot_abc3(abc3_ex)
 	
 ```
 # アカガレイデータの呼び出し
-  
 data(data_aka)	
 # 2系
 abc2_aka <- calc_abc2(data_aka)
@@ -64,6 +63,9 @@ abc3_aka <- calc_abc3(data_aka)
 graph3_aka <- plot_abc3(abc3_aka)
 # グラフをセーブする場合
 # ggsave(graph3_aka[[2]],file="aka3.png")
+
+abc3_aka_ex1 <- calc_abc3(data_aka,BT=0.1,PL=4,PB=10,tune.par=c(3.5,0.5))
+(hcr_compared_aka <- plot_hcr3(list(abc3_aka,abc3_aka_ex1)))
 	  
 ```
 

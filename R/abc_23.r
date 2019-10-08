@@ -390,21 +390,20 @@ plot_abc3 <- function(res,stock.name=NULL){
     PL <- res$arglist$PL
     PB <- res$arglist$PB
     tune.par <- res$arglist$tune.par
+
+    g.hcr <- plot_hcr3(res)
     
-    (g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
-#         stat_function(fun=type3_func_wrapper,
-#                       args=list(BT=BT,PL=10,PB=PB,tune.par=tune.par,type="%")
-#                      ,color="gray")+
-         stat_function(fun=type3_func_wrapper,
-                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,type="%")
-                      ,color="black",size=1)+         
-         geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=1)+
-    geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
-    scale_color_manual(values=rev(col.BRP))+    
-         theme_bw()+theme_custom()+
-    xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
-    ggtitle("漁獲管理規則")+
-         theme(legend.position="top"))
+    ## (g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+    ##      stat_function(fun=type3_func_wrapper,
+    ##                    args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,type="%")
+    ##                   ,color="black",size=1)+         
+    ##      geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=1)+
+    ## geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
+    ## scale_color_manual(values=rev(col.BRP))+    
+    ##      theme_bw()+theme_custom()+
+    ## xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
+    ## ggtitle("漁獲管理規則")+
+    ##      theme(legend.position="top"))
 
     (g.catch <- ccdata %>% ggplot() +
         geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
@@ -428,6 +427,46 @@ plot_abc3 <- function(res,stock.name=NULL){
     return(list(graph.component=graph.component,graph.combined=graph.combined))    
 }
 
+#' 3系のHCRを比較するための関数
+#' 
+#' @param res.list calc_abc3の返り値のリスト
+#'
+#' @export
+#' 
+
+plot_hcr3 <- function(res.list,stock.name=NULL){
+
+    if("arglist"%in%names(res.list)) res.list <- list(res.list)
+    
+    (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
+         theme_bw()+theme_custom()+
+         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
+         ggtitle("漁獲管理規則")+
+         theme(legend.position="top"))    
+
+    for(i in 1:length(res.list)){
+        res <- res.list[[i]]
+        
+        data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
+                           value_ratio=res$BRP)
+        
+        BT <- res$arglist$BT
+        PL <- res$arglist$PL
+        PB <- res$arglist$PB
+        tune.par <- res$arglist$tune.par
+    
+        (g.hcr <- g.hcr + 
+             stat_function(fun=type3_func_wrapper,
+                           args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,type="%"),
+                           color="black",size=1,linetype=i)+         
+             geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=1)+
+             geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP),
+                        linetype=i)+
+             scale_color_manual(values=rev(col.BRP)))
+    }
+
+    return(g.hcr)
+}
 
 #' 2系・3系のABC計算関数．岡村さん作成のプロトタイプ．チェック用に使う．
 #'
