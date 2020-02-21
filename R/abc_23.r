@@ -20,6 +20,7 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' @param PL  目標水準の何割を限界水準にするか（BL = PL*BT、デフォルトは0.7）
 #' @param PB  目標水準の何割を禁漁水準にするか（BB = PB*BT、デフォルトは0）
 #' @param tune.par  c(delta1, delta2, delta3) に対応するチューニングパラメータ。デフォルトの値はc(0.5,0.4,0.4)
+#' @param beta  保守的なABCのためのパラメータ
 #' @param AAV default:"auto", "auto"の場合、CPUEのAAVを内部で計算した値を使う。明示的に数値を与える場合は、その数字が使われる
 #' @param n.catch 過去の漁獲量を平均する年数（デフォルトの値は5）
 #'
@@ -44,7 +45,8 @@ calc_abc2 <- function(
   PB=0.0,   #  BB = PB*BT
   tune.par = c(0.5,0.4,0.4), #  tuning parameters: (delta1, delta2, delta3)
   AAV="auto", #
-  n.catch=5   #  period for averaging the past catches
+  n.catch=5,   #  period for averaging the past catches
+  beta = 1.0
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
     arglist <- lapply(argname,function(xx) eval(parse(text=xx)))
@@ -120,7 +122,7 @@ calc_abc2 <- function(
   return(output)
 }
 
-type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4)){
+type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
     delta1 <- tune.par[1]   # velocity to go to BT
     delta2 <- tune.par[2]   # correction factor when D <= BL
     delta3 <- tune.par[3]   # tuning parameter for updating BT
@@ -134,7 +136,7 @@ type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0
         alpha <- exp(k*(cD-BT))
     }
     if(cD > BL) alpha <- exp(delta1*(cD-BT))
-    return(alpha)
+    return(alpha*beta)
     # cpue.nは必要か？
     #    k <- ifelse(cD > BB, delta1+(cD <= BL)*delta2*exp(delta3*log(AAV^2+1))*(BL-cD)/(cD-BB), Inf)    #  calculation of k
     #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
@@ -153,7 +155,7 @@ type2_func_wrapper <- function(DL,type=NULL,...){
 #' @param PL  BL = PL*BT
 #' @param PB  BB = PB*BT
 #' @param tune.par  tuning parameters: (gamma1, gamma2)
-#' @param n.catch  period for averaging the past catches
+#' @param n.catch  period for averaging the past catches (default value = 3)
 #'
 #' @examples
 #'
@@ -179,7 +181,7 @@ calc_abc3 <- function(
 #  PL=8,   #  BL = PL*BT
 #  PB=20,   #  BB = PB*BT
 #  tune.par = c(3.5,3.5), #  tuning parameters: (gamma1, gamma2, gamma3)
-  n.catch=5   #  period for averaging the past catches
+  n.catch=3   #  period for averaging the past catches
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
     arglist <- lapply(argname,function(xx) eval(parse(text=xx)))
@@ -328,13 +330,14 @@ plot_abc2 <- function(res,stock.name=NULL){
     PL <- res$arglist$PL
     PB <- res$arglist$PB
     tune.par <- res$arglist$tune.par
+    beta <- res$arglist$beta
 
     g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
          stat_function(fun=type2_func_wrapper,
-                       args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,AAV=res$AAV,type="%"),
+                       args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                        color="gray")+
          stat_function(fun=type2_func_wrapper,
-                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,AAV=res$AAV,type="%"),
+                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                        color="black",size=1)+
          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
         geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
@@ -530,7 +533,7 @@ abc_t23_proto1 <- function(
   # C[t+1] = C[t]*exp(k*(D-BT))
   #
 
-  if (default & (sum(cpue,na.rm=TRUE)==0 | catch.only)) {catch.only <- TRUE; tune.par <- c(1.5,2,0); BT <- 0.1; PL <- 2; PB <- 10}
+  if (default & (sum(cpue,na.rm=TRUE)==0 | catch.only)) {catch.only <- TRUE; tune.par <- c(2.0,1,0); BT <- 0.1; PL <- 6; PB <- 10; n.catch=3}
 
   delta1 <- tune.par[1]   # velocity to go to BT
   delta2 <- tune.par[2]   # correction factor when D <= BL
