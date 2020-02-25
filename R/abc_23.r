@@ -53,8 +53,9 @@ calc_abc2 <- function(
     names(arglist) <- argname
 
     cpue <- ccdata$cpue
+    ori.cpue <- cpue
     cpue <- cpue[!is.na(ccdata$cpue)]
-    catch <- ccdata$catch
+    ori.catch <- ccdata$catch
     catch <- catch[!is.na(ccdata$cpue)]
 
     delta1 <- tune.par[1]   # velocity to go to BT
@@ -66,21 +67,23 @@ calc_abc2 <- function(
     BRP <- c(BT, BL, BB)
 
     n <- length(catch)   # the number of catch data
-    l.cpue <- length(cpue)
+    l.catch <- length(ori.catch)
+    l.cpue <- length(ori.cpue)
+
     cum.cpue <- function(x) pnorm(scale(x),0,1) # cumulative normal distribution
     cum.cpue2 <- function(x) pnorm(x,mean(x),sd(x)) # cumulative normal distribution
-    mean.catch <- mean(catch[(n-n.catch+1):n])
+    mean.catch <- mean(ori.catch[(l.catch-n.catch+1):l.catch],na.rm = TRUE)
 
     D <- cum.cpue(as.numeric(cpue))              # cumulative probability of cpue
     mD <- attributes(D)$'scaled:center'         # mean of cpue
     sD <- attributes(D)$'scaled:scale'           # standard deviation of cpue
-    cD <- D[l.cpue]                                   # final depletion
+    cD <- D[n]                                   # final depletion
 
     icum.cpue <- function(x) sD*qnorm(x,0,1)+mD   # inverse function from D to CPUE
 
     if (delta3 > 0){
         if(AAV=="auto"){
-            AAV <- aav.f(cpue)
+            AAV <- aav.f(ori.cpue)
         }
         else{
             AAV <- AAV
