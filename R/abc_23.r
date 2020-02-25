@@ -504,7 +504,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL){
                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,AAV=res$AAV,type="%"),
                        color="black",size=1,linetype=i)+
             geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
-            geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
+            geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP),linetype=i)+
             scale_color_manual(values=rev(c(col.BRP)))                                     
             }
     g.hcr
