@@ -35,6 +35,7 @@ data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 # 2系
 abc2_ex <- calc_abc2(data_example)
 graph2_ex <- plot_abc2(abc2_ex)
+## graph2_ex <- plot_abc2(abc2_ex,mac=TRUE) Mac userの場合;
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
 
@@ -42,7 +43,7 @@ abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)
 ## dataにCPUEが入っていても無視します
 abc3_ex <- calc_abc3(data_example)
 graph3_ex <- plot_abc3(abc3_ex)
-	  
+## graph3_ex <- plot_abc3(abc3_ex,mac=TRUE) Mac userの場合;	  
 ```
 
 # 実データの解析例とグラフ
@@ -51,7 +52,7 @@ graph3_ex <- plot_abc3(abc3_ex)
 # アカガレイデータの呼び出し
 data(data_aka)	
 # 2系
-abc2_aka <- calc_abc2(data_aka,BT=0.8, PL=0.7, PB=0, tune.par=c(0.5,0.4,0.4),AAV="auto")
+abc2_aka <- calc_abc2(data_aka,beta=1)
 graph2_aka <- plot_abc2(abc2_aka)
 # グラフをセーブする場合
 # ggsave(graph2_aka[[2]],file="aka2.png")
@@ -64,9 +65,7 @@ graph3_aka <- plot_abc3(abc3_aka)
 # グラフをセーブする場合
 # ggsave(graph3_aka[[2]],file="aka3.png")
 
-abc3_aka_ex1 <- calc_abc3(data_aka,BT=0.1,PL=4,PB=10,tune.par=c(3.5,0.5))
-(hcr_compared_aka <- plot_hcr3(list(abc3_aka,abc3_aka_ex1)))
-	  
+
 ```
 
 ![](tools/aka3.png)	
@@ -75,28 +74,15 @@ abc3_aka_ex1 <- calc_abc3(data_aka,BT=0.1,PL=4,PB=10,tune.par=c(3.5,0.5))
 ```
 # 2系
 ## デフォルトのパラメータ
-abc2_aka <- calc_abc2(data_aka,BT=0.8, PL=0.7, PB=0, tune.par=c(0.5,0.4,0.4),AAV="auto")
-## AAVを大きくしてみる
-abc2_aka_AAV1 <- calc_abc2(data_aka,BT=0.8, PL=0.7, PB=0, tune.par=c(0.5,0.4,0.4),AAV=1)
+abc2_aka <- calc_abc2(data_aka,beta=1)
+## 保守的なABC
+abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
 ## 比較
-plot_hcr2(list(abc2_aka,abc2_aka_AAV1))
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC))
 ```
 <!-- 
 ggsave(file="hcr2_compare.png",width=5,height=3)
 -->
 ![](hcr2_compare.png)	
 
-```
-# BT=0.1の場合
-abc3_aka_ex1 <- calc_abc3(data_aka,BT=0.1,PL=4,PB=10,tune.par=c(3.5,0.5))
 
-# BT=0.05の場合
-abc3_aka_ex2 <- calc_abc3(data_aka,BT=0.05,PL=8,PB=20,tune.par=c(3.5,0.5))
-
-# 比較
-plot_hcr3(list(abc3_aka_ex1,abc3_aka_ex2))
-```
-<!-- 
-ggsave(file="hcr3_compare.png",width=5,height=3)
--->
-![](hcr3_compare.png)	
