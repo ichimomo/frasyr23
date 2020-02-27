@@ -319,7 +319,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res,stock.name=NULL,mac=FALSE){
+plot_abc2 <- function(res,stock.name=NULL){
     # plot
     ccdata <- res$arglist$ccdata
     years <- ccdata$year
@@ -333,7 +333,8 @@ plot_abc2 <- function(res,stock.name=NULL,mac=FALSE){
     data_percent <- tibble(x=rep(max(years)+2,11),
                                y=res$Obs_percent,
                                label=str_c(c(0.05,seq(from=0.1,to=0.9,by=0.1),0.95)*100,"%"))
-    font_MAC <- "HiraKakuProN-W3"
+    font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
+
     g.cpue <- ccdata %>% ggplot() +
          geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
          geom_text(data=data_percent,aes(x=x,y=y,label=label))+
@@ -346,7 +347,7 @@ plot_abc2 <- function(res,stock.name=NULL,mac=FALSE){
          ggtitle("資源量指標値のトレンド")+
          theme(legend.position="top")
 
-    if(isTRUE(mac)){
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       g.cpue <- ccdata %>% ggplot() +
         geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
         geom_text(data=data_percent,aes(x=x,y=y,label=label))+
@@ -383,7 +384,7 @@ plot_abc2 <- function(res,stock.name=NULL,mac=FALSE){
          xlab("資源量水準(%)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
          theme(legend.position="top")
 
-    if(isTRUE(mac)){
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
         stat_function(fun=type2_func_wrapper,
                       args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
@@ -416,7 +417,7 @@ plot_abc2 <- function(res,stock.name=NULL,mac=FALSE){
         ylim(0,NA)+ theme_custom()+
         theme(legend.position="top")
 
-    if(isTRUE(mac)){
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       g.catch <- ccdata %>% ggplot() +
         geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
         geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
@@ -446,7 +447,7 @@ plot_abc2 <- function(res,stock.name=NULL,mac=FALSE){
 #' @export
 #'
 
-plot_abc3 <- function(res,stock.name=NULL,mac=FALSE){
+plot_abc3 <- function(res,stock.name=NULL){
     # plot
     ccdata <- res$arglist$ccdata
     n.catch <- res$arglist$n.catch
@@ -461,14 +462,14 @@ plot_abc3 <- function(res,stock.name=NULL,mac=FALSE){
     data_percent <- tibble(x=rep(min(years),10),
                            y=max(ccdata$catch)*1:10/10,
                            label=str_c(1:10/10*100,"%"))
-    font_MAC <- "HiraKakuProN-W3"
+    font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
 
     BT <- res$arglist$BT
     PL <- res$arglist$PL
     PB <- res$arglist$PB
     tune.par <- res$arglist$tune.par
 
-    g.hcr <- plot_hcr3(res,mac=mac)
+    g.hcr <- plot_hcr3(res)
 
     ## (g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
     ##      stat_function(fun=type3_func_wrapper,
@@ -499,7 +500,7 @@ plot_abc3 <- function(res,stock.name=NULL,mac=FALSE){
          ggtitle("漁獲量のトレンドとABC")+
          theme(legend.position="top"))
 
-    if(isTRUE(mac)){
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       (g.catch <- ccdata %>% ggplot() +
          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
          geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
@@ -529,8 +530,8 @@ plot_abc3 <- function(res,stock.name=NULL,mac=FALSE){
 #' @export
 #'
 
-plot_hcr3 <- function(res.list,stock.name=NULL,mac=FALSE){
-  font_MAC <- "HiraKakuProN-W3"
+plot_hcr3 <- function(res.list,stock.name=NULL){
+  font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
 
     if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -540,7 +541,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,mac=FALSE){
          ggtitle("漁獲管理規則")+
          theme(legend.position="top"))
 
-    if(isTRUE(mac)){
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
          theme_bw(base_family = font_MAC)+theme_custom()+
          xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
@@ -580,8 +581,8 @@ plot_hcr3 <- function(res.list,stock.name=NULL,mac=FALSE){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,mac=FALSE){
-    font_MAC <- "HiraKakuProN-W3"
+plot_hcr2 <- function(res.list,stock.name=NULL){
+  font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
 
     if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -591,7 +592,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,mac=FALSE){
         xlab("資源量水準(%)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
         theme(legend.position="top")
 
-    if(isTRUE(mac)){
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
         theme_bw(base_family = font_MAC)+theme_custom()+
         ggtitle("漁獲管理規則")+

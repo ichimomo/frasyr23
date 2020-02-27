@@ -35,7 +35,6 @@ data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 # 2系
 abc2_ex <- calc_abc2(data_example)
 graph2_ex <- plot_abc2(abc2_ex)
-## graph2_ex <- plot_abc2(abc2_ex,mac=TRUE) Mac userの場合;
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
 
@@ -43,7 +42,6 @@ abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)
 ## dataにCPUEが入っていても無視します
 abc3_ex <- calc_abc3(data_example)
 graph3_ex <- plot_abc3(abc3_ex)
-## graph3_ex <- plot_abc3(abc3_ex,mac=TRUE) Mac userの場合;	  
 ```
 
 # 実データの解析例とグラフ
