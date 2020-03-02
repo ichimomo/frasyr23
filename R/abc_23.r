@@ -10,7 +10,6 @@
 #'
 
 col.BRP <- c("#00533E","#edb918","#C73C2E")
-col.set <- c("#000000","#FF0000",rev(col.BRP))
 
 "_PACKAGE"
 
@@ -503,6 +502,7 @@ plot_abc3 <- function(res,stock.name=NULL){
          theme(legend.position="top"))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+      col.set <- c("#000000","#FF0000",rev(col.BRP))
       g.catch <- ccdata %>% ggplot() +
          theme_bw(base_family = font_MAC)+
          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
