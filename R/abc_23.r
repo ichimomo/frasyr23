@@ -10,6 +10,7 @@
 #'
 
 col.BRP <- c("#00533E","#edb918","#C73C2E")
+col.set <- c("#000000","#FF0000",rev(col.BRP))
 
 "_PACKAGE"
 
@@ -322,11 +323,12 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 plot_abc2 <- function(res,stock.name=NULL){
     # plot
     ccdata <- res$arglist$ccdata
+    n.catch <- res$arglist$n.catch
     years <- ccdata$year
     last.year <- rev(years)[1]
     data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
                          catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
-                         type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),5),"ABC"))
+                         type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
     data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
                        value_ratio=res$BRP)
 
@@ -421,7 +423,7 @@ plot_abc2 <- function(res,stock.name=NULL){
       g.catch <- ccdata %>% ggplot() +
         geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
         geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-        scale_color_manual(values=c(1,2))+
+        scale_color_manual(values=c("black","red"))+
         # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
         #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
         #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
@@ -501,21 +503,23 @@ plot_abc3 <- function(res,stock.name=NULL){
          theme(legend.position="top"))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-      (g.catch <- ccdata %>% ggplot() +
+      g.catch <- ccdata %>% ggplot() +
+         theme_bw(base_family = font_MAC)+
          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
          geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-         #         geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-         #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
-         #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-         #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
+        #          geom_point(data=dplyr::filter(data_catch,type=="ABC"),
+        #                      mapping=aes(x=year,y=catch),lwd=2,color="red")+
+        #          geom_line(data=dplyr::filter(data_catch,type!="ABC"),
+        #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
          geom_path(aes(x=year,y=catch),size=1)+
-         theme_bw(base_family = font_MAC)+ylab("漁獲量")+xlab("年")+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label))+
+         ylab("漁獲量")+xlab("年")+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
          geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,family=font_MAC,label="(漁獲量水準)"),size=4)+
          geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-         scale_color_manual(values=c(1,2,rev(col.BRP)))+
+         scale_color_manual(values=col.set)+
          ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
          ggtitle("漁獲量のトレンドとABC")+
-         theme(legend.position="top", text = element_text(family = font_MAC) ))
+         theme(text = element_text(family = font_MAC))+
+         theme(legend.position="top")
     }
 
     graph.component <- list(g.hcr,g.catch)
@@ -569,6 +573,8 @@ plot_hcr3 <- function(res.list,stock.name=NULL){
              geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP),
                         linetype=i)+
              scale_color_manual(values=rev(col.BRP)))
+
+
     }
 
     return(g.hcr)
