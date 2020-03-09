@@ -393,12 +393,12 @@ plot_abc2 <- function(res,stock.name=NULL){
         stat_function(fun=type2_func_wrapper,
                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                       color="black",size=1)+
-        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
+        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=2)+
         geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
         scale_color_manual(values=rev(c(col.BRP)))+
         theme_bw()+theme_custom()+
         ggtitle("漁獲管理規則")+
-        xlab("資源量水準(%)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
+        xlab("資源量水準(%)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
         theme(legend.position="top") +
         theme(text = element_text(family = font_MAC))
 
