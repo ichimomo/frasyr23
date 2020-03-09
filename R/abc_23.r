@@ -382,7 +382,7 @@ plot_abc2 <- function(res,stock.name=NULL){
         scale_color_manual(values=rev(c(col.BRP)))+
          theme_bw()+theme_custom()+
          ggtitle("漁獲管理規則")+
-         xlab("資源量水準(%)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
+         xlab("資源量水準(%)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
          theme(legend.position="top")
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
@@ -541,14 +541,14 @@ plot_hcr3 <- function(res.list,stock.name=NULL){
 
     (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
          theme_bw()+theme_custom()+
-         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
+         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
          ggtitle("漁獲管理規則")+
          theme(legend.position="top"))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
          theme_bw(base_family = font_MAC)+theme_custom()+
-         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
+         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
          ggtitle("漁獲管理規則")+
          theme(legend.position="top")+
          theme(text = element_text(family = font_MAC)))
