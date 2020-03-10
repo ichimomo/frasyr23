@@ -335,7 +335,7 @@ plot_abc2 <- function(res,stock.name=NULL){
                                y=res$Obs_percent,
                                label=str_c(c(0.05,seq(from=0.1,to=0.9,by=0.1),0.95)*100,"%"))
     font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
-    legend.labels <-c("目標水準","限界水準","禁漁水準")
+    legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
     g.cpue <- ccdata %>% ggplot() +
          geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
          geom_text(data=data_percent,aes(x=x,y=y,label=label))+
@@ -464,7 +464,7 @@ plot_abc3 <- function(res,stock.name=NULL){
                            y=max(ccdata$catch)*1:10/10,
                            label=str_c(1:10/10*100,"%"))
     font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
-    legend.labels <-c("目標水準","限界水準","禁漁水準")
+    legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均"),"ABC",rev(c(legend.labels)))
 
     BT <- res$arglist$BT
@@ -538,7 +538,7 @@ ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
 
 plot_hcr3 <- function(res.list,stock.name=NULL){
   font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
-  legend.labels <-c("目標水準","限界水準","禁漁水準")
+  legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
     if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
     (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
@@ -600,7 +600,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL){
 
 plot_hcr2 <- function(res.list,stock.name=NULL){
   font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
-  legend.labels <-c("目標水準","限界水準","禁漁水準")
+  legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
     if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
     g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
