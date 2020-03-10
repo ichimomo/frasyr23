@@ -336,6 +336,7 @@ plot_abc2 <- function(res,stock.name=NULL){
                                label=str_c(c(0.05,seq(from=0.1,to=0.9,by=0.1),0.95)*100,"%"))
     font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
     legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
+    legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量")
     g.cpue <- ccdata %>% ggplot() +
          geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
          geom_text(data=data_percent,aes(x=x,y=y,label=label))+
@@ -407,7 +408,7 @@ plot_abc2 <- function(res,stock.name=NULL){
     g.catch <- ccdata %>% ggplot() +
         geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
         geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-        scale_color_manual(values=c(1,2))+
+        scale_color_manual(values=c(1,2),labels=legend.labels2)+
         # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
 #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
 #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
@@ -465,7 +466,7 @@ plot_abc3 <- function(res,stock.name=NULL){
                            label=str_c(1:10/10*100,"%"))
     font_MAC <- "HiraKakuProN-W3"#"Japan1GothicBBB"
     legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
-    legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均"),"ABC",rev(c(legend.labels)))
+    legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量",rev(c(legend.labels)))
 
     BT <- res$arglist$BT
     PL <- res$arglist$PL
