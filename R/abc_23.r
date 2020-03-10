@@ -423,7 +423,7 @@ plot_abc2 <- function(res,stock.name=NULL){
       g.catch <- ccdata %>% ggplot() +
         geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
         geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-        scale_color_manual(values=c("black","red"))+
+        scale_color_manual(values=c("black","red"),labels=legend.labels2)+
         # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
         #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
         #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
