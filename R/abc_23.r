@@ -5,8 +5,6 @@
 #' @import stringr
 #' @import magrittr
 #' @import ggplot2
-#' @import graphics
-#' @import stats
 #'
 #'　
 #'
