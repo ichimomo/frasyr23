@@ -45,18 +45,18 @@ graph3_ex <- plot_abc3(abc3_ex)
 ```
 
 # 実データの解析例とグラフ
-	
+
 ```
 # アカガレイデータの呼び出し
-data(data_aka)	
+data(data_aka)
 # 2系
 abc2_aka <- calc_abc2(data_aka,beta=1)
 graph2_aka <- plot_abc2(abc2_aka)
 # グラフをセーブする場合
 # ggsave(graph2_aka[[2]],file="aka2.png")
 ```
-![](tools/aka2.png)	
-	
+![](tools/aka2.png)
+
 ```	  	   	
 abc3_aka <- calc_abc3(data_aka)
 graph3_aka <- plot_abc3(abc3_aka)
@@ -66,7 +66,7 @@ graph3_aka <- plot_abc3(abc3_aka)
 
 ```
 
-![](tools/aka3.png)	
+![](tools/aka3.png)
 
 # HCRのみ描画し、比較する
 ```
@@ -78,9 +78,7 @@ abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
 ## 比較
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC))
 ```
-<!-- 
+<!--
 ggsave(file="hcr2_compare.png",width=5,height=3)
 -->
-![](hcr2_compare.png)	
-
-
+![](./tools/hcr2_compare.png)	
