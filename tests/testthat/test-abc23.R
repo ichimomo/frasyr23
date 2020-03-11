@@ -39,6 +39,7 @@ test_that("type23 check",{
     data("data_aka")
     # 2系
     aka_abc2_check <- calc_abc2(data_aka)
+    graph_aka_abc2 <- plot_abc2(aka_abc2_check)
     # 上記結果の読み込み
     load(system.file("extdata","res_aka_abc2.rda",package = "frasyr23"))
     # テスト内容
@@ -50,6 +51,7 @@ test_that("type23 check",{
 
     # 3系
     aka_abc3_check <- calc_abc3(data_aka)
+    graph_aka_abc3 <- plot_abc3(aka_abc3_check)
     # 上記結果の読み込み
     load(system.file("extdata","res_aka_abc3.rda",package = "frasyr23"))
     # テスト内容
