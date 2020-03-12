@@ -49,7 +49,12 @@ abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)
 # 3系
 ## dataにCPUEが入っていても無視します
 abc3_ex <- calc_abc3(data_example)
+# ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
 graph3_ex <- plot_abc3(abc3_ex)
+# ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
+graph3_ex <- plot_abc3(abc3_ex,fishseason=1)
+# ABCが決定できない魚種で、かつ漁期が暦の年に一致しない場合
+graph3_ex <- plot_abc3(abc3_ex,fishseason=1,detABC=1)
 ```
 
 # 実データの解析例とグラフ
