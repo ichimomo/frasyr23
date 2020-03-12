@@ -335,9 +335,9 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                                y=res$Obs_percent,
                                label=str_c(c(0.05,seq(from=0.1,to=0.9,by=0.1),0.95)*100,"%"))
     font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-    legend.labels <-c("目標水準","限界水準","禁漁水準")
+    legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
-    legend.labels.1 <-c("目標水準案","限界水準案","禁漁水準案")
+
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量")
 
     if(fishseason==1){ #----
@@ -345,34 +345,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
       g.cpue <- ccdata %>% ggplot() +
         geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
         geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-        geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
-        geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
-        geom_path(aes(x=year,y=cpue),size=1)+
-        theme_bw()+ylab("資源量指数")+xlab("漁期年")+
-        ylim(0,NA)+theme_custom()+
-        ggtitle("資源量指数のトレンド")+
-        theme(legend.position="top")
-
-      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ #----
-        g.cpue <- ccdata %>% ggplot() +
-          geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
-          geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-          geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
-          geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
-          geom_path(aes(x=year,y=cpue),size=1)+
-          theme_bw()+ylab("資源量指数")+xlab("漁期年")+
-          ylim(0,NA)+theme_custom()+
-          ggtitle("資源量指数のトレンド")+
-          theme(legend.position="top") +
-          theme(text = element_text(family = font_MAC))
-      }
-    }else{#----
-      g.cpue <- ccdata %>% ggplot() +
-        geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
-        geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-        geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
+        geom_text(aes(x=max(years)-0.5,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
         scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
         geom_path(aes(x=year,y=cpue),size=1)+
@@ -385,7 +358,34 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
         g.cpue <- ccdata %>% ggplot() +
           geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-          geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
+          geom_text(aes(x=max(years)-0.5,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
+          geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
+          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
+          geom_path(aes(x=year,y=cpue),size=1)+
+          theme_bw()+ylab("資源量指数")+xlab("漁期年")+
+          ylim(0,NA)+theme_custom()+
+          ggtitle("資源量指数のトレンド")+
+          theme(legend.position="top") +
+          theme(text = element_text(family = font_MAC))
+      }
+    }else{#----
+      g.cpue <- ccdata %>% ggplot() +
+        geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
+        geom_text(data=data_percent,aes(x=x,y=y,label=label))+
+        geom_text(aes(x=max(years)-0.5,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
+        geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
+        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
+        geom_path(aes(x=year,y=cpue),size=1)+
+        theme_bw()+ylab("資源量指数")+xlab("漁期年")+
+        ylim(0,NA)+theme_custom()+
+        ggtitle("資源量指数のトレンド")+
+        theme(legend.position="top")
+
+      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ #----
+        g.cpue <- ccdata %>% ggplot() +
+          geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
+          geom_text(data=data_percent,aes(x=x,y=y,label=label))+
+          geom_text(aes(x=max(years)-0.5,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           geom_path(aes(x=year,y=cpue),size=1)+
@@ -401,9 +401,9 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
         g.cpue <- ccdata %>% ggplot() +
           geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-          geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
+          geom_text(aes(x=max(years)-0.5,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
+          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           geom_path(aes(x=year,y=cpue),size=1)+
           theme_bw()+ylab("資源量指数")+xlab("年")+
           ylim(0,NA)+theme_custom()+
@@ -414,9 +414,9 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
             g.cpue <- ccdata %>% ggplot() +
               geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
               geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-              geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
+              geom_text(aes(x=max(years)-0.5,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
               geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-              scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
+              scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
               geom_path(aes(x=year,y=cpue),size=1)+
               theme_bw()+ylab("資源量指数")+xlab("年")+
               ylim(0,NA)+theme_custom()+
@@ -428,7 +428,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
         g.cpue <- ccdata %>% ggplot() +
           geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-          geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
+          geom_text(aes(x=max(years)-0.5,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           geom_path(aes(x=year,y=cpue),size=1)+
@@ -441,7 +441,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           g.cpue <- ccdata %>% ggplot() +
             geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
             geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-            geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
+            geom_text(aes(x=max(years)-0.5,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
             geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
             scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
             geom_path(aes(x=year,y=cpue),size=1)+
@@ -469,7 +469,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                       color="black",size=1)+
         geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
         geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
-        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
+        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
         theme_bw()+theme_custom()+
         ggtitle("漁獲管理規則案")+
         xlab("資源量水準(%)")+ylab(str_c("α (算定漁獲量の算出年の漁獲量の削減率)"))+
@@ -485,10 +485,10 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                         color="black",size=1)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=2)+
           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
-          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
+          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("漁獲管理規則案")+
-          xlab("資源量水準(%)")+ylab(str_c("α (算定漁獲量算出年の漁獲量の削減率)"))+
+          xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
           theme(legend.position="top") +
           theme(text = element_text(family = font_MAC))
 
@@ -506,7 +506,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("漁獲管理規則")+
-          xlab("資源量水準(%)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
+          xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
           theme(legend.position="top")
 
         if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ #----
@@ -522,7 +522,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
               scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
               theme_bw()+theme_custom()+
               ggtitle("漁獲管理規則")+
-              xlab("資源量水準(%)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
+              xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
               theme(legend.position="top") +
               theme(text = element_text(family = font_MAC))
         }
@@ -692,10 +692,10 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                            y=max(ccdata$catch)*1:10/10,
                            label=str_c(1:10/10*100,"%"))
     font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-    legend.labels <-c("目標水準","限界水準","禁漁水準")
+    legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC",rev(c(legend.labels)))
-    legend.labels.1 <-c("目標水準案","限界水準案","禁漁水準案")
-    legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量",rev(c(legend.labels.1)))
+
+    legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量",rev(c(legend.labels)))
 
     BT <- res$arglist$BT
     PL <- res$arglist$PL
@@ -712,7 +712,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
     ## geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
     ## scale_color_manual(values=rev(col.BRP))+
     ##      theme_bw()+theme_custom()+
-    ## xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (ABC年の漁獲量の削減率)"))+
+    ## xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (漁獲量の削減率)"))+
     ## ggtitle("漁獲管理規則")+
     ##      theme(legend.position="top"))
     if(fishseason==1){
@@ -889,21 +889,21 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
 
 plot_hcr3 <- function(res.list,stock.name=NULL,detABC=0){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-  legend.labels <-c("目標水準","限界水準","禁漁水準")
-  legend.labels.1 <-c("目標水準案","限界水準案","禁漁水準案")
+  legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
+
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
   if(detABC==1){ #----
     (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
        theme_bw()+theme_custom()+
-       xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (算定漁獲量算出年の漁獲量の削減率)"))+
+       xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (漁獲量の削減率)"))+
        ggtitle("漁獲管理規則案")+
        theme(legend.position="top"))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
          theme_bw(base_family = font_MAC)+theme_custom()+
-         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (算定漁獲量算出年の漁獲量の削減率)"))+
+         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (漁獲量の削減率)"))+
          ggtitle("漁獲管理規則案")+
          theme(legend.position="top")+
          theme(text = element_text(family = font_MAC)))
@@ -926,7 +926,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,detABC=0){
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=1)+
           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP),
                      linetype=i)+
-          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1))))
+          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels))))
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         (g.hcr <- g.hcr +
            stat_function(fun=type3_func_wrapper,
@@ -935,19 +935,19 @@ plot_hcr3 <- function(res.list,stock.name=NULL,detABC=0){
            geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=1)+
            geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP),
                       linetype=i)+
-           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1))))}
+           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels))))}
     }
   }else{ #----
     (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
        theme_bw()+theme_custom()+
-       xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
+       xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (漁獲量の削減率)"))+
        ggtitle("漁獲管理規則")+
        theme(legend.position="top"))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
          theme_bw(base_family = font_MAC)+theme_custom()+
-         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
+         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (漁獲量の削減率)"))+
          ggtitle("漁獲管理規則")+
          theme(legend.position="top")+
          theme(text = element_text(family = font_MAC)))
@@ -996,22 +996,21 @@ plot_hcr3 <- function(res.list,stock.name=NULL,detABC=0){
 
 plot_hcr2 <- function(res.list,stock.name=NULL,detABC=0){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-  legend.labels <-c("目標水準","限界水準","禁漁水準")
-  legend.labels.1 <-c("目標水準案","限界水準案","禁漁水準案")
+  legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
     if(detABC==1){
       g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
         theme_bw()+theme_custom()+
         ggtitle("漁獲管理規則案")+
-        xlab("資源量水準(%)")+ylab(str_c("α (算定漁獲量算出年の漁獲量の削減率)"))+
+        xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
         theme(legend.position="top")
 
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           theme_bw(base_family = font_MAC)+theme_custom()+
           ggtitle("漁獲管理規則案")+
-          xlab("資源量水準(%)")+ylab(str_c("α (算定漁獲量算出年の漁獲量の削減率)"))+
+          xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
           theme(legend.position="top")+
           theme(text = element_text(family = font_MAC))
       }
@@ -1033,7 +1032,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,detABC=0){
                         color="black",size=1,linetype=i)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
-          scale_color_manual(name="",values=rev(c(col.BRP)),label=legend.labels.1)
+          scale_color_manual(name="",values=rev(c(col.BRP)),label=legend.labels)
       }
 
 
@@ -1041,14 +1040,14 @@ plot_hcr2 <- function(res.list,stock.name=NULL,detABC=0){
       g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
         theme_bw()+theme_custom()+
         ggtitle("漁獲管理規則")+
-        xlab("資源量水準(%)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
+        xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
         theme(legend.position="top")
 
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           theme_bw(base_family = font_MAC)+theme_custom()+
           ggtitle("漁獲管理規則")+
-          xlab("資源量水準(%)")+ylab(str_c("α (ABC年の漁獲量の削減率)"))+
+          xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
           theme(legend.position="top")+
           theme(text = element_text(family = font_MAC))
       }
