@@ -6,6 +6,8 @@
 ```
 # install.pakcages("devtools") # <-- devtoolsをインストールしていない人
 devtools::install_github("ichimomo/frasyr23") # frasyrのインストール
+# Mac ユーザの方
+devtools::install_github("ichimomo/frasyr23",branch="mac") # frasyrのインストール
 library(frasyr23) # frasyrの呼び出し
 library(tidyverse) # こちらのパッケージを使うので呼び出しておく		  
 ```
@@ -34,7 +36,13 @@ data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
 # 2系
 abc2_ex <- calc_abc2(data_example)
+# ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
 graph2_ex <- plot_abc2(abc2_ex)
+# ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1)
+# ABCが決定できない魚種で、かつ漁期が暦の年に一致しない場合
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
+
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
 
@@ -75,8 +83,10 @@ graph3_aka <- plot_abc3(abc3_aka)
 abc2_aka <- calc_abc2(data_aka,beta=1)
 ## 保守的なABC
 abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
-## 比較
+## 比較　ABCが決定できる魚種
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC))
+## 比較　ABCが決定できない魚種
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),detABC=1)
 ```
 <!--
 ggsave(file="hcr2_compare.png",width=5,height=3)
