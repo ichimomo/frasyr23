@@ -345,7 +345,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
       g.cpue <- ccdata %>% ggplot() +
         geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
         geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-        geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,label="(資源量水準)"),size=4)+
+        geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
         scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
         geom_path(aes(x=year,y=cpue),size=1)+
@@ -358,7 +358,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
         g.cpue <- ccdata %>% ggplot() +
           geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-          geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,family=font_MAC,label="(資源量水準)"),size=4)+
+          geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
           geom_path(aes(x=year,y=cpue),size=1)+
@@ -372,7 +372,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
       g.cpue <- ccdata %>% ggplot() +
         geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
         geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-        geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,label="(資源量水準)"),size=4)+
+        geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
         scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
         geom_path(aes(x=year,y=cpue),size=1)+
@@ -385,7 +385,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
         g.cpue <- ccdata %>% ggplot() +
           geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-          geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,family=font_MAC,label="(資源量水準)"),size=4)+
+          geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           geom_path(aes(x=year,y=cpue),size=1)+
@@ -401,7 +401,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
         g.cpue <- ccdata %>% ggplot() +
           geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-          geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,label="(資源量水準)"),size=4)+
+          geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
           geom_path(aes(x=year,y=cpue),size=1)+
@@ -414,7 +414,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
             g.cpue <- ccdata %>% ggplot() +
               geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
               geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-              geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,family=font_MAC,label="(資源量水準)"),size=4)+
+              geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
               geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
               scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.1)))+
               geom_path(aes(x=year,y=cpue),size=1)+
@@ -428,7 +428,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
         g.cpue <- ccdata %>% ggplot() +
           geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-          geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,label="(資源量水準)"),size=4)+
+          geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,label="(資源量水準)"),size=4)+
           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           geom_path(aes(x=year,y=cpue),size=1)+
@@ -441,7 +441,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           g.cpue <- ccdata %>% ggplot() +
             geom_hline(yintercept=res$Obs_percent,color="gray",linetype=2)+
             geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-            geom_text(aes(x=max(years),y=min(data_percent$y)*0.85,family=font_MAC,label="(資源量水準)"),size=4)+
+            geom_text(aes(x=max(years)-1,y=min(data_percent$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
             geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
             scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
             geom_path(aes(x=year,y=cpue),size=1)+
@@ -726,7 +726,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
            #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
            geom_path(aes(x=year,y=catch),size=1)+
            geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-           geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,label="(漁獲量水準)"),size=4)+
+           geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
            theme_bw()+ylab("漁獲量")+xlab("漁期年")+theme_custom()+
            geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
            scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2.1)+
@@ -746,7 +746,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
             #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
             geom_path(aes(x=year,y=catch),size=1)+
             ylab("漁獲量")+xlab("漁期年")+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
-            geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,family=font_MAC,label="(漁獲量水準)"),size=4)+
+            geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
             geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
             scale_color_manual(name="",values=col.set,labels=legend.labels2.1)+
             ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
@@ -765,7 +765,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
            #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
            geom_path(aes(x=year,y=catch),size=1)+
            geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-           geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,label="(漁獲量水準)"),size=4)+
+           geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
            theme_bw()+ylab("漁獲量")+xlab("漁期年")+theme_custom()+
            geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
            scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2)+
@@ -785,7 +785,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
             #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
             geom_path(aes(x=year,y=catch),size=1)+
             ylab("漁獲量")+xlab("漁期年")+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
-            geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,family=font_MAC,label="(漁獲量水準)"),size=4)+
+            geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
             geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
             scale_color_manual(name="",values=col.set,labels=legend.labels2)+
             ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
@@ -805,7 +805,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
            #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
            geom_path(aes(x=year,y=catch),size=1)+
            geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-           geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,label="(漁獲量水準)"),size=4)+
+           geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
            theme_bw()+ylab("漁獲量")+xlab("年")+theme_custom()+
            geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
            scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2.1)+
@@ -825,7 +825,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
             #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
             geom_path(aes(x=year,y=catch),size=1)+
             ylab("漁獲量")+xlab("年")+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
-            geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,family=font_MAC,label="(漁獲量水準)"),size=4)+
+            geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
             geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
             scale_color_manual(name="",values=col.set,labels=legend.labels2.1)+
             ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
@@ -844,7 +844,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
          #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
          geom_path(aes(x=year,y=catch),size=1)+
          geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-         geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,label="(漁獲量水準)"),size=4)+
+         geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
          theme_bw()+ylab("漁獲量")+xlab("年")+theme_custom()+
          geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
          scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2)+
@@ -864,7 +864,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
           geom_path(aes(x=year,y=catch),size=1)+
           ylab("漁獲量")+xlab("年")+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
-          geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.85,family=font_MAC,label="(漁獲量水準)"),size=4)+
+          geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
           scale_color_manual(name="",values=col.set,labels=legend.labels2)+
           ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
