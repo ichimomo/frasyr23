@@ -345,8 +345,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
     if(res$BRP[3] == 0) {
       legend.labels <- c("目標水準案","限界水準案")
       col.BRP <- c("#00533E","#edb918")
-      data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
-                         value_ratio=res$BRP[-3])
+      data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],value_ratio=res$BRP[-3])
     }
 
     if(fishseason==1){ #----
