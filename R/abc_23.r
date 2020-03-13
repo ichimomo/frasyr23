@@ -337,16 +337,8 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
     font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
     legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
+
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量")
-    col.BRP.hcr <- col.BRP
-    data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
-                       value_ratio=res$BRP)
-    if(res$BRP[3] == 0) {
-      legend.labels <- c("目標水準案","限界水準案")
-      col.BRP <- c("#00533E","#edb918")
-      data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
-                         value_ratio=res$BRP[-3])
-    }
 
     if(fishseason==1){ #----
       if(detABC==1){ #----
@@ -476,8 +468,8 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                       color="black",size=1)+
         geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
-        geom_vline(data=data_BRP_hcr,mapping=aes(xintercept=value_ratio*100,color=BRP))+
-        scale_color_manual(name="",values=rev(c(col.BRP.hcr)),labels=rev(c(legend.labels.hcr)))+
+        geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
+        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
         theme_bw()+theme_custom()+
         ggtitle("漁獲管理規則案")+
         xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
@@ -492,8 +484,8 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=2)+
-          geom_vline(data=data_BRP_hcr,mapping=aes(xintercept=value_ratio*100,color=BRP))+
-          scale_color_manual(name="",values=rev(c(col.BRP.hcr)),labels=rev(c(legend.labels.hcr)))+
+          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
+          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("漁獲管理規則案")+
           xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
@@ -510,8 +502,8 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
-          geom_vline(data=data_BRP_hcr,mapping=aes(xintercept=value_ratio*100,color=BRP))+
-          scale_color_manual(name="",values=rev(c(col.BRP.hcr)),labels=rev(c(legend.labels.hcr)))+
+          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
+          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("漁獲管理規則案")+
           xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
@@ -526,8 +518,8 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                             args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                             color="black",size=1)+
               geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=2)+
-              geom_vline(data=data_BRP_hcr,mapping=aes(xintercept=value_ratio*100,color=BRP))+
-              scale_color_manual(name="",values=rev(c(col.BRP.hcr)),labels=rev(c(legend.labels.hcr)))+
+              geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
+              scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
               theme_bw()+theme_custom()+
               ggtitle("漁獲管理規則案")+
               xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
@@ -1004,8 +996,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,detABC=0){
 
 plot_hcr2 <- function(res.list,stock.name=NULL,detABC=0){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-  legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
-
+  legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
     if(detABC==1){
