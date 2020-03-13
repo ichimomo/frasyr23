@@ -6,8 +6,6 @@
 ```
 # install.pakcages("devtools") # <-- devtoolsをインストールしていない人
 devtools::install_github("ichimomo/frasyr23") # frasyrのインストール
-# Mac ユーザの方
-devtools::install_github("ichimomo/frasyr23",branch="mac") # frasyrのインストール
 library(frasyr23) # frasyrの呼び出し
 library(tidyverse) # こちらのパッケージを使うので呼び出しておく		  
 ```
