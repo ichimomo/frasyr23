@@ -472,7 +472,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
         scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
         theme_bw()+theme_custom()+
         ggtitle("漁獲管理規則案")+
-        xlab("資源量水準(%)")+ylab(str_c("α (算定漁獲量の算出年の漁獲量の削減率)"))+
+        xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
         theme(legend.position="top")
 
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ #----
@@ -505,7 +505,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
-          ggtitle("漁獲管理規則")+
+          ggtitle("漁獲管理規則案")+
           xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
           theme(legend.position="top")
 
@@ -521,7 +521,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
               geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
               scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
               theme_bw()+theme_custom()+
-              ggtitle("漁獲管理規則")+
+              ggtitle("漁獲管理規則案")+
               xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
               theme(legend.position="top") +
               theme(text = element_text(family = font_MAC))
@@ -713,7 +713,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
     ## scale_color_manual(values=rev(col.BRP))+
     ##      theme_bw()+theme_custom()+
     ## xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (漁獲量の削減率)"))+
-    ## ggtitle("漁獲管理規則")+
+    ## ggtitle("漁獲管理規則案")+
     ##      theme(legend.position="top"))
     if(fishseason==1){
       if(detABC==1){ #----
@@ -941,14 +941,14 @@ plot_hcr3 <- function(res.list,stock.name=NULL,detABC=0){
     (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
        theme_bw()+theme_custom()+
        xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (漁獲量の削減率)"))+
-       ggtitle("漁獲管理規則")+
+       ggtitle("漁獲管理規則案")+
        theme(legend.position="top"))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
       (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
          theme_bw(base_family = font_MAC)+theme_custom()+
          xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (漁獲量の削減率)"))+
-         ggtitle("漁獲管理規則")+
+         ggtitle("漁獲管理規則案")+
          theme(legend.position="top")+
          theme(text = element_text(family = font_MAC)))
     }
@@ -1039,14 +1039,14 @@ plot_hcr2 <- function(res.list,stock.name=NULL,detABC=0){
     }else{
       g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
         theme_bw()+theme_custom()+
-        ggtitle("漁獲管理規則")+
+        ggtitle("漁獲管理規則案")+
         xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
         theme(legend.position="top")
 
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           theme_bw(base_family = font_MAC)+theme_custom()+
-          ggtitle("漁獲管理規則")+
+          ggtitle("漁獲管理規則案")+
           xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
           theme(legend.position="top")+
           theme(text = element_text(family = font_MAC))
