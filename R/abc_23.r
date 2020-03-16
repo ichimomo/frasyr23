@@ -367,11 +367,11 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
     #資源量指数のトレンド ----
     g.cpue <- ccdata %>% ggplot() +
       geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
-      geom_text(data=data_percent_even,aes(x=x,y=y,label=label))+
+      geom_text(data=data_percent_even,aes(x=x,y=y+0.5,label=label))+
       geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,label="(資源量水準)"),size=4)+
       geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP), size = 0.9, linetype = "41")+
-      ggrepel::geom_label_repel(data=data_BRP,                                                                                   mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels),                         box.padding=0.5, nudge_x=1)+
-      scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE)+ #labels=rev(c(legend.labels)))+
+      #ggrepel::geom_label_repel(data=data_BRP,                                                                                   mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels),                         box.padding=0.5, nudge_x=1)+
+      scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
       geom_path(aes(x=year,y=cpue),size=1)+
       theme_bw()+ylab("資源量指数")+xlab(year.axis.label)+
       ylim(0,NA)+theme_custom()+
@@ -381,11 +381,11 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ #----
       g.cpue <- ccdata %>% ggplot() +
         geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
-        geom_text(data=data_percent_even,aes(x=x,y=y,label=label))+
+        geom_text(data=data_percent_even,aes(x=x,y=y+0.5,label=label))+
         geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP), size = 0.9, linetype = "41")+
-        ggrepel::geom_label_repel(data=data_BRP,                                                                                   mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels,family = font_MAC),                         box.padding=0.5, nudge_x=1)+
-        scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE)+ #labels=rev(c(legend.labels)))+
+        #ggrepel::geom_label_repel(data=data_BRP,                                                                                   mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels,family = font_MAC),                         box.padding=0.5, nudge_x=1)+
+        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
         geom_path(aes(x=year,y=cpue),size=1)+
         theme_bw()+ylab("資源量指数")+xlab(year.axis.label)+
         ylim(0,NA)+theme_custom()+
