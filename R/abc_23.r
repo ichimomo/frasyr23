@@ -110,6 +110,8 @@ calc_abc2 <- function(
     }else{
       alphafromD <- type2_func(D2alpha,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
+    alphafromD01 <- type2_func(0.1,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
 
     ABC <- mean.catch * alpha
 
@@ -129,8 +131,10 @@ calc_abc2 <- function(
                        "AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
                        "Average catch: ",round(mean.catch,3),"\n",
-                       "ABC in ",max(ccdata$year,na.rm=T)+2,": ",round(ABC,3),"\n"))
-    if(!is.null(D2alpha)) cat("Derived alpha from D=",round(D2alpha,3),": ",round(alphafromD,3),"\n")
+                       "ABC in ",max(ccdata$year,na.rm=T)+2,": ",round(ABC,3),"\n",
+                       "CPUE Level and alpha: 0.1  and  ",round(alphafromD01,3),"\n",
+                       "CPUE Level and alpha: 0.05 and  ",round(alphafromD005,3),"\n"))
+    if(!is.null(D2alpha)) cat("Derived alpha from CPUE level=",round(D2alpha,3),": ",round(alphafromD,3),"\n")
     cat("---------------------\n")
 if(isTRUE(catch.na.warning))cat("Warning! Recent n.catch year data contains NA.")
 
