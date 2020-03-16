@@ -30,16 +30,20 @@ help(calc_abc2) # helpを見ると引数の説明などが見れます
 # 例データ
 catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
 cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
-data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
+data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch,D2alpha=0.1)
 
 # 2系
 abc2_ex <- calc_abc2(data_example)
+# ある資源量水準Dにおけるαを求めたいとき、関数の引数にD2alpha=xx（0<xx<1）を加える。(デフォルトはNULLで結果は出力されない)
+abc2_ex <- calc_abc2(data_example,D2alpha=0.155)
+
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
 graph2_ex <- plot_abc2(abc2_ex)
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1)
 # ABCが決定できない魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
+
 
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
