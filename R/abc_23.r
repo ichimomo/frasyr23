@@ -130,7 +130,7 @@ calc_abc2 <- function(
                        "alpha: ",round(alpha,3),"\n",
                        "Average catch: ",round(mean.catch,3),"\n",
                        "ABC in ",max(ccdata$year,na.rm=T)+2,": ",round(ABC,3),"\n"))
-    if(!is.null(D2alpha)) cat("Derived alpha from D=", round(D2alpha,3), "is",round(alphafromD,3),"\n")
+    if(!is.null(D2alpha)) cat("Derived alpha from D=",round(D2alpha,3),": ",round(alphafromD,3),"\n")
     cat("---------------------\n")
 if(isTRUE(catch.na.warning))cat("Warning! Recent n.catch year data contains NA.")
 
