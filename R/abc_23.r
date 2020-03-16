@@ -411,7 +411,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = "41")+
           ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=max(res$alpha), label=legend.labels),
+                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels),
                                     box.padding=0.5, nudge_y=1)+
           scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE)+#,labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
@@ -430,7 +430,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=2)+
           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = "41" )+
         ggrepel::geom_label_repel(data=data_BRP,
-                                  mapping=aes(x=value_ratio*100, y=max(res$alpha), label=legend.labels,family = font_MAC),
+                                  mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
                                   box.padding=0.5, nudge_y=1)+
           scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE )+ #,labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
