@@ -34,12 +34,18 @@ data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
 # 2系
 abc2_ex <- calc_abc2(data_example)
+# ある資源量水準Dにおけるαを求めたいとき、関数の引数にD2alpha=xx（0<xx<1）を加える。(デフォルトはNULLで結果は出力されない)
+abc2_ex <- calc_abc2(data_example,D2alpha=0.155)
+# 保守的なABCを求めたい（βを設定したい）時。（デフォルトはβ=1となっている）
+abc2_ex <- calc_abc2(data_example,beta=0.9)
+
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
 graph2_ex <- plot_abc2(abc2_ex)
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1)
 # ABCが決定できない魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
+
 
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     

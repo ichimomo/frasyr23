@@ -29,7 +29,7 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' library(frasyr23)
 #' catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
 #' cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
-#' example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
+#' example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch,D2alpha=0.1)
 #'
 #' # 2系
 #' example_abc2 <- calc_abc2(example_data,beta=1)
@@ -46,7 +46,8 @@ calc_abc2 <- function(
   tune.par = c(0.5,0.4,0.4), #  tuning parameters: (delta1, delta2, delta3)
   AAV="auto", #
   n.catch=5,   #  period for averaging the past catches
-  beta = 1.0
+  beta = 1.0,
+  D2alpha = NULL
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
     arglist <- lapply(argname,function(xx) eval(parse(text=xx)))
@@ -103,6 +104,13 @@ calc_abc2 <- function(
 #    ABC <- ifelse(cD > BB & cpue[n] > 0, mean.catch*exp(k*(cD-BT)), 0)    # calculation of ABC
     #    alpha <- exp(k*(cD-BT))
     alpha <- type2_func(cD,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+
+    if(is.null(D2alpha)){
+      alphafromD <- NULL
+    }else{
+      alphafromD <- type2_func(D2alpha,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    }
+
     ABC <- mean.catch * alpha
 
     Obs_BRP <- c(icum.cpue(BT), icum.cpue(BL), icum.cpue(BB))
@@ -122,6 +130,7 @@ calc_abc2 <- function(
                        "alpha: ",round(alpha,3),"\n",
                        "Average catch: ",round(mean.catch,3),"\n",
                        "ABC in ",max(ccdata$year,na.rm=T)+2,": ",round(ABC,3),"\n"))
+    if(!is.null(D2alpha)) cat("Derived alpha from D=",round(D2alpha,3),": ",round(alphafromD,3),"\n")
     cat("---------------------\n")
 if(isTRUE(catch.na.warning))cat("Warning! Recent n.catch year data contains NA.")
 
@@ -129,7 +138,7 @@ if(isTRUE(catch.na.warning))cat("Warning! Recent n.catch year data contains NA."
                    AAV=AAV,tune.par=tune.par,ABC=ABC,arglist=arglist,
                    mean.catch=mean.catch,Obs_percent=Obs_percent,Obs_percent_even=Obs_percent_even,
                    D=D,
-                   alpha=alpha,beta=beta)
+                   alpha=alpha,beta=beta,D2alpha=alphafromD)
 
   return(output)
 }
