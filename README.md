@@ -92,10 +92,9 @@ graph3_aka <- plot_abc3(abc3_aka)
 abc2_aka <- calc_abc2(data_aka,beta=1)
 ## 保守的なABC
 abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
-## 比較　ABCが決定できる魚種
+## 比較
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC))
-## 比較　ABCが決定できない魚種
-plot_hcr2(list(abc2_aka,abc2_aka_conservABC))
+
 ```
 <!--
 ggsave(file="hcr2_compare.png",width=5,height=3)
