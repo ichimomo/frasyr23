@@ -378,7 +378,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
       ggtitle("資源量指数のトレンド")+
       theme(legend.position="top")
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ #----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
       g.cpue <- ccdata %>% ggplot() +
         geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
         geom_text(data=data_percent_even,aes(x=x,y=y+0.5,label=label))+
@@ -419,7 +419,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           xlab("資源量水準(%)")+ylab(str_c("α (漁獲量の削減率)"))+
           theme(legend.position="top")
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ #----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
       g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           #stat_function(fun=type2_func_wrapper,
           #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
@@ -458,7 +458,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
       ylim(0,NA)+ theme_custom()+
       theme(legend.position="top")
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){# plot 設定 for mac
       g.catch <- ccdata %>% ggplot() +
         geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
         geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
@@ -510,10 +510,11 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
     font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
     legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC",rev(c(legend.labels)))
-
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量",rev(c(legend.labels)))
 
+    #漁期年/年の設定 ----
     ifelse(fishseason==1, year.axis.label <- "漁期年",year.axis.label <- "年")
+    #ABC決定可能/不可能の設定 ----
     if(detABC==1){
       g.catch.title <- "漁獲量のトレンドと算定漁獲量"
       g.catch.abcpoint <- "算定漁獲量"
@@ -528,7 +529,8 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
     PB <- res$arglist$PB
     tune.par <- res$arglist$tune.par
 
-    g.hcr <- plot_hcr3(res,detABC = detABC)
+    # 漁獲管理規則案HCR ----
+    g.hcr <- plot_hcr3(res)
 
     ## (g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
     ##      stat_function(fun=type3_func_wrapper,
@@ -541,166 +543,47 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
     ## xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("alpha (漁獲量の削減率)"))+
     ## ggtitle("漁獲管理規則案")+
     ##      theme(legend.position="top"))
-    if(fishseason==1){
-      if(detABC==1){ #----
-        (g.catch <- ccdata %>% ggplot() +
-           geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-           geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-           #         geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-           #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
-           #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-           #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
-           geom_path(aes(x=year,y=catch),size=1)+
-           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-           geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
-           theme_bw()+ylab("漁獲量")+xlab("year.axis.label")+theme_custom()+
-           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-           scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2)+
-           ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
-           ggtitle(g.catch.title)+
-           theme(legend.position="top"))
 
-        if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-          col.set <- c("#000000","#FF0000",rev(col.BRP))
-          g.catch <- ccdata %>% ggplot() +
-            theme_bw(base_family = font_MAC)+
-            geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-            geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-            #          geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-            #                      mapping=aes(x=year,y=catch),lwd=2,color="red")+
-            #          geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-            #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
-            geom_path(aes(x=year,y=catch),size=1)+
-            ylab("漁獲量")+xlab("year.axis.label")+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
-            geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
-            geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-            scale_color_manual(name="",values=col.set,labels=legend.labels2)+
-            ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
-            ggtitle(g.catch.title)+
-            theme(text = element_text(family = font_MAC))+
-            theme(legend.position="top")
-        }
-      }else{ #----
+    # 漁獲量トレンドとABC/算定漁獲量 ----
+    (g.catch <- ccdata %>% ggplot() +
+        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+        geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+        #         geom_point(data=dplyr::filter(data_catch,type=="ABC"),
+        #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
+        #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
+        #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
+        geom_path(aes(x=year,y=catch),size=1)+
+        geom_text(data=data_percent,aes(x=x,y=y,label=label))+
+        geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
+        theme_bw()+ylab("漁獲量（トン）")+xlab(year.axis.label)+theme_custom()+
+        geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP), size = 0.9, linetype = "41")+
+        scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2)+
+        ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
+        ggtitle(g.catch.title)+
+        theme(legend.position="top"))
 
-        (g.catch <- ccdata %>% ggplot() +
-           geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-           geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-           #         geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-           #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
-           #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-           #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
-           geom_path(aes(x=year,y=catch),size=1)+
-           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-           geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
-           theme_bw()+ylab("漁獲量")+xlab("year.axis.label")+theme_custom()+
-           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-           scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2)+
-           ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
-           ggtitle(g.catch.title)+
-           theme(legend.position="top"))
-
-        if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-          col.set <- c("#000000","#FF0000",rev(col.BRP))
-          g.catch <- ccdata %>% ggplot() +
-            theme_bw(base_family = font_MAC)+
-            geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-            geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-            #          geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-            #                      mapping=aes(x=year,y=catch),lwd=2,color="red")+
-            #          geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-            #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
-            geom_path(aes(x=year,y=catch),size=1)+
-            ylab("漁獲量")+xlab("year.axis.label")+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
-            geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
-            geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-            scale_color_manual(name="",values=col.set,labels=legend.labels2)+
-            ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
-            ggtitle(g.catch.title)+
-            theme(text = element_text(family = font_MAC))+
-            theme(legend.position="top")
-        }
-      }
-    }else{
-      if(detABC==1){ #----
-        (g.catch <- ccdata %>% ggplot() +
-           geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-           geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-           #         geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-           #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
-           #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-           #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
-           geom_path(aes(x=year,y=catch),size=1)+
-           geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-           geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
-           theme_bw()+ylab("漁獲量")+xlab(year.axis.label)+theme_custom()+
-           geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-           scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2)+
-           ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
-           ggtitle(g.catch.title)+
-           theme(legend.position="top"))
-
-        if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-          col.set <- c("#000000","#FF0000",rev(col.BRP))
-          g.catch <- ccdata %>% ggplot() +
-            theme_bw(base_family = font_MAC)+
-            geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-            geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-            #          geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-            #                      mapping=aes(x=year,y=catch),lwd=2,color="red")+
-            #          geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-            #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
-            geom_path(aes(x=year,y=catch),size=1)+
-            ylab("漁獲量")+xlab(year.axis.label)+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
-            geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
-            geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-            scale_color_manual(name="",values=col.set,labels=legend.labels2)+
-            ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
-            ggtitle(g.catch.title)+
-            theme(text = element_text(family = font_MAC))+
-            theme(legend.position="top")
-        }
-      }else{ #----
-
-      (g.catch <- ccdata %>% ggplot() +
-         geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-         geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-         #         geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-         #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
-         #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-         #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
-         geom_path(aes(x=year,y=catch),size=1)+
-         geom_text(data=data_percent,aes(x=x,y=y,label=label))+
-         geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
-         theme_bw()+ylab("漁獲量")+xlab(year.axis.label)+theme_custom()+
-         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-         scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2)+
-         ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
-         ggtitle(g.catch.title)+
-         theme(legend.position="top"))
-
-      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-        col.set <- c("#000000","#FF0000",rev(col.BRP))
-        g.catch <- ccdata %>% ggplot() +
-          theme_bw(base_family = font_MAC)+
-          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-          geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-          #          geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-          #                      mapping=aes(x=year,y=catch),lwd=2,color="red")+
-          #          geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-          #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
-          geom_path(aes(x=year,y=catch),size=1)+
-          ylab("漁獲量")+xlab(year.axis.label)+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
-          geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
-          geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP))+
-          scale_color_manual(name="",values=col.set,labels=legend.labels2)+
-          ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
-          ggtitle(g.catch.title)+
-          theme(text = element_text(family = font_MAC))+
-          theme(legend.position="top")
-      }
-      }
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac
+      col.set <- c("#000000","#FF0000",rev(col.BRP))
+      g.catch <- ccdata %>% ggplot() +
+        theme_bw(base_family = font_MAC)+
+        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+        geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+        #          geom_point(data=dplyr::filter(data_catch,type=="ABC"),
+        #                      mapping=aes(x=year,y=catch),lwd=2,color="red")+
+        #          geom_line(data=dplyr::filter(data_catch,type!="ABC"),
+        #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
+        geom_path(aes(x=year,y=catch),size=1)+
+        ylab("漁獲量（トン）")+xlab(year.axis.label)+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
+        geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
+        geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP), size = 0.9, linetype = "41")+
+        scale_color_manual(name="",values=col.set,labels=legend.labels2)+
+        ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
+        ggtitle(g.catch.title)+
+        theme(text = element_text(family = font_MAC))+
+        theme(legend.position="top")
     }
 
+    #出力設定 ----
     graph.component <- list(g.hcr,g.catch)
     graph.combined <- gridExtra::grid.arrange(g.hcr,g.catch,ncol=2,top=stock.name)
     return(list(graph.component=graph.component,graph.combined=graph.combined))
@@ -713,13 +596,12 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
 #' @export
 #'
 
-plot_hcr3 <- function(res.list,stock.name=NULL,detABC=0){
+plot_hcr3 <- function(res.list,stock.name=NULL){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
 
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
-  if(detABC==1){ #----
     (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
        theme_bw()+theme_custom()+
        xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (漁獲量の削減率)"))+
@@ -734,6 +616,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,detABC=0){
          theme(legend.position="top")+
          theme(text = element_text(family = font_MAC)))
     }
+
     for(i in 1:length(res.list)){
       res <- res.list[[i]]
 
@@ -750,67 +633,26 @@ plot_hcr3 <- function(res.list,stock.name=NULL,detABC=0){
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,type="%"),
                         color="black",size=1,linetype=i)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=1)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP),
-                     linetype=i)+
-          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.hcr))))
+          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = "41")+
+          ggrepel::geom_label_repel(data=data_BRP,
+                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels.hcr,),
+                                    box.padding=0.5, nudge_y=1)+
+          scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE)) #labels=rev(c(legend.labels.hcr))))
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         (g.hcr <- g.hcr +
            stat_function(fun=type3_func_wrapper,
                          args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,type="%"),
                          color="black",size=1,linetype=i)+
            geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=1)+
-           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP),
-                      linetype=i)+
-           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.hcr))))}
+           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = "41")+
+           ggrepel::geom_label_repel(data=data_BRP,
+                                     mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels.hcr, family=font_MAC),
+                                     box.padding=0.5, nudge_y=1)+
+           scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE)) #labels=rev(c(legend.labels.hcr))))}
+      }
     }
-  }else{ #----
-    (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
-       theme_bw()+theme_custom()+
-       xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (漁獲量の削減率)"))+
-       ggtitle("漁獲管理規則案")+
-       theme(legend.position="top"))
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-      (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
-         theme_bw(base_family = font_MAC)+theme_custom()+
-         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("α (漁獲量の削減率)"))+
-         ggtitle("漁獲管理規則案")+
-         theme(legend.position="top")+
-         theme(text = element_text(family = font_MAC)))
-    }
-    for(i in 1:length(res.list)){
-      res <- res.list[[i]]
-
-      data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
-                         value_ratio=res$BRP)
-
-      BT <- res$arglist$BT
-      PL <- res$arglist$PL
-      PB <- res$arglist$PB
-      tune.par <- res$arglist$tune.par
-
-      (g.hcr <- g.hcr +
-          stat_function(fun=type3_func_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,type="%"),
-                        color="black",size=1,linetype=i)+
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=1)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP),
-                     linetype=i)+
-          scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.hcr))))
-      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-        (g.hcr <- g.hcr +
-           stat_function(fun=type3_func_wrapper,
-                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,type="%"),
-                         color="black",size=1,linetype=i)+
-           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=1)+
-           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP),
-                      linetype=i)+
-           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels.hcr))))}
-    }
-  }
-
-
-    return(g.hcr)
+  return(g.hcr)
 }
 
 #' 2系のHCRを比較するための関数
@@ -856,7 +698,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL){
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1,linetype=i)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP))+
+          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = "41")+
           scale_color_manual(name="",values=rev(c(col.BRP)),label=rev(legend.labels.hcr))
       }
 
