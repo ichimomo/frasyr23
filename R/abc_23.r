@@ -431,7 +431,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE)+#,labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("")+
-          xlab("資源量水準(%)")+ylab(str_c("現状の漁獲量からの削減率"))+
+          xlab("資源量水準(%)")+ylab(str_c("漁獲量比"))+
           theme(legend.position="top",legend.justification = c(1,0))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
@@ -450,7 +450,7 @@ plot_abc2 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
           scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE )+ #,labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("")+
-          xlab("資源量水準(%)")+ylab(str_c("現状の漁獲量からの削減率"))+
+          xlab("資源量水準(%)")+ylab(str_c("漁獲量比"))+
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
     }
@@ -620,14 +620,14 @@ plot_hcr3 <- function(res.list,stock.name=NULL){
 
     (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
        theme_bw()+theme_custom()+
-       xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("現状の漁獲量からの削減率"))+
+       xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("漁獲量比"))+
        ggtitle("")+
        theme(legend.position="top",legend.justification = c(1,0)))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot setting for mac----
       (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
          theme_bw(base_family = font_MAC)+theme_custom()+
-         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("現状の漁獲量からの削減率"))+
+         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("漁獲量比"))+
          ggtitle("")+
          theme(legend.position="top",legend.justification = c(1,0))+
          theme(text = element_text(family = font_MAC)))
@@ -687,7 +687,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL){
       g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
         theme_bw()+theme_custom()+
         ggtitle("")+
-        xlab("資源量水準(%)")+ylab(str_c("現状の漁獲量からの削減率"))+
+        xlab("資源量水準(%)")+ylab(str_c("漁獲量比"))+
         theme(legend.position="top",legend.justification = c(1,0))
         for(i in 1:length(res.list)){
           res <- res.list[[i]]
@@ -717,7 +717,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL){
         g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           theme_bw(base_family = font_MAC)+theme_custom()+
           ggtitle("")+
-          xlab("資源量水準(%)")+ylab(str_c("現状の漁獲量からの削減率"))+
+          xlab("資源量水準(%)")+ylab(str_c("漁獲量比"))+
           theme(legend.position="top",legend.justification = c(1,0))+
           theme(text = element_text(family = font_MAC))
 
