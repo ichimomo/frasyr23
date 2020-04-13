@@ -6,6 +6,11 @@
 ```
 # install.pakcages("devtools") # <-- devtoolsをインストールしていない人
 devtools::install_github("ichimomo/frasyr23") # frasyrのインストール
+
+# 過去の安定版を指定してインストールする場合
+# @以下にリリースバージョンを指定します
+devtools::install_github("ichimomo/frasyr23@v1.00")
+
 library(frasyr23) # frasyrの呼び出し
 library(tidyverse) # こちらのパッケージを使うので呼び出しておく		  
 ```
