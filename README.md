@@ -43,8 +43,17 @@ abc2_ex <- calc_abc2(data_example,beta=0.9)
 graph2_ex <- plot_abc2(abc2_ex)
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1)
-# ABCが決定できない魚種で、かつ漁期が暦の年に一致しない場合
+# ABCが決定できず算定漁獲量を提示する魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
+# 提案段階のため「漁獲量の予測値」として示す場合で、かつ漁期が暦の年に一致しない場合
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=2)
+# 資源量指標値の時系列グラフの背景に水準を境界とした色を塗りたい場合
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=2,fillarea=TRUE)
+
+# 2系の水準計算を準用する跨り資源の場合
+abc4_ex <- calc_abc2(data_example, BT=0.5)
+graph4_ex <- plot_abc2(abc4_ex,fishseason=1,detABC=2, abc4=TRUE)
+# calc_abc2関数でBT=0.5とし、plot_abc2関数でabc4=TRUEとすることで資源量指標値の平均水準（50%水準）と過去最低値を参照する図が描画される
 
 
 # AAVのちがいを見る	   
