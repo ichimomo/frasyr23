@@ -6,6 +6,11 @@
 ```
 # install.pakcages("devtools") # <-- devtoolsをインストールしていない人
 devtools::install_github("ichimomo/frasyr23") # frasyrのインストール
+
+# 過去の安定版を指定してインストールする場合
+# @以下にリリースバージョンを指定します
+devtools::install_github("ichimomo/frasyr23@v1.00")
+
 library(frasyr23) # frasyrの呼び出し
 library(tidyverse) # こちらのパッケージを使うので呼び出しておく		  
 ```
@@ -77,11 +82,20 @@ graph3_ex <- plot_abc3(abc3_ex,fishseason=1,detABC=1)
 data(data_aka)
 # 2系
 abc2_aka <- calc_abc2(data_aka,beta=1)
-graph2_aka <- plot_abc2(abc2_aka)
+graph2_aka <- plot_abc2(abc2_aka, detABC=2, fillarea=FALSE)
 # グラフをセーブする場合
-# ggsave(graph2_aka[[2]],file="aka2.png")
+# ggsave(width=420,height=150,dpi=200,units="mm", graph2_aka[[2]], file="aka2.png")
 ```
 ![](tools/aka2.png)
+
+```
+# 資源量指標値の図だけ抜き出し、かつ色を塗ってみる
+graph2_aka <- plot_abc2(abc2_aka, detABC=2, fillarea=TRUE)
+# グラフをセーブする場合
+# ggsave(width=140,height=105,dpi=200,units="mm", graph2_aka$graph.component[[1]], file="aka2cpue.png")
+```
+![](tools/aka2cpue.png)		
+
 
 ```	  	   	
 abc3_aka <- calc_abc3(data_aka)
