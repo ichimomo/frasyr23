@@ -334,18 +334,20 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @param detABC  次漁期の漁獲量の凡例表記を変更（0ならABC、1なら算定漁獲量、2なら予測値）
 #' @param abc4  北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE）
 #' @param fillarea  資源量指標値の図にkobeプロットに似た色を塗る（TRUEなら塗る、デフォルトはFALSE）
+#' @param cpueunit  資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）
+#' @param leftalign  資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）
 #'
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", leftalign=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
     ifelse(fishseason==1, year.axis.label <- "漁期年", year.axis.label <- "年")
 
     # plot
-    ccdata <- res$arglist$ccdata
+    ccdata <<- res$arglist$ccdata
     n.catch <- res$arglist$n.catch
     years <- ccdata$year
     last.year <- rev(years)[1]
@@ -412,11 +414,17 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       colfill <- c("white", "white", "white", "white")
     }
 
+    #minyearを追加しポリゴンをコントロール。最後にxlimで制御
+    if(leftalign==TRUE){
+      minyears <- min(ccdata[!is.na(ccdata$cpue),]$year)
+    }else{
+      minyears <- min(years)-2
+    }
     g.cpue <- ccdata %>% ggplot() +
-      geom_polygon(data=tibble(x=c(min(years)-2,max(years)+4,max(years)+4,min(years)-2), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
-      geom_polygon(data=tibble(x=c(min(years)-2,max(years)+4,max(years)+4,min(years)-2), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
-      geom_polygon(data=tibble(x=c(min(years)-2,max(years)+4,max(years)+4,min(years)-2), y=c(data_BRP2$value_obs[3],data_BRP2$value_obs[3],data_BRP2$value_obs[2],data_BRP2$value_obs[2])), aes(x=x,y=y), fill=colfill[3]) +
-      geom_polygon(data=tibble(x=c(min(years)-2,max(years)+4,max(years)+4,min(years)-2), y=c(0,0,data_BRP2$value_obs[3],data_BRP2$value_obs[3])), aes(x=x,y=y), fill=colfill[4]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[3],data_BRP2$value_obs[3],data_BRP2$value_obs[2],data_BRP2$value_obs[2])), aes(x=x,y=y), fill=colfill[3]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(0,0,data_BRP2$value_obs[3],data_BRP2$value_obs[3])), aes(x=x,y=y), fill=colfill[4]) +
       geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
       geom_text(data=data_percent_even, aes(x=x,y=y*1.05,label=label))+
       geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,label="(資源量水準)"),size=4)+
@@ -424,17 +432,20 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels), box.padding=0.5, nudge_x=1)+
       scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
       geom_path(aes(x=year,y=cpue),size=1)+
-      theme_bw()+ylab("資源量指標値")+xlab(year.axis.label)+
+      theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
       ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
       ggtitle("")+
       theme(legend.position="top",legend.justification = c(1,0))
+     if(leftalign==TRUE){
+      g.cpue <- g.cpue + xlim(minyears, max(ccdata[!is.na(ccdata$cpue),]$year)+4)
+      }
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
       g.cpue <- ccdata %>% ggplot() +
-        geom_polygon(data=tibble(x=c(min(years)-2,max(years)+4,max(years)+4,min(years)-2), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
-        geom_polygon(data=tibble(x=c(min(years)-2,max(years)+4,max(years)+4,min(years)-2), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
-        geom_polygon(data=tibble(x=c(min(years)-2,max(years)+4,max(years)+4,min(years)-2), y=c(data_BRP2$value_obs[3],data_BRP2$value_obs[3],data_BRP2$value_obs[2],data_BRP2$value_obs[2])), aes(x=x,y=y), fill=colfill[3]) +
-        geom_polygon(data=tibble(x=c(min(years)-2,max(years)+4,max(years)+4,min(years)-2), y=c(0,0,data_BRP2$value_obs[3],data_BRP2$value_obs[3])), aes(x=x,y=y), fill=colfill[4]) +
+        geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
+        geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
+        geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[3],data_BRP2$value_obs[3],data_BRP2$value_obs[2],data_BRP2$value_obs[2])), aes(x=x,y=y), fill=colfill[3]) +
+        geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(0,0,data_BRP2$value_obs[3],data_BRP2$value_obs[3])), aes(x=x,y=y), fill=colfill[4]) +
         geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
         geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
         geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
@@ -442,11 +453,14 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels,family = font_MAC), box.padding=0.5, nudge_x=1)+
         scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
         geom_path(aes(x=year,y=cpue),size=1)+
-        theme_bw()+ylab("資源量指標値")+xlab(year.axis.label)+
+        theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
         ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
         ggtitle("")+
         theme(legend.position="top",legend.justification = c(1,0)) +
         theme(text = element_text(family = font_MAC))
+     if(leftalign==TRUE){
+      g.cpue <- g.cpue + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
+      }
     }
 
     if(isTRUE(abc4)){
@@ -458,14 +472,16 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       geom_hline(mapping=aes(yintercept=min(cpue, na.rm=TRUE), color=col.BRP[1]), size = 0.9*2, linetype = 4)+
       #ggrepel::geom_label_repel(mapping=aes(x=c(min(years, na.rm=TRUE)+0.5,min(years, na.rm=TRUE)+0.5), y=c(min(cpue, na.rm=TRUE),data_BRP$value_obs[1]), label=rev(c("平均水準","過去最低値"))),
       #                          box.padding=0.5, nudge_x=1)+
-      scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c("平均水準","過去最低値")))+
+      scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(paste(min(ccdata[!is.na(ccdata$cpue),]$year),"～",max(ccdata[!is.na(ccdata$cpue),]$year),"の平均水準",sep=""),"過去最低値")))+
       geom_path(aes(x=year,y=cpue),linetype=1,size=1)+
-      theme_bw()+ylab("資源量指標値")+xlab(year.axis.label)+
-      ylim(0,NA)+theme_custom()+
+      theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
       ggtitle("資源量指標値のトレンド")+
       ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
       ggtitle("")+
       theme(legend.position="top",legend.justification = c(1,0))
+     if(leftalign==TRUE){
+      g.cpue4 <- g.cpue4 + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
+      }
     }
 
 
