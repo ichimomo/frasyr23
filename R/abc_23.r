@@ -820,7 +820,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL){
           stat_function(fun=type2_func_wrapper,
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1,linetype=i)+
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
+          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)
       }
       g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
                        ggrepel::geom_label_repel(data=data_BRP,
