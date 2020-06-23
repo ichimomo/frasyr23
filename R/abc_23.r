@@ -762,7 +762,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL){
 
 plot_hcr2 <- function(res.list,stock.name=NULL){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-  legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
+  legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
   linetype.set <- c("22","41","solid")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -787,13 +787,14 @@ plot_hcr2 <- function(res.list,stock.name=NULL){
           stat_function(fun=type2_func_wrapper,
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1,linetype=i)+
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-          ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels.hcr),
-                                    box.padding=0.5, nudge_y=1)+
-          scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
+          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)
         }
+      g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+          ggrepel::geom_label_repel(data=data_BRP,
+                                    mapping=aes(x=value_ratio*100, y=c(1.1,1.0,0.9), label=legend.labels.hcr),
+                                    box.padding=0.5)+
+          scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
+
 
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
@@ -820,13 +821,13 @@ plot_hcr2 <- function(res.list,stock.name=NULL){
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1,linetype=i)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-          ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels.hcr,family=font_MAC),
-                                    box.padding=0.5, nudge_y=1)+
-          scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
       }
-}
+      g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+                       ggrepel::geom_label_repel(data=data_BRP,
+                       mapping=aes(x=value_ratio*100, y=c(1.1,1.0,0.9), label=legend.labels.hcr,family=font_MAC),
+                       box.padding=0.5)+
+                       scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
+  }
     g.hcr
 }
 
