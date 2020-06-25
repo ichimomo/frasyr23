@@ -507,7 +507,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE)+#,labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("")+
-          xlab("資源量水準(%)")+ylab(str_c("漁獲量比"))+
+          xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
@@ -526,7 +526,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE )+ #,labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("")+
-          xlab("資源量水準(%)")+ylab(str_c("漁獲量比"))+
+          xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
     }
@@ -702,14 +702,14 @@ plot_hcr3 <- function(res.list,stock.name=NULL){
 
     (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
        theme_bw()+theme_custom()+
-       xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("漁獲量比"))+
+       xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("漁獲量を増減させる係数"))+
        ggtitle("")+
        theme(legend.position="top",legend.justification = c(1,0)))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot setting for mac----
       (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
          theme_bw(base_family = font_MAC)+theme_custom()+
-         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("漁獲量比"))+
+         xlab("漁獲量水準 (漁獲量/最大漁獲量, %)")+ylab(str_c("漁獲量を増減させる係数"))+
          ggtitle("")+
          theme(legend.position="top",legend.justification = c(1,0))+
          theme(text = element_text(family = font_MAC)))
@@ -762,14 +762,14 @@ plot_hcr3 <- function(res.list,stock.name=NULL){
 
 plot_hcr2 <- function(res.list,stock.name=NULL){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-  legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
+  legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
   linetype.set <- c("22","41","solid")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
       g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
         theme_bw()+theme_custom()+
         ggtitle("")+
-        xlab("資源量水準(%)")+ylab(str_c("漁獲量比"))+
+        xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
         theme(legend.position="top",legend.justification = c(1,0))
         for(i in 1:length(res.list)){
           res <- res.list[[i]]
@@ -787,19 +787,20 @@ plot_hcr2 <- function(res.list,stock.name=NULL){
           stat_function(fun=type2_func_wrapper,
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1,linetype=i)+
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-          ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels.hcr),
-                                    box.padding=0.5, nudge_y=1)+
-          scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
+          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)
         }
+      g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+          ggrepel::geom_label_repel(data=data_BRP,
+                                    mapping=aes(x=value_ratio*100, y=c(1.1,1.0,0.9), label=legend.labels.hcr),
+                                    box.padding=0.5)+
+          scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
+
 
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           theme_bw(base_family = font_MAC)+theme_custom()+
           ggtitle("")+
-          xlab("資源量水準(%)")+ylab(str_c("漁獲量比"))+
+          xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0))+
           theme(text = element_text(family = font_MAC))
 
@@ -819,14 +820,14 @@ plot_hcr2 <- function(res.list,stock.name=NULL){
           stat_function(fun=type2_func_wrapper,
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1,linetype=i)+
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=2)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-          ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels.hcr,family=font_MAC),
-                                    box.padding=0.5, nudge_y=1)+
-          scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
+          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)
       }
-}
+      g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+                       ggrepel::geom_label_repel(data=data_BRP,
+                       mapping=aes(x=value_ratio*100, y=c(1.1,1.0,0.9), label=legend.labels.hcr,family=font_MAC),
+                       box.padding=0.5)+
+                       scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
+  }
     g.hcr
 }
 
