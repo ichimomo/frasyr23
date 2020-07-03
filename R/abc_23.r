@@ -339,7 +339,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -362,9 +362,12 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
                            y=res$Obs_percent_even,
                            label=str_c(c(0.05,seq(from=0.2,to=0.8,by=0.2),0.95)*100,"%"))
     font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-    legend.labels <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
+    if(proposal==TRUE){
+      legend.labels <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
+    }else{
+      legend.labels <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
+    }
     linetype.set <- c("dashed","longdash","solid") 
-    #legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量")
     legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep="")) 
@@ -373,7 +376,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     # PB=0の時の禁漁水準削除設定 ----
     if(res$BRP[3] == 0) {
-      legend.labels <- c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案")
+      if(proposal==TRUE){
+        legend.labels <- c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案")
+      }else{
+        legend.labels <- c("目標管理基準値（目標水準）","限界管理基準値（限界水準）")
+      }
       linetype.set <- c("22","41")
       if(abc4==TRUE){
         col.BRP <- c("blue","red")
@@ -610,7 +617,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 #' @export
 #'
 
-plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
+plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
     # plot
     ccdata <- res$arglist$ccdata
     n.catch <- res$arglist$n.catch
@@ -626,7 +633,11 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                            y=max(ccdata$catch)*1:10/10,
                            label=str_c(1:10/10*100,"%"))
     font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-    legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
+    if(proposal==TRUE){
+      legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
+    }else{
+      legend.labels <-c("目標水準","限界水準","禁漁水準")
+    }
     linetype.set <- c("22","41","solid")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC",rev(c(legend.labels)))
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量",rev(c(legend.labels)))
@@ -715,9 +726,13 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
 #' @export
 #'
 
-plot_hcr3 <- function(res.list,stock.name=NULL){
+plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-  legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
+  if(proposal==TRUE){
+    legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
+  }else{
+    legend.labels.hcr <-c("目標水準","限界水準","禁漁水準")
+  }
   linetype.set <- c("22","41","solid")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -781,9 +796,13 @@ plot_hcr3 <- function(res.list,stock.name=NULL){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-  legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
+  if(proposal==TRUE){
+    legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
+  }else{
+    legend.labels.hcr <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
+  }
   linetype.set <- c("22","41","solid")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
