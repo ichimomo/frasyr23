@@ -29,10 +29,12 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
 ```
 # 例データ
 catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
-data_example <- data.frame(year=2001:2012,catch=catch)
+cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
+data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
 # 3系
-## dataにCPUEが入っていても無視します
+## 3系の関数はdataにCPUEが入っていても無視します
+## 当然CPUEがなく、yearとcatchのデータフレームも計算できます
 abc3_ex <- calc_abc3(data_example)
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
 graph3_ex <- plot_abc3(abc3_ex)

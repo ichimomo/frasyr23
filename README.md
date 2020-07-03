@@ -24,9 +24,6 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
    - calc_abc2 ABCの計算
    - plot_abc2 結果のプロット
 
-- 3系の計算
-   - calc_abc3 ABCの計算
-   - plot_abc3 結果のプロット
 
 # Rコード例
 ```
