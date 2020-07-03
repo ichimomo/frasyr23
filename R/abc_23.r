@@ -339,7 +339,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", leftalign=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -426,19 +426,28 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(0,0,data_BRP2$value_obs[3],data_BRP2$value_obs[3])), aes(x=x,y=y), fill=colfill[4]) +
       geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
       geom_text(data=data_percent_even, aes(x=x,y=y*1.05,label=label))+
-      geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,label="(資源量水準)"),size=4)+
-      geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=rev(col.BRP), linetype=rev(linetype.set)), size = 0.9*1.5)+ 
+      geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,label="(資源量水準)"),size=4)
+    if(RP==TRUE){
+     g.cpue <- g.cpue + 
+      geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=rev(col.BRP), linetype=rev(linetype.set)), size = 0.9*1.5)+
       #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels), box.padding=0.5, nudge_x=1)+
-      scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) + 
-      scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
-      geom_path(aes(x=year,y=cpue),size=1)+
-      theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
-      ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
-      ggtitle("")+
-      theme(legend.position="top",legend.justification = c(1,0), legend.key.width = unit(2.5, 'lines')) 
-     if(leftalign==TRUE){
-      g.cpue <- g.cpue + xlim(minyears, max(ccdata[!is.na(ccdata$cpue),]$year)+4)
-      }
+      scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
+      scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
+     }
+    g.cpue <- g.cpue + 
+      geom_path(data=ccdata, aes(x=year,y=cpue),size=1)+
+      theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+ 
+      ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()
+    if(RP!=TRUE){
+     g.cpue <- g.cpue +
+      geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+      scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
+     }
+    g.cpue <- g.cpue + 
+      ggtitle("") + theme(legend.position="top", legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'),legend.justification=c(1,0))
+    if(leftalign==TRUE){
+     g.cpue <- g.cpue + xlim(minyears, max(ccdata[!is.na(ccdata$cpue),]$year)+4)
+     }
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
       g.cpue <- ccdata %>% ggplot() +
@@ -449,15 +458,25 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
         geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
         geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
+     if(RP==TRUE){
+      g.cpue <- g.cpue + 
         geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=rev(col.BRP), linetype=rev(linetype.set)), size = 0.9*1.5)+
         #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels,family = font_MAC), box.padding=0.5, nudge_x=1)+
-        scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) + 
-        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
+        scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
+        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
+       }
+      g.cpue <- g.cpue + 
         geom_path(aes(x=year,y=cpue),size=1)+
         theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
-        ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
+        ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()
+     if(RP!=TRUE){
+      g.cpue <- g.cpue +
+        geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+        scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
+      }
+     g.cpue <- g.cpue + 
         ggtitle("")+
-        theme(legend.position="top",legend.justification = c(1,0), legend.key.width = unit(2.5, 'lines')) + 
+        theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines')) +
         theme(text = element_text(family = font_MAC))
      if(leftalign==TRUE){
       g.cpue <- g.cpue + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
