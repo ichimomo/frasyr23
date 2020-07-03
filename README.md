@@ -1,6 +1,6 @@
 # frasyr23
 - Fisheries Research Agency (FRA) provides the method for calculating sustainable yield (SY) with R for data poor fisheries stocks (type 2 and type3)
-- ２系・３系用のABC計算パッケージ（試験運用中）です
+- ２系(３系)用のABC計算パッケージです
 
 # インストールと呼び出し
 ```
@@ -24,9 +24,6 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
    - calc_abc2 ABCの計算
    - plot_abc2 結果のプロット
 
-- 3系の計算
-   - calc_abc3 ABCの計算
-   - plot_abc3 結果のプロット
 
 # Rコード例
 ```
@@ -55,15 +52,6 @@ graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
 
-# 3系
-## dataにCPUEが入っていても無視します
-abc3_ex <- calc_abc3(data_example)
-# ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
-graph3_ex <- plot_abc3(abc3_ex)
-# ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
-graph3_ex <- plot_abc3(abc3_ex,fishseason=1)
-# ABCが決定できない魚種で、かつ漁期が暦の年に一致しない場合
-graph3_ex <- plot_abc3(abc3_ex,fishseason=1,detABC=1)
 ```
 
 # 実データの解析例とグラフ
@@ -79,16 +67,6 @@ graph2_aka <- plot_abc2(abc2_aka)
 ```
 ![](tools/aka2.png)
 
-```	  	   	
-abc3_aka <- calc_abc3(data_aka)
-graph3_aka <- plot_abc3(abc3_aka)
-# グラフをセーブする場合
-# ggsave(graph3_aka[[2]],file="aka3.png")
-
-
-```
-
-![](tools/aka3.png)
 
 # HCRのみ描画し、比較する
 ```
