@@ -47,7 +47,8 @@ calc_abc2 <- function(
   AAV="auto", #
   n.catch=5,   #  period for averaging the past catches
   beta = 1.0,
-  D2alpha = NULL
+  D2alpha = NULL,
+  summary_abc = TRUE # 浜辺加筆（'20/07/10）
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
     arglist <- lapply(argname,function(xx) eval(parse(text=xx)))
@@ -123,6 +124,7 @@ calc_abc2 <- function(
 
     names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
 
+    if(summary_abc){ # summary_abc=Tなら以下の結果を自動で書く
     cat("---------------------\n")
     cat(stringr::str_c("Target CPUE value and Level: ",round(Obs_BRP[1],2)," and ", round(BRP[1],2) ,"\n",
                        "Limit CPUE value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
@@ -136,7 +138,8 @@ calc_abc2 <- function(
                        "CPUE Level and alpha: 0.05 and  ",round(alphafromD005,3),"\n"))
     if(!is.null(D2alpha)) cat("alpha at CPUE Level=",round(D2alpha,3),": ",round(alphafromD,3),"\n")
     cat("---------------------\n")
-if(isTRUE(catch.na.warning))cat("Warning! Recent n.catch year data contains NA.")
+    if(isTRUE(catch.na.warning))cat("Warning! Recent n.catch year data contains NA.")
+    }
 
     output <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Current_Status,
                    AAV=AAV,tune.par=tune.par,ABC=ABC,arglist=arglist,
