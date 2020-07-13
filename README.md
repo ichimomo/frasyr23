@@ -42,9 +42,9 @@ abc2_ex <- calc_abc2(data_example,D2alpha=0.155)
 abc2_ex <- calc_abc2(data_example,beta=0.9)
 
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
-graph2_ex <- plot_abc2(abc2_ex)
+graph2_ex <- plot_abc2(abc2_ex,detABC=0)
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
-graph2_ex <- plot_abc2(abc2_ex,fishseason=1)
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=0)
 # ABCが決定できず算定漁獲量を提示する魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
 # 提案段階のため「漁獲量の予測値」として示す場合で、かつ漁期が暦の年に一致しない場合
