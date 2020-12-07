@@ -23,7 +23,8 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' @param beta  保守的なABCのためのパラメータ(デフォルトは1)
 #' @param AAV default:"auto", "auto"の場合、CPUEのAAVを内部で計算した値を使う。明示的に数値を与える場合は、その数字が使われる
 #' @param n.catch 過去の漁獲量を平均する年数（デフォルトの値は5）
-#'
+#' @param n.cpue 過去の資源量指標値を平均する年数（デフォルトの値は3）
+#' @param smooth.cpue ABC算出時に平均化CPUEを使うか（デフォルトはFALSE）
 #'
 #' @examples
 #' library(frasyr23)
@@ -46,6 +47,8 @@ calc_abc2 <- function(
   tune.par = c(0.5,0.4,0.4), #  tuning parameters: (delta1, delta2, delta3)
   AAV="auto", #
   n.catch=5,   #  period for averaging the past catches
+  n.cpue=3,   #  period for averaging the past cpues
+  smooth.cpue = FALSE,
   beta = 1.0,
   D2alpha = NULL,
   summary_abc = TRUE # 浜辺加筆（'20/07/10）
@@ -77,6 +80,8 @@ calc_abc2 <- function(
     cum.cpue <- function(x) pnorm(scale(x),0,1) # cumulative normal distribution
     cum.cpue2 <- function(x) pnorm(x,mean(x),sd(x)) # cumulative normal distribution
     mean.catch <- mean(ori.catch[(l.catch-n.catch+1):l.catch],na.rm = TRUE)
+    mean.cpue <- mean(ori.cpue[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE)
+
     for(i in 0:(n.catch-1)){
       if(is.na (ori.catch[l.catch-i])){
         catch.na.warning <- TRUE
@@ -105,14 +110,18 @@ calc_abc2 <- function(
 #    ABC <- ifelse(cD > BB & cpue[n] > 0, mean.catch*exp(k*(cD-BT)), 0)    # calculation of ABC
     #    alpha <- exp(k*(cD-BT))
     alpha <- type2_func(cD,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    if(smooth.cpue) alpha <- type2_func(cD,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
 
     if(is.null(D2alpha)){
       alphafromD <- NULL
     }else{
       alphafromD <- type2_func(D2alpha,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      if(smooth.cpue) alphafromD <- type2_func(D2alpha,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
     alphafromD01 <- type2_func(0.1,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    if(smooth.cpue) alphafromD01 <- type2_func(0.1,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    if(smooth.cpue) alphafromD005 <- type2_func(0.05,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
 
     ABC <- mean.catch * alpha
 
@@ -121,6 +130,9 @@ calc_abc2 <- function(
     Obs_percent_even <- icum.cpue(c(0.05,seq(from=0.2,to=0.8,by=0.2),0.95))
     Current_Status <- c(D[n],cpue[n])
     names(Current_Status) <- c("Level","CPUE")
+    Recent_Status <- c(mean(D[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE),mean.cpue)
+    names(Recent_Status) <- c("Level","CPUE")
+
 
     names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
 
@@ -148,6 +160,11 @@ calc_abc2 <- function(
                    D=D,
                    alpha=alpha,beta=beta,D2alpha=alphafromD)
 
+    if(smooth.cpue) output <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Recent_Status,
+                   AAV=AAV,tune.par=tune.par,ABC=ABC,arglist=arglist,
+                   mean.catch=mean.catch,Obs_percent=Obs_percent,Obs_percent_even=Obs_percent_even,
+                   D=D,
+                   alpha=alpha,beta=beta,D2alpha=alphafromD)
   return(output)
 }
 
