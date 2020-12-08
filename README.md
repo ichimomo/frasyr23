@@ -1,6 +1,6 @@
 # frasyr23
 - Fisheries Research Agency (FRA) provides the method for calculating sustainable yield (SY) with R for data poor fisheries stocks (type 2 and type3)
-- ２系・３系用のABC計算パッケージ（試験運用中）です
+- ２系(３系)用のABC計算パッケージです
 
 # インストールと呼び出し
 ```
@@ -24,9 +24,6 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
    - calc_abc2 ABCの計算
    - plot_abc2 結果のプロット
 
-- 3系の計算
-   - calc_abc3 ABCの計算
-   - plot_abc3 結果のプロット
 
 # Rコード例
 ```
@@ -45,9 +42,9 @@ abc2_ex <- calc_abc2(data_example,D2alpha=0.155)
 abc2_ex <- calc_abc2(data_example,beta=0.9)
 
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
-graph2_ex <- plot_abc2(abc2_ex)
+graph2_ex <- plot_abc2(abc2_ex,detABC=0)
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
-graph2_ex <- plot_abc2(abc2_ex,fishseason=1)
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=0)
 # ABCが決定できず算定漁獲量を提示する魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
 # 提案段階のため「漁獲量の予測値」として示す場合で、かつ漁期が暦の年に一致しない場合
@@ -68,15 +65,6 @@ graph4_ex <- plot_abc2(abc4_ex,fishseason=1,detABC=2, abc4=TRUE)
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
 
-# 3系
-## dataにCPUEが入っていても無視します
-abc3_ex <- calc_abc3(data_example)
-# ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
-graph3_ex <- plot_abc3(abc3_ex)
-# ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
-graph3_ex <- plot_abc3(abc3_ex,fishseason=1)
-# ABCが決定できない魚種で、かつ漁期が暦の年に一致しない場合
-graph3_ex <- plot_abc3(abc3_ex,fishseason=1,detABC=1)
 ```
 
 # 実データの解析例とグラフ
@@ -91,6 +79,7 @@ graph2_aka <- plot_abc2(abc2_aka, detABC=2, fillarea=FALSE)
 # ggsave(width=420,height=150,dpi=200,units="mm", graph2_aka[[2]], file="aka2.png")
 ```
 ![](tools/aka2.png)
+
 
 ```
 # 資源量指標値の図だけ抜き出し、かつ色を塗ってみる（かつ資源量指標値に単位を付けてみる）
@@ -110,17 +99,6 @@ graph2_aka <- plot_abc2(abc2_aka, detABC=2, fillarea=FALSE, RP=FALSE, cpueunit="
 ![](tools/aka2cpue_woRP.png)		
 
 
-```	  	   	
-abc3_aka <- calc_abc3(data_aka)
-graph3_aka <- plot_abc3(abc3_aka)
-# グラフをセーブする場合
-# ggsave(graph3_aka[[2]],file="aka3.png")
-
-
-```
-
-![](tools/aka3.png)
-
 # HCRのみ描画し、比較する
 ```
 # 2系
@@ -130,9 +108,8 @@ abc2_aka <- calc_abc2(data_aka,beta=1)
 abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
 ## 比較
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC))
+# グラフをセーブする場合
+# ggsave(file="hcr2_compare.png",width=5,height=3)
 
 ```
-<!--
-ggsave(file="hcr2_compare.png",width=5,height=3)
--->
-![](./tools/hcr2_compare.png)	
+![](./tools/hcr2_compare.png)
