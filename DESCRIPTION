@@ -1,13 +1,13 @@
 Package: frasyr23
 Title: Fisheries Research Agency (FRA) provides the method for calculating sustainable yield (SY) with R for data poor fisheries stocks (type 2 and type 3)
-Version: 1.0.0.000
+Version: 0.0.0.9000
 Authors@R: person(given="Hiroshi", family="Okamura", email = "okamura@fra.affrc.go.jp", role = c("aut", "cre"))
 Description: Calculating ABC for data poor fisheries stocks (type2: only with CPUE and catch, type3: only with catch)
 Depends: R (>= 3.4.4)
 License: Apache Licence 2.0
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 6.1.1
 Suggests: 
     testthat
 Imports: 
