@@ -141,8 +141,7 @@ calc_abc2 <- function(
     cat(stringr::str_c("Target CPUE value and Level: ",round(Obs_BRP[1],2)," and ", round(BRP[1],2) ,"\n",
                        "Limit CPUE value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
                        "Histrical low CPUE value and Level: ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata[ccdata$cpue==min(cpue),]$year, ")", "\n",
-                       "Last year's CPUE value and Level: ",round(cpue[n],3)," and ",
-                       round(D[n],3),"\n",
+                       "Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n",
                        "AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
                        "Average catch: ",round(mean.catch,3),"\n",
@@ -360,7 +359,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", leftalign=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -383,19 +382,27 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
                            y=res$Obs_percent_even,
                            label=str_c(c(0.05,seq(from=0.2,to=0.8,by=0.2),0.95)*100,"%"))
     font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-    legend.labels <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
+
+    if(proposal==TRUE){
+      legend.labels <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
+    }else{
+      legend.labels <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
+    }
     linetype.set <- c("dashed","longdash","solid")
-    #legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量")
-    legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,year.axis.label,"の予測値",sep=""))
+    legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
     col.BRP.hcr <- col.BRP
     data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
 
     # PB=0の時の禁漁水準削除設定 ----
     if(res$BRP[3] == 0) {
-      legend.labels <- c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案")
-      linetype.set <- c("dashed","longdash")  #c(3,4) #c("22","41")
+      if(proposal==TRUE){
+        legend.labels <- c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案")
+      }else{
+        legend.labels <- c("目標管理基準値（目標水準）","限界管理基準値（限界水準）")
+      }
+      linetype.set <- c("22","41")
       if(abc4==TRUE){
         col.BRP <- c("blue","red")
       }else{
@@ -447,18 +454,28 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(0,0,data_BRP2$value_obs[3],data_BRP2$value_obs[3])), aes(x=x,y=y), fill=colfill[4]) +
       geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
       geom_text(data=data_percent_even, aes(x=x,y=y*1.05,label=label))+
-      geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,label="(資源量水準)"),size=4)+
-      geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=BRP), size = 0.9*2, linetype = linetype.set)+
+      geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,label="(資源量水準)"),size=4)
+    if(RP==TRUE){
+     g.cpue <- g.cpue +
+      geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=rev(col.BRP), linetype=rev(linetype.set)), size = 0.9*1.5)+
       #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels), box.padding=0.5, nudge_x=1)+
-      scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
-      geom_path(aes(x=year,y=cpue),size=1)+
+      scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
+      scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
+     }
+    g.cpue <- g.cpue +
+      geom_path(data=ccdata, aes(x=year,y=cpue),size=1)+
       theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
-      ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
-      ggtitle("")+
-      theme(legend.position="top",legend.justification = c(1,0))
-     if(leftalign==TRUE){
-      g.cpue <- g.cpue + xlim(minyears, max(ccdata[!is.na(ccdata$cpue),]$year)+4)
-      }
+      ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()
+    if(RP!=TRUE){
+     g.cpue <- g.cpue +
+      geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+      scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
+     }
+    g.cpue <- g.cpue +
+      ggtitle("") + theme(legend.position="top", legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'),legend.justification=c(1,0))
+    if(leftalign==TRUE){
+     g.cpue <- g.cpue + xlim(minyears, max(ccdata[!is.na(ccdata$cpue),]$year)+4)
+     }
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
       g.cpue <- ccdata %>% ggplot() +
@@ -469,14 +486,25 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
         geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
         geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)+
-        geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs,color=BRP), size = 0.9*2, linetype = linetype.set)+
+     if(RP==TRUE){
+      g.cpue <- g.cpue +
+        geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=rev(col.BRP), linetype=rev(linetype.set)), size = 0.9*1.5)+
         #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels,family = font_MAC), box.padding=0.5, nudge_x=1)+
-        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
+        scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
+        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
+       }
+      g.cpue <- g.cpue +
         geom_path(aes(x=year,y=cpue),size=1)+
         theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
-        ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
+        ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()
+     if(RP!=TRUE){
+      g.cpue <- g.cpue +
+        geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+        scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
+      }
+     g.cpue <- g.cpue +
         ggtitle("")+
-        theme(legend.position="top",legend.justification = c(1,0)) +
+        theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines')) +
         theme(text = element_text(family = font_MAC))
      if(leftalign==TRUE){
       g.cpue <- g.cpue + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
@@ -484,21 +512,22 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     }
 
     if(isTRUE(abc4)){
+     hanrei_label <- rev(c(paste(min(ccdata[!is.na(ccdata$cpue),]$year),"～",max(ccdata[!is.na(ccdata$cpue),]$year),"年", gsub("年","",year.axis.label), "の平均水準",sep=""),"過去最低値"))  ##OS200702
      g.cpue4 <- ccdata %>% ggplot() +
       geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
       geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
       geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,label="(指標値の水準)"),size=4)+
-      geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs[1], color=col.BRP[2]), size = 0.9*1.5, linetype = 2)+
-      geom_hline(mapping=aes(yintercept=min(cpue, na.rm=TRUE), color=col.BRP[1]), size = 0.9*2, linetype = 4)+
+      geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs[1], color=col.BRP[2], linetype ="twodash"), size = 0.9*1.5, show.legend =TRUE)+
+      geom_hline(mapping=aes(yintercept=min(cpue, na.rm=TRUE), color=col.BRP[1], linetype ="longdash"), size = 0.9*1.5, show.legend =TRUE)+
       #ggrepel::geom_label_repel(mapping=aes(x=c(min(years, na.rm=TRUE)+0.5,min(years, na.rm=TRUE)+0.5), y=c(min(cpue, na.rm=TRUE),data_BRP$value_obs[1]), label=rev(c("平均水準","過去最低値"))),
       #                          box.padding=0.5, nudge_x=1)+
-      scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(paste(min(ccdata[!is.na(ccdata$cpue),]$year),"～",max(ccdata[!is.na(ccdata$cpue),]$year),"の平均水準",sep=""),"過去最低値")))+
+      scale_linetype_manual(name="", values=(c("twodash","longdash")), labels=hanrei_label) +
+      scale_color_manual(name="",values=rev(c(col.BRP)), labels=hanrei_label)+
       geom_path(aes(x=year,y=cpue),linetype=1,size=1)+
       theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
-      ggtitle("資源量指標値のトレンド")+
       ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
       ggtitle("")+
-      theme(legend.position="top",legend.justification = c(1,0))
+      theme(legend.position="top",legend.justification = c(1,0), legend.key.width = unit(5, 'lines'))
      if(leftalign==TRUE){
       g.cpue4 <- g.cpue4 + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
      }
@@ -542,7 +571,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*2, linetype = linetype.set)+
+          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
           ggrepel::geom_label_repel(data=data_BRP,
                                     mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels),
                                     box.padding=0.5)+ #, nudge_y=1
@@ -561,7 +590,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
                             args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                             color="black",size=1)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*2, linetype = linetype.set)+
+          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
         ggrepel::geom_label_repel(data=data_BRP,
                                   mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
                                   box.padding=0.5, nudge_y=1)+
@@ -587,7 +616,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
       geom_path(aes(x=year,y=catch),size=1)+
       ylab("漁獲量（トン）")+xlab(year.axis.label)+
-      ggtitle(g.catch.title)+
+      ggtitle("")+
       ylim(0,NA)+ theme_custom()+
       theme(legend.position="top",legend.justification = c(1,0))
 
@@ -605,7 +634,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
         geom_path(aes(x=year,y=catch),size=1)+
         ylab("漁獲量（トン）")+xlab(year.axis.label)+
-        ggtitle(g.catch.title)+
+        ggtitle("")+
         ylim(0,NA)+ theme_custom()+
         theme(legend.position="top",legend.justification = c(1,0)) +
         theme(text = element_text(family = font_MAC))
@@ -631,7 +660,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 #' @export
 #'
 
-plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
+plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
     # plot
     ccdata <- res$arglist$ccdata
     n.catch <- res$arglist$n.catch
@@ -647,7 +676,11 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
                            y=max(ccdata$catch)*1:10/10,
                            label=str_c(1:10/10*100,"%"))
     font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-    legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
+    if(proposal==TRUE){
+      legend.labels <-c("目標水準案","限界水準案","禁漁水準案")
+    }else{
+      legend.labels <-c("目標水準","限界水準","禁漁水準")
+    }
     linetype.set <- c("22","41","solid")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC",rev(c(legend.labels)))
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量",rev(c(legend.labels)))
@@ -736,9 +769,13 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0){
 #' @export
 #'
 
-plot_hcr3 <- function(res.list,stock.name=NULL){
+plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-  legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
+  if(proposal==TRUE){
+    legend.labels.hcr <-c("目標水準案","限界水準案","禁漁水準案")
+  }else{
+    legend.labels.hcr <-c("目標水準","限界水準","禁漁水準")
+  }
   linetype.set <- c("22","41","solid")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -802,9 +839,13 @@ plot_hcr3 <- function(res.list,stock.name=NULL){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
-  legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
+  if(proposal==TRUE){
+    legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
+  }else{
+    legend.labels.hcr <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
+  }
   linetype.set <- c("22","41","solid")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
