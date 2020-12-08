@@ -79,6 +79,7 @@ calc_abc2 <- function(
 
     cum.cpue <- function(x) pnorm(scale(x),0,1) # cumulative normal distribution
     cum.cpue2 <- function(x) pnorm(x,mean(x),sd(x)) # cumulative normal distribution
+    cum.cpue3 <- function(y,x) pnorm(y,mean(x),sd(x)) # cumulative normal distribution
     mean.catch <- mean(ori.catch[(l.catch-n.catch+1):l.catch],na.rm = TRUE)
     mean.cpue <- mean(ori.cpue[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE)
 
@@ -92,6 +93,7 @@ calc_abc2 <- function(
     mD <- attributes(D)$'scaled:center'         # mean of cpue
     sD <- attributes(D)$'scaled:scale'           # standard deviation of cpue
     cD <- D[n]                                   # final depletion
+    if(smooth.cpue==TRUE) cD <- cum.cpue3(mean.cpue,cpue)
 
     icum.cpue <- function(x) sD*qnorm(x,0,1)+mD   # inverse function from D to CPUE
 
@@ -116,12 +118,9 @@ calc_abc2 <- function(
       alphafromD <- NULL
     }else{
       alphafromD <- type2_func(D2alpha,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      if(smooth.cpue) alphafromD <- type2_func(D2alpha,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
     alphafromD01 <- type2_func(0.1,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-    if(smooth.cpue) alphafromD01 <- type2_func(0.1,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-    if(smooth.cpue) alphafromD005 <- type2_func(0.05,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
 
     ABC <- mean.catch * alpha
 
@@ -130,9 +129,8 @@ calc_abc2 <- function(
     Obs_percent_even <- icum.cpue(c(0.05,seq(from=0.2,to=0.8,by=0.2),0.95))
     Current_Status <- c(D[n],cpue[n])
     names(Current_Status) <- c("Level","CPUE")
-    Recent_Status <- c(mean(D[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE),mean.cpue)
+    Recent_Status <- c(cD,mean.cpue)
     names(Recent_Status) <- c("Level","CPUE")
-
 
     names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
 
@@ -140,9 +138,10 @@ calc_abc2 <- function(
     cat("---------------------\n")
     cat(stringr::str_c("Target CPUE value and Level: ",round(Obs_BRP[1],2)," and ", round(BRP[1],2) ,"\n",
                        "Limit CPUE value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
-                       "Histrical low CPUE value and Level: ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata[ccdata$cpue==min(cpue),]$year, ")", "\n",
-                       "Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n",
-                       "AAV of CPUE: ",round(AAV,3),"\n",
+                       "Histrical low CPUE value and Level: ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata[ccdata$cpue==min(cpue),]$year, ")", "\n"))
+    if(smooth.cpue==FALSE) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
+    else cat(stringr::str_c("Recent ", n.cpue, "year's CPUE value and Level: ",round(mean.cpue,3)," and ",round(cD,3),"\n"))
+            cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
                        "Average catch: ",round(mean.catch,3),"\n",
                        "ABC in ",max(ccdata$year,na.rm=T)+2,": ",round(ABC,3),"\n",
@@ -159,7 +158,7 @@ calc_abc2 <- function(
                    D=D,
                    alpha=alpha,beta=beta,D2alpha=alphafromD)
 
-    if(smooth.cpue) output <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Recent_Status,
+    if(smooth.cpue==TRUE) output <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Recent_Status,
                    AAV=AAV,tune.par=tune.par,ABC=ABC,arglist=arglist,
                    mean.catch=mean.catch,Obs_percent=Obs_percent,Obs_percent_even=Obs_percent_even,
                    D=D,
