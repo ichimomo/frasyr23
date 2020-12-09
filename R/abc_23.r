@@ -7,7 +7,6 @@
 #' @import ggplot2
 #'
 #'
-#'
 
 col.BRP <- c("#00533E","#edb918","#C73C2E")
 
@@ -23,8 +22,9 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' @param beta  保守的なABCのためのパラメータ(デフォルトは1)
 #' @param AAV default:"auto", "auto"の場合、CPUEのAAVを内部で計算した値を使う。明示的に数値を与える場合は、その数字が使われる
 #' @param n.catch 過去の漁獲量を平均する年数（デフォルトの値は5）
-#' @param n.cpue 過去の資源量指標値を平均する年数（デフォルトの値は3）
+#' @param n.cpue 過去の資源量指標値を平均する年数（デフォルトの値は3）,期間中にnaを含む場合はrm.na
 #' @param smooth.cpue ABC算出時に平均化CPUEを使うか（デフォルトはFALSE）
+#' @param empir.dist CPUEの分布に経験分布を用いる（デフォルトはFALSEで正規分布を仮定）
 #'
 #' @examples
 #' library(frasyr23)
@@ -48,7 +48,8 @@ calc_abc2 <- function(
   AAV="auto", #
   n.catch=5,   #  period for averaging the past catches
   n.cpue=3,   #  period for averaging the past cpues
-  smooth.cpue = FALSE,
+  smooth.cpue = FALSE,  # option using smoothed cpue
+  empir.dist = FALSE,   # option for cupe dist
   beta = 1.0,
   D2alpha = NULL,
   summary_abc = TRUE # 浜辺加筆（'20/07/10）
@@ -80,6 +81,8 @@ calc_abc2 <- function(
     cum.cpue <- function(x) pnorm(scale(x),0,1) # cumulative normal distribution
     cum.cpue2 <- function(x) pnorm(x,mean(x),sd(x)) # cumulative normal distribution
     cum.cpue3 <- function(y,x) pnorm(y,mean(x),sd(x)) # cumulative normal distribution
+    cum.cpue4 <- ecdf(cpue) # cumulative empirical distribution
+
     mean.catch <- mean(ori.catch[(l.catch-n.catch+1):l.catch],na.rm = TRUE)
     mean.cpue <- mean(ori.cpue[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE)
 
@@ -94,8 +97,13 @@ calc_abc2 <- function(
     sD <- attributes(D)$'scaled:scale'           # standard deviation of cpue
     cD <- D[n]                                   # final depletion
     if(smooth.cpue==TRUE) cD <- cum.cpue3(mean.cpue,cpue)
+    if(empir.dist==TRUE){
+      cD <- cum.cpue4(cpue[n])
+      if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(cpue[n:n-n.cpue+1]))
+    }
 
     icum.cpue <- function(x) sD*qnorm(x,0,1)+mD   # inverse function from D to CPUE
+    if(empir.dist==TRUE) icum.cpue <- function(x) as.numeric(quantile(cpue,x))   # inverse function from empirical dist D to CPUE
 
     if (delta3 > 0){
         if(AAV=="auto"){
