@@ -140,7 +140,7 @@ calc_abc2 <- function(
                        "Limit CPUE value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
                        "Histrical low CPUE value and Level: ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata[ccdata$cpue==min(cpue),]$year, ")", "\n"))
     if(smooth.cpue==FALSE) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
-    else cat(stringr::str_c("Recent ", n.cpue, "year's CPUE value and Level: ",round(mean.cpue,3)," and ",round(cD,3),"\n"))
+    else cat(stringr::str_c("Recent ", n.cpue, " year's average CPUE value and Level: ",round(mean.cpue,3)," and ",round(cD,3),"\n"))
             cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
                        "Average catch: ",round(mean.catch,3),"\n",
