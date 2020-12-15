@@ -187,7 +187,8 @@ type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0
         k <- delta1 + delta2* exp(delta3*log(AAV^2+1)) * (BL-cD)/(cD-BB)
         alpha <- exp(k*(cD-BT))
     }
-    if(cD > BL) alpha <- exp(delta1*(cD-BT))
+    if(cD >= BL) alpha <- exp(delta1*(cD-BT))
+    assertthat::assert_that(is.numeric(alpha))
     return(alpha*beta)
     # cpue.nは必要か？
     #    k <- ifelse(cD > BB, delta1+(cD <= BL)*delta2*exp(delta3*log(AAV^2+1))*(BL-cD)/(cD-BB), Inf)    #  calculation of k

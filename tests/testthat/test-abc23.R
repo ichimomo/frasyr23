@@ -64,3 +64,10 @@ test_that("type23 check",{
 })
 
 
+context("type2_func")
+
+test_that("alpha check",{
+    expect_equal(0, type2_func(0, 1:10))
+    expect_equal(1, type2_func(0.8, 1:10))
+    expect_equal(1.105171, type2_func(1, 1:10))
+})
