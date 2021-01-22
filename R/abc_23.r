@@ -25,7 +25,7 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' @param n.cpue 過去の資源量指標値を平均する年数（デフォルトの値は3）,期間中にnaを含む場合はrm.na
 #' @param smooth.cpue ABC算出時に平均化CPUEを使うか（デフォルトはFALSE）
 #' @param empir.dist CPUEの分布に経験分布を用いる（デフォルトはFALSEで正規分布を仮定）
-#'
+#' @param simple.empir CPUEの分布に経験分布を用いるときに旧2系的に分布を仮定する（デフォルトはFALSE）empir.dist==Tとした上で追加。
 #' @examples
 #' library(frasyr23)
 #' catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
@@ -49,7 +49,8 @@ calc_abc2 <- function(
   n.catch=5,   #  period for averaging the past catches
   n.cpue=3,   #  period for averaging the past cpues
   smooth.cpue = FALSE,  # option using smoothed cpue
-  empir.dist = FALSE,   # option for cupe dist
+  empir.dist = FALSE,   # option for cpue dist
+  simple.empir = FALSE, # option for empirical cpue dist
   beta = 1.0,
   D2alpha = NULL,
   summary_abc = TRUE # 浜辺加筆（'20/07/10）
@@ -100,10 +101,15 @@ calc_abc2 <- function(
     if(empir.dist==TRUE){
       cD <- cum.cpue4(cpue[n])
       if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(cpue[n:n-n.cpue+1]))
+      if(simple.empir ==TRUE){
+        cD <- simple_ecdf(cpue,cpue[n])
+      }
     }
 
     icum.cpue <- function(x) sD*qnorm(x,0,1)+mD   # inverse function from D to CPUE
-    if(empir.dist==TRUE) icum.cpue <- function(x) as.numeric(quantile(cpue,x))   # inverse function from empirical dist D to CPUE
+    if(empir.dist==TRUE) {icum.cpue <- function(x) as.numeric(quantile(cpue,x))   # inverse function from empirical dist D to CPUE
+      if(simple.empir==TRUE) icum.cpue <- function(x) inv_simple_ecdf(cpue,x) # inverse function from simple empirical dist D to CPUE
+    }
 
     if (delta3 > 0){
         if(AAV=="auto"){
@@ -314,6 +320,17 @@ type3_func <- function(cD,BT=0.1,PL=6,PB=10,tune.par=c(2.0,1.0)){
 type3_func_wrapper <- function(DL,type=NULL,...){
     if(type=="%") DL <- DL/100
     purrr::map_dbl(DL,type3_func,...)
+}
+
+simple_ecdf <- function(cpue, x){
+  percent <- (x-min(cpue))/(max(cpue)-min(cpue))
+  if(percent<0) percent <- 0
+  return(percent)
+}
+
+inv_simple_ecdf <- function(cpue, x){
+  inv.value <- x*(max(cpue)-min(cpue))+min(cpue)
+  return(inv.value)
 }
 
 
