@@ -49,6 +49,7 @@ calc_abc2 <- function(
   n.catch=5,   #  period for averaging the past catches
   n.cpue=3,   #  period for averaging the past cpues
   smooth.cpue = FALSE,  # option using smoothed cpue
+  smooth.dist = FALSE,  # option for cpue dist
   empir.dist = FALSE,   # option for cpue dist
   simple.empir = FALSE, # option for empirical cpue dist
   beta = 1.0,
@@ -79,6 +80,11 @@ calc_abc2 <- function(
     l.catch <- length(ori.catch)
     l.cpue <- length(ori.cpue)
 
+    smoothed.cpue <- c()
+    for(i in n.cpue:l.cpue){
+      smoothed.cpue <- cbind(smoothed.cpue,mean(ori.cpue[(i-n.cpue+1):i],na.rm = TRUE))
+    }
+
     cum.cpue <- function(x) pnorm(scale(x),0,1) # cumulative normal distribution
     cum.cpue2 <- function(x) pnorm(x,mean(x),sd(x)) # cumulative normal distribution
     cum.cpue3 <- function(y,x) pnorm(y,mean(x),sd(x)) # cumulative normal distribution
@@ -97,6 +103,14 @@ calc_abc2 <- function(
     mD <- attributes(D)$'scaled:center'         # mean of cpue
     sD <- attributes(D)$'scaled:scale'           # standard deviation of cpue
     cD <- D[n]                                   # final depletion
+
+    if(smooth.dist==TRUE){
+      D <- cum.cpue(as.numeric(smoothed.cpue))              # cumulative probability of cpue
+      mD <- attributes(D)$'scaled:center'         # mean of cpue
+      sD <- attributes(D)$'scaled:scale'           # standard deviation of cpue
+      cD <- D[length(smoothed.cpue)]                                   # final depletion
+    }
+
     if(smooth.cpue==TRUE) cD <- cum.cpue3(mean.cpue,cpue)
     if(empir.dist==TRUE){
       cD <- cum.cpue4(cpue[n])
