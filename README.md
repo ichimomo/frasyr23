@@ -49,8 +49,12 @@ graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=0)
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
 # 提案段階のため「漁獲量の予測値」として示す場合で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=2)
+# 目標水準・限界水準・禁漁水準が確定して案を外す場合
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,proposal=FALSE)
 # 資源量指標値の時系列グラフの背景に水準を境界とした色を塗りたい場合（かつ資源量指標値に単位を付ける場合）
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=2,fillarea=TRUE, cpueunit="（トン/網）")
+# 資源量指標値の時系列グラフに目標水準・限界水準を重ね描きしない場合（評価報告書作成用）
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,RP=FALSE)
 
 # 2系の水準計算を準用する跨り資源の場合
 abc4_ex <- calc_abc2(data_example, BT=0.5)
@@ -81,9 +85,18 @@ graph2_aka <- plot_abc2(abc2_aka, detABC=2, fillarea=FALSE)
 # 資源量指標値の図だけ抜き出し、かつ色を塗ってみる（かつ資源量指標値に単位を付けてみる）
 graph2_aka <- plot_abc2(abc2_aka, detABC=2, fillarea=TRUE, cpueunit="（トン/網）")
 # グラフをセーブする場合
-# ggsave(width=140,height=105,dpi=200,units="mm", graph2_aka$graph.component[[1]], file="aka2cpue.png")
+# ggsave(width=140,height=105,dpi=200,units="mm", graph2_aka$graph.component[[1]], file="aka2cpue_fill.png")
 ```
-![](tools/aka2cpue.png)		
+![](tools/aka2cpue_fill.png)		
+
+
+```
+# 資源量指標値の図だけ抜き出すが、目標水準・限界水準は描画しない
+graph2_aka <- plot_abc2(abc2_aka, detABC=2, fillarea=FALSE, RP=FALSE, cpueunit="（トン/網）")
+# グラフをセーブする場合
+# ggsave(width=140,height=105,dpi=200,units="mm", graph2_aka$graph.component[[1]], file="aka2cpue_woRP.png")
+```
+![](tools/aka2cpue_woRP.png)		
 
 
 # HCRのみ描画し、比較する
