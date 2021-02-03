@@ -488,16 +488,16 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels,family = font_MAC), box.padding=0.5, nudge_x=1)+
           scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
+      }else{
+        g.cpue <- g.cpue +
+          geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+          scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
       }
       g.cpue <- g.cpue +
         geom_path(aes(x=year,y=cpue),size=1)+
         theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
         ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()
-      if(RP!=TRUE){
-        g.cpue <- g.cpue +
-          geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
-          scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
-      }
+
       g.cpue <- g.cpue +
         ggtitle("")+
         theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines')) +
@@ -520,16 +520,15 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels), box.padding=0.5, nudge_x=1)+
           scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
           scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
+      }else{
+        g.cpue <- g.cpue +
+          geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+          scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
       }
       g.cpue <- g.cpue +
         geom_path(data=ccdata, aes(x=year,y=cpue),size=1)+
         theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
         ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()
-      if(RP!=TRUE){
-        g.cpue <- g.cpue +
-          geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
-          scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
-      }
       g.cpue <- g.cpue +
         ggtitle("") + theme(legend.position="top", legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'),legend.justification=c(1,0))
       if(leftalign==TRUE){
