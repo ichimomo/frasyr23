@@ -4,6 +4,7 @@
 #' @import tibble
 #' @import stringr
 #' @import magrittr
+#' @import ggrepel
 #' @import ggplot2
 #'
 #'
