@@ -12,6 +12,7 @@ Suggests:
     testthat
 Imports: 
     ggplot2,
+    ggrepel,
     purrr,
     tibble,
     dplyr,
