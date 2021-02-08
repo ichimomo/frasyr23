@@ -4,6 +4,7 @@
 #' @import tibble
 #' @import stringr
 #' @import magrittr
+#' @import ggrepel
 #' @import ggplot2
 #'
 #'
@@ -30,7 +31,7 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' library(frasyr23)
 #' catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
 #' cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
-#' example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch,D2alpha=0.1)
+#' example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 #'
 #' # 2系
 #' example_abc2 <- calc_abc2(example_data,beta=1)
