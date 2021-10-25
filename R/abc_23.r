@@ -68,8 +68,8 @@ calc_abc2 <- function(
       cpue <- cpue[!is.na(ccdata$cpue)]
 
     } else{
-      if(BTstart > max(ccdata$year)) stop("BTyear year must be set less than max(ccdata$year)!")
-      if(BTstart < min(ccdata$year)) stop("BTyear year must be set larger than min(ccdata$year)!")
+      if(BTyear > max(ccdata$year)) stop("BTyear year must be set less than max(ccdata$year)!")
+      if(BTyear < min(ccdata$year)) stop("BTyear year must be set larger than min(ccdata$year)!")
       ccdata_forBt <- ccdata[which(ccdata$year <= BTyear),]
 
       cpue <- ccdata_forBt$cpue
