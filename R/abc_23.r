@@ -15,6 +15,7 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' 2系のABC計算用の関数
 #'
 #' @param ccdata year,cpue,catchのデータフレーム（ラベルは小文字でyear, cpue, catchとする）
+#' @param BTyear ccdataのyearのうち、いつを基準にBTを設定してABC計算をするか
 #' @param BT  目標水準のレベル（デフォルト=0.8)
 #' @param PL  目標水準の何割を限界水準にするか（BL = PL*BT、デフォルトは0.7）
 #' @param PB  目標水準の何割を禁漁水準にするか（BB = PB*BT、デフォルトは0）
@@ -54,15 +55,28 @@ calc_abc2 <- function(
   simple.empir = FALSE, # option for empirical cpue dist
   beta = 1.0,
   D2alpha = NULL,
+  BTyear = NULL,
   summary_abc = TRUE # 浜辺加筆（'20/07/10）
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
     arglist <- lapply(argname,function(xx) eval(parse(text=xx)))
     names(arglist) <- argname
 
-    cpue <- ccdata$cpue
-    ori.cpue <- cpue
-    cpue <- cpue[!is.na(ccdata$cpue)]
+    if(is.null(BTyear)){
+      cpue <- ccdata$cpue
+      ori.cpue <- cpue
+      cpue <- cpue[!is.na(ccdata$cpue)]
+
+    } else{
+      if(BTstart > max(ccdata$year)) stop("BTyear year must be set less than max(ccdata$year)!")
+      if(BTstart < min(ccdata$year)) stop("BTyear year must be set larger than min(ccdata$year)!")
+      ccdata_forBt <- ccdata[which(ccdata$year <= BTyear),]
+
+      cpue <- ccdata_forBt$cpue
+      ori.cpue <- cpue
+      cpue <- cpue[!is.na(ccdata_forBt$cpue)]
+      target.cpue <- ccdata$cpue[nrow(ccdata)]
+    }
     ori.catch <- ccdata$catch
     catch <- ccdata$catch
     catch <- catch[!is.na(ccdata$cpue)]
@@ -99,26 +113,49 @@ calc_abc2 <- function(
       }
     }
 
-    D <- cum.cpue(as.numeric(cpue))              # cumulative probability of cpue
-    mD <- attributes(D)$'scaled:center'         # mean of cpue
-    sD <- attributes(D)$'scaled:scale'           # standard deviation of cpue
-    cD <- D[n]                                   # final depletion
+      D <- cum.cpue(as.numeric(cpue))              # cumulative probability of cpue
+      mD <- attributes(D)$'scaled:center'         # mean of cpue
+      sD <- attributes(D)$'scaled:scale'           # standard deviation of cpue
+      if(is.null(BTyear)){
+        cD <- D[n]                                   # final depletion
+      }else{
+        cD <- pnorm((target.cpue-mD)/sD,0,1)
+        #(CPUE - mD)/sD = qnorm(x,0,1)
+        # final depletion
+      }
+
 
     if(smooth.dist==TRUE){
       D <- cum.cpue(as.numeric(smoothed.cpue))              # cumulative probability of cpue
       mD <- attributes(D)$'scaled:center'         # mean of cpue
       sD <- attributes(D)$'scaled:scale'           # standard deviation of cpue
-      cD <- D[length(smoothed.cpue)]                                   # final depletion
-    }
-
-    if(smooth.cpue==TRUE) cD <- cum.cpue3(mean.cpue,cpue)
-    if(empir.dist==TRUE){
-      cD <- cum.cpue4(cpue[n])
-      if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(cpue[n:n-n.cpue+1]))
-      if(simple.empir ==TRUE){
-        cD <- simple_ecdf(cpue,cpue[n])
+      if(is.null(BTyear)){
+        cD <- D[length(smoothed.cpue)]                                   # final depletion
+      }else{
+        cD <- pnorm((target.cpue-mD)/sD,0,1)
       }
     }
+
+    if(is.null(BTyear)){
+      if(smooth.cpue==TRUE) cD <- cum.cpue3(mean.cpue,cpue)
+      if(empir.dist==TRUE){
+        cD <- cum.cpue4(cpue[n])
+        if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(cpue[n:n-n.cpue+1]))
+        if(simple.empir ==TRUE){
+          cD <- simple_ecdf(cpue,cpue[n])
+        }
+      }
+    }else{
+      if(smooth.cpue==TRUE) cD <- cum.cpue3(target.cpue,cpue)
+      if(empir.dist==TRUE){
+        cD <- cum.cpue4(target.cpue)
+        if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(ccdata$cpue[n:n-n.cpue+1]))
+        if(simple.empir ==TRUE){
+          cD <- simple_ecdf(cpue,target.cpue)
+        }
+      }
+    }
+
 
     icum.cpue <- function(x) sD*qnorm(x,0,1)+mD   # inverse function from D to CPUE
     if(empir.dist==TRUE) {icum.cpue <- function(x) as.numeric(quantile(cpue,x))   # inverse function from empirical dist D to CPUE
