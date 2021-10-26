@@ -126,13 +126,13 @@ catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
 cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
 data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
-# ABC計算の際の現在資源量指標値に最近年移動平均CPUE(n.cpue年)を使う
+# ABC計算の際、現時点(CPUE時系列最終年)での資源量指標値に最近年移動平均CPUE(n.cpue年)を使う
 abc2_ex_smD <- calc_abc2(data_example, smooth.cpue=T, n.cpue=3)
 
 # 資源量指標値を求める際、CPUE時系列データを一度平滑化(n.cpue年)してから正規分布に当てる
 abc2_ex_smooth_dist <- calc_abc2(data_example, smooth.dist=T, n.cpue=3)
 
-# 資源量指標値を求める際、CPUE時系列データを正規分布にではなく経験分布(累積経験分布関数ecdfを使う)に当てる
+# 資源量指標値を求める際、CPUE時系列データを標準正規分布ではなく経験分布(累積経験分布関数ecdfを使う)に当てる
 abc2_ex_empir_dist <- calc_abc2(data_example, empir.dist=T)
 
 # 資源量指標値を求める際、CPUE時系列データを経験分布に当てるが、過去最大・最小をそれぞれ1,0として相対値を求める簡素なものを使う
