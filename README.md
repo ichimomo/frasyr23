@@ -138,7 +138,7 @@ abc2_ex_empir_dist <- calc_abc2(data_example, empir.dist=T)
 # 資源量指標値を求める際、CPUE時系列データを経験分布に当てるが、過去最大・最小をそれぞれ1,0として相対値を求める簡素なものを使う
 abc2_ex_simple_em_dist <- calc_abc2(data_example, empir.dist=T,simple.empir=T)
 
-# 管理水準を求める際、CPUE時系列の最終年ではなく、特定の年(BTyear)までの時系列を使う
+# 管理水準を求める際、CPUE時系列の最終年ではなく、CPUEデータの初出年から特定の年(BTyear)までの時系列を使う
 abc2_ex_bt2010 <- calc_abc2(data_example, BTyear=2010)
 
 ```
