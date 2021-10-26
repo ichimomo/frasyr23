@@ -105,7 +105,8 @@ calc_abc2 <- function(
     cum.cpue4 <- ecdf(cpue) # cumulative empirical distribution
 
     mean.catch <- mean(ori.catch[(l.catch-n.catch+1):l.catch],na.rm = TRUE)
-    mean.cpue <- mean(ori.cpue[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE)
+    mean.cpue <- mean(ori.cpue[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE) # this mean.cpue is for calculation based on BTyear
+    mean.cpue.current <- mean(ccdata$cpue[(length(ccdata$cpue)-n.cpue+1):length(ccdata$cpue)],na.rm = TRUE) # this mean.cpue is the most recent cpue (max(ccdata$year))
 
     for(i in 0:(n.catch-1)){
       if(is.na (ori.catch[l.catch-i])){
@@ -176,25 +177,48 @@ calc_abc2 <- function(
 #    k <- ifelse(cD > BB, delta1+(cD <= BL)*delta2*exp(delta3*log(AAV^2+1))*(BL-cD)/(cD-BB), Inf)    #  calculation of k
 #    ABC <- ifelse(cD > BB & cpue[n] > 0, mean.catch*exp(k*(cD-BT)), 0)    # calculation of ABC
     #    alpha <- exp(k*(cD-BT))
-    alpha <- type2_func(cD,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    if(is.null(BTyear)){
+      alpha <- type2_func(cD,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    }else{
+      alpha <- type2_func(cD,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    }
     if(smooth.cpue) alpha <- type2_func(cD,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+
 
     if(is.null(D2alpha)){
       alphafromD <- NULL
     }else{
-      alphafromD <- type2_func(D2alpha,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      if(is.null(BTyear)){
+        alphafromD <- type2_func(D2alpha,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      }else{
+        alphafromD <- type2_func(D2alpha,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      }
     }
-    alphafromD01 <- type2_func(0.1,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-    alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+
+    if(is.null(BTyear)){
+      alphafromD01 <- type2_func(0.1,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    }else{
+      alphafromD01 <- type2_func(0.1,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      alphafromD005 <- type2_func(0.05,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    }
 
     ABC <- mean.catch * alpha
 
     Obs_BRP <- c(icum.cpue(BT), icum.cpue(BL), icum.cpue(BB))
     Obs_percent <- icum.cpue(c(0.05,seq(from=0.1,to=0.9,by=0.1),0.95))
     Obs_percent_even <- icum.cpue(c(0.05,seq(from=0.2,to=0.8,by=0.2),0.95))
-    Current_Status <- c(D[n],cpue[n])
+    if(is.null(BTyear)){
+      Current_Status <- c(D[n],cpue[n])
+    }else{
+      Current_Status <- c(D[length(cpue)],ccdata$cpue[n])
+    }
     names(Current_Status) <- c("Level","CPUE")
-    Recent_Status <- c(cD,mean.cpue)
+    if(is.null(BTyear)){
+      Recent_Status <- c(cD,mean.cpue)
+    }else{
+      Recent_Status <- c(cD,mean.cpue.current)
+    }
     names(Recent_Status) <- c("Level","CPUE")
 
     names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
