@@ -105,7 +105,7 @@ calc_abc2 <- function(
     cum.cpue4 <- ecdf(cpue) # cumulative empirical distribution
 
     mean.catch <- mean(ori.catch[(l.catch-n.catch+1):l.catch],na.rm = TRUE)
-    mean.cpue <- mean(ori.cpue[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE) # this mean.cpue is for calculation based on BTyear
+    mean.cpue <- mean(ori.cpue[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE) # this mean.cpue calculates BT based on BTyear
     mean.cpue.current <- mean(ccdata$cpue[(length(ccdata$cpue)-n.cpue+1):length(ccdata$cpue)],na.rm = TRUE) # this mean.cpue is the most recent cpue (max(ccdata$year))
 
     for(i in 0:(n.catch-1)){
@@ -225,9 +225,16 @@ calc_abc2 <- function(
 
     if(summary_abc){ # summary_abc=Tなら以下の結果を自動で書く
     cat("---------------------\n")
-    cat(stringr::str_c("Target CPUE value and Level: ",round(Obs_BRP[1],2)," and ", round(BRP[1],2) ,"\n",
-                       "Limit CPUE value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
-                       "Histrical low CPUE value and Level: ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata[ccdata$cpue==min(cpue),]$year, ")", "\n"))
+    if(is.null(BTyear)){
+      cat(stringr::str_c("Target CPUE value and Level: ",round(Obs_BRP[1],2)," and ", round(BRP[1],2) ,"\n",
+                         "Limit CPUE value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
+                         "Histrical low CPUE value and Level: ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata[ccdata$cpue==min(cpue),]$year, ")", "\n"))
+    }else{
+      cat(stringr::str_c("Target CPUE value and Level: ",round(Obs_BRP[1],2)," and ", round(BRP[1],2) ,"\n",
+                         "Limit CPUE value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
+                         "Histrical low CPUE value and Level(",min(ccdata_forBt$year),"-",max(ccdata_forBt$year),"): ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata_forBt[ccdata_forBt$cpue==min(cpue),]$year, ")", "\n"))
+
+    }
     if(smooth.cpue==FALSE) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
     else cat(stringr::str_c("Recent ", n.cpue, " year's average CPUE value and Level: ",round(mean.cpue,3)," and ",round(cD,3),"\n"))
             cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
