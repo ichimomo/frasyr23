@@ -664,12 +664,12 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
      }
     }
 
-
     BT <- res$arglist$BT
     PL <- res$arglist$PL
     PB <- res$arglist$PB
     tune.par <- res$arglist$tune.par
     beta <- res$arglist$beta
+    BTyear <- res$arglist$BTyear
 
     #漁獲管理規則案 HCR ----
     g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
