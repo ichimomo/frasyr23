@@ -733,11 +733,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
     g.hcr.dist <- g.hcr.dist +
       geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color="#1A4472",size=1,linetype="dashed")+
-      geom_text(aes(x=res$Current_Status[2]*1.2,y=0.1,family=font_MAC,label="現在の資源水準"),size=4)
+      geom_text(aes(x=ifelse(Current_Status[2]>mean(ccdata.plot$cpue),res$Current_Status[2]*1.2,res$Current_Status[2]*0.8),y=0.1,family=font_MAC,label="現在の資源水準"),color="#1A4472",size=4)
     }else{
       g.hcr.dist <- g.hcr.dist +
         geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color="#1A4472",size=1,linetype="dashed")+
-        geom_text(aes(x=res$Current_Status[2]*1.2,y=0.1,label="現在の資源水準"),size=4)
+        geom_text(aes(x=ifelse(Current_Status[2]>mean(ccdata.plot$cpue),res$Current_Status[2]*1.2,res$Current_Status[2]*0.8),y=0.1,label="現在の資源水準"),color="#1A4472",size=4)
     }
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
