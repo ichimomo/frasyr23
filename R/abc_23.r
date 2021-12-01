@@ -466,14 +466,16 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
     ifelse(fishseason==1, year.axis.label <- "漁期年", year.axis.label <- "年")
 
     # plot
-    ccdata <<- res$arglist$ccdata
+    ccdata <- res$arglist$ccdata
+    ccdata_forBt <- res$arglist$ccdata
+    if(!is.null(res$arglist$BTyear)) ccdata_forBt <- ccdata[which(ccdata$year <= BTyear),]
     n.catch <- res$arglist$n.catch
     years <- ccdata$year
     last.year <- rev(years)[1]
@@ -662,12 +664,12 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
      }
     }
 
-
     BT <- res$arglist$BT
     PL <- res$arglist$PL
     PB <- res$arglist$PB
     tune.par <- res$arglist$tune.par
     beta <- res$arglist$beta
+    BTyear <- res$arglist$BTyear
 
     #漁獲管理規則案 HCR ----
     g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
@@ -701,12 +703,59 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         ggrepel::geom_label_repel(data=data_BRP,
                                   mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
                                   box.padding=0.5, nudge_y=1)+
-          scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE )+ #,labels=rev(c(legend.labels)))+
+          scale_color_manual(name="",values=rev(c(col.BRP)), guide="none")+ #,labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("")+
           xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
+    }
+
+    #漁獲管理規則案 HCR.Dist ----
+    ifelse(!is.null(BTyear),ccdata.plot<-ccdata,
+           ccdata.plot<-ccdata_forBt)
+    current_index_col <- "#1A4472"
+
+    model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
+    model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
+
+    g.hcr.dist <- ggplot(data=model_dist)+
+      #stat_function(fun=dnorm,args=list(mean=mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue)),color="black",size=1)
+      geom_line(aes(x=cpue,y=dens))+
+      geom_area(data=filter(model_dist, cpue < res$Current_Status[2]), aes(x=cpue, y=dens), fill="grey")
+
+    g.hcr.dist <-  g.hcr.dist +
+      geom_vline(data=data_BRP,mapping=aes(xintercept=value_obs,color=BRP), size = 0.9*1.5, linetype = linetype.set) +
+      scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
+      scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
+      guides(colour="none")+
+      coord_flip()
+
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    g.hcr.dist <- g.hcr.dist +
+      geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color=current_index_col,size=1,linetype="dashed")+
+      geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(model_dist$dens)*0.85,family=font_MAC,label="(現在の資源水準)"),color=current_index_col,size=4)
+    }else{
+      g.hcr.dist <- g.hcr.dist +
+        geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color=current_index_col,size=1,linetype="dashed")+
+        geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(model_dist$dens)*0.85,label="(現在の資源水準)"),color=current_index_col,size=4)
+    }
+
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    g.hcr.dist <- g.hcr.dist +  ggtitle("")+
+      scale_x_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
+      #scale_y_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
+      xlab("資源量指標値")+ylab("")+
+      theme_bw()+theme_custom()+
+      theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'),axis.text.x = element_blank()) +
+      theme(text = element_text(family = font_MAC))
+    }else{
+      g.hcr.dist <- g.hcr.dist +  ggtitle("")+
+        scale_x_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
+        #scale_y_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
+        xlab("資源量指標値")+ylab("")+
+        theme_bw()+theme_custom()+
+        theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'),axis.text.x = element_blank())
     }
 
     #漁獲量のトレンドとABC/算定漁獲量 ----
@@ -748,7 +797,18 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     }
 
     # 出力設定 ----
-    if(isTRUE(abc4)){
+    if(isTRUE(hcrdist)){
+      if(isTRUE(abc4)){
+        graph.component <- list(g.cpue4,g.cpue,g.hcr.dist,g.hcr,g.catch)
+        graph.combined <- gridExtra::grid.arrange(g.cpue4,g.cpue,g.hcr.dist,g.hcr,g.catch,ncol=3,top=stock.name)
+        return(list(graph.component=graph.component,graph.combined=graph.combined))
+      }else{
+        graph.component <- list(g.cpue,g.hcr.dist,g.hcr,g.catch)
+        graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr.dist,g.hcr,g.catch,ncol=2,top=stock.name)
+        return(list(graph.component=graph.component,graph.combined=graph.combined))
+      }
+    }else{
+      if(isTRUE(abc4)){
       graph.component <- list(g.cpue4,g.cpue,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue4,g.cpue,g.hcr,g.catch,ncol=2,top=stock.name)
       return(list(graph.component=graph.component,graph.combined=graph.combined))
@@ -756,6 +816,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       graph.component <- list(g.cpue,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr,g.catch,ncol=3,top=stock.name)
       return(list(graph.component=graph.component,graph.combined=graph.combined))
+    }
     }
 }
 
