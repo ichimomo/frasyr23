@@ -714,6 +714,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     #漁獲管理規則案 HCR.Dist ----
     ifelse(!is.null(BTyear),ccdata.plot<-ccdata,
            ccdata.plot<-ccdata_forBt)
+    current_index_col <- "#1A4472"
 
     model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
     model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
@@ -732,12 +733,12 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
     g.hcr.dist <- g.hcr.dist +
-      geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color="#1A4472",size=1,linetype="dashed")+
-      geom_text(aes(x=ifelse(Current_Status[2]>mean(ccdata.plot$cpue),res$Current_Status[2]*1.2,res$Current_Status[2]*0.8),y=0.1,family=font_MAC,label="現在の資源水準"),color="#1A4472",size=4)
+      geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color=current_index_col,size=1,linetype="dashed")+
+      geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(model_dist$dens)*0.85,family=font_MAC,label="(現在の資源水準)"),color=current_index_col,size=4)
     }else{
       g.hcr.dist <- g.hcr.dist +
-        geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color="#1A4472",size=1,linetype="dashed")+
-        geom_text(aes(x=ifelse(Current_Status[2]>mean(ccdata.plot$cpue),res$Current_Status[2]*1.2,res$Current_Status[2]*0.8),y=0.1,label="現在の資源水準"),color="#1A4472",size=4)
+        geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color=current_index_col,size=1,linetype="dashed")+
+        geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(model_dist$dens)*0.85,label="(現在の資源水準)"),color=current_index_col,size=4)
     }
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
