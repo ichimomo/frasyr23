@@ -283,9 +283,37 @@ type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0
     #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
 }
 
+type2_func_empir <- function(cD,cpue,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
+  delta1 <- tune.par[1]   # velocity to go to BT
+  delta2 <- tune.par[2]   # correction factor when D <= BL
+  delta3 <- tune.par[3]   # tuning parameter for updating BT
+  BT <- BT      # Btarget
+  BL <- PL*BT      # Blimit
+  BB <- PB*BT      # Bban
+
+  cum.cpue <- ecdf(cpue)
+
+  if(cD <= BB) alpha <- 0
+  if(BB < cD & cD < BL){
+    k <- delta1 + delta2* exp(delta3*log(AAV^2+1)) * (BL-cD)/(cD-BB)
+    alpha <- exp(k*(cD-BT))
+  }
+  if(cD >= BL) alpha <- exp(delta1*(cD-BT))
+  assertthat::assert_that(is.numeric(alpha))
+  return(alpha*beta)
+  # cpue.nは必要か？
+  #    k <- ifelse(cD > BB, delta1+(cD <= BL)*delta2*exp(delta3*log(AAV^2+1))*(BL-cD)/(cD-BB), Inf)    #  calculation of k
+  #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
+}
+
 type2_func_wrapper <- function(DL,type=NULL,...){
     if(type=="%") DL <- DL/100
     purrr::map_dbl(DL,type2_func,...)
+}
+
+type2_func_empir_wrapper <- function(DL,type=NULL,...){
+  if(type=="%") DL <- DL/100
+  purrr::map_dbl(DL,type2_func_empir,...)
 }
 
 
