@@ -62,7 +62,7 @@ graph4_ex <- plot_abc2(abc4_ex,fishseason=1,detABC=2, abc4=TRUE)
 # calc_abc2関数でBT=0.5とし、plot_abc2関数でabc4=TRUEとすることで資源量指標値の平均水準（50%水準）と過去最低値を参照する図が描画される
 
 # 現在の資源水準が管理基準を決定する分布のどこに位置するか示したい場合(資源水準分布を正規分布にあてるの時のみ)
-graph2_ex <- plot_abc2(abc2_ex,hcrdiist=T)
+graph2_ex <- plot_abc2(abc2_ex,hcrdist=T)
 
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
