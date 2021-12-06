@@ -146,6 +146,7 @@ calc_abc2 <- function(
         if(simple.empir ==TRUE){
           cD <- simple_ecdf(cpue,cpue[n])
           D <- simple_ecdf_seq(cpue)
+          if(cD <= min(D)) cat("alpha = 0 because current cpue is minimum\n")
         }
       }
     }else{
@@ -155,8 +156,10 @@ calc_abc2 <- function(
         D <- cum.cpue4(cpue_forBt)
         if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(ccdata$cpue[n:n-n.cpue+1]))
         if(simple.empir ==TRUE){
-          cD <- simple_ecdf(cpue_forBt,target.cpue)
           D <- simple_ecdf_seq(cpue_forBt)
+          if(target.cpue > min(D)) cD <- simple_ecdf(cpue_forBt,target.cpue)
+          else cD <- min(D)
+          if(cD <= min(D)) cat("alpha <= 0 because current cpue is minimum or less than any cpue data used for calculating management level\n")
         }
       }
     }
@@ -336,6 +339,8 @@ type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tun
   }
 
   cD <- trans_empir_prob(cD,cpue.prob)
+
+  if(simple.empir & cD==0) cD <- (max(cpue)-min(cpue))/1000
 
   if(cD <= BB) alpha <- 0
   if(BB < cD & cD < BL){
