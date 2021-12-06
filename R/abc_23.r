@@ -181,10 +181,10 @@ calc_abc2 <- function(
     #    alpha <- exp(k*(cD-BT))
     if(is.null(BTyear)){
       if(!(empir.dist)) alpha <- type2_func(cD,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alpha <- type2_func_empir(cD,cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alpha <- type2_func_empir(cD,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }else{
       if(!(empir.dist)) alpha <- type2_func(cD,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alpha <- type2_func_empir(cD,cpue_forBt,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alpha <- type2_func_empir(cD,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
     if(smooth.cpue) {
       if(!(empir.dist)) alpha <- type2_func(cD,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
@@ -196,23 +196,23 @@ calc_abc2 <- function(
     }else{
       if(is.null(BTyear)){
         if(!(empir.dist)) alphafromD <- type2_func(D2alpha,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-        else alphafromD<- type2_func_empir(D2alpha,cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+        else alphafromD<- type2_func_empir(D2alpha,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
       }else{
         if(!(empir.dist)) alphafromD <- type2_func(D2alpha,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-        else alphafromD<- type2_func_empir(D2alpha,cpue_forBt,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+        else alphafromD<- type2_func_empir(D2alpha,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
       }
     }
 
     if(is.null(BTyear)){
       if(!(empir.dist)) alphafromD01 <- type2_func(0.1,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alphafromD01 <- type2_func_empir(0.1,cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD01 <- type2_func_empir(0.1,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
       if(!(empir.dist)) alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alphafromD005 <- type2_func_empir(0.05,cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD005 <- type2_func_empir(0.05,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }else{
       if(!(empir.dist)) alphafromD01 <- type2_func(0.1,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alphafromD01 <- type2_func_empir(0.1,cpue_forBt,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD01 <- type2_func_empir(0.1,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
       if(!(empir.dist)) alphafromD005 <- type2_func(0.05,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alphafromD005 <- type2_func_empir(0.05,cpue_forBt,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD005 <- type2_func_empir(0.05,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
 
     ABC <- mean.catch * alpha
@@ -295,7 +295,7 @@ type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0
     #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
 }
 
-type2_func_empir <- function(cD,cpue,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
+type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
   delta1 <- tune.par[1]   # velocity to go to BT
   delta2 <- tune.par[2]   # correction factor when D <= BL
   delta3 <- tune.par[3]   # tuning parameter for updating BT
@@ -303,9 +303,15 @@ type2_func_empir <- function(cD,cpue,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0
   BL <- PL*BT      # Blimit
   BB <- PB*BT      # Bban
 
-  cum.cpue <- ecdf(cpue)
-  cpue.order <- sort(unique(cpue))
-  cpue.prob <-cum.cpue(cpue.order)
+  if(!simple){
+    cum.cpue <- ecdf(cpue)
+    cpue.order <- sort(unique(cpue))
+    cpue.prob <-cum.cpue(cpue.order)
+
+  }else{
+    cum.cpue <- simple_ecdf_seq(cpue)
+    cpue.prob <- sort(unique(cum.cpue))
+  }
   trans_empir_prob<-function(prob.seq,cpue.prob){
     empir.prob <- prob.seq
     n <- length(cpue.prob)
@@ -347,9 +353,9 @@ type2_func_wrapper <- function(DL,type=NULL,...){
     purrr::map_dbl(DL,type2_func,...)
 }
 
-type2_func_empir_wrapper <- function(DL,cpue,type=NULL,...){
+type2_func_empir_wrapper <- function(DL,cpue,simple,type=NULL,...){
   if(type=="%") DL <- DL/100
-  purrr::map_dbl(DL,type2_func_empir,cpue=cpue,...)
+  purrr::map_dbl(DL,type2_func_empir,cpue=cpue,simple=simple,...)
 }
 
 
@@ -472,6 +478,17 @@ simple_ecdf <- function(cpue, x){
   percent <- (x-min(cpue))/(max(cpue)-min(cpue))
   if(percent<0) percent <- 0
   return(percent)
+}
+
+simple_ecdf_seq<-function(cpue){
+  cum.cpue <-c()
+  i<-1
+  while(i<=length(cpue)){
+    cum.cpue.tmp <- simple_ecdf(cpue,cpue[i])
+    cum.cpue <- c(cum.cpue,cum.cpue.tmp)
+    i <- i +1
+  }
+  return(cum.cpue)
 }
 
 inv_simple_ecdf <- function(cpue, x){
@@ -787,7 +804,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
         #              color="gray")+
         stat_function(fun=type2_func_empir_wrapper,
-                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,type="%"),
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
                       color="black",size=1) +
         geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
         geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
@@ -805,7 +822,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
           #              color="gray")+
           stat_function(fun=type2_func_empir_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,type="%"),
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
                         color="black",size=1) +
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
