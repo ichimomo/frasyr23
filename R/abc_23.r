@@ -141,18 +141,25 @@ calc_abc2 <- function(
       if(smooth.cpue==TRUE) cD <- cum.cpue3(mean.cpue,cpue)
       if(empir.dist==TRUE){
         cD <- cum.cpue4(cpue[n])
+        D <- cum.cpue4(cpue)
         if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(cpue[n:n-n.cpue+1]))
         if(simple.empir ==TRUE){
           cD <- simple_ecdf(cpue,cpue[n])
+          D <- simple_ecdf_seq(cpue)
+          if(cD <= min(D)) cat("alpha = 0 because current cpue is minimum\n")
         }
       }
     }else{
       if(smooth.cpue==TRUE) cD <- cum.cpue3(target.cpue,cpue)
       if(empir.dist==TRUE){
         cD <- cum.cpue4(target.cpue)
+        D <- cum.cpue4(cpue_forBt)
         if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(ccdata$cpue[n:n-n.cpue+1]))
         if(simple.empir ==TRUE){
-          cD <- simple_ecdf(cpue,target.cpue)
+          D <- simple_ecdf_seq(cpue_forBt)
+          if(target.cpue > min(D)) cD <- simple_ecdf(cpue_forBt,target.cpue)
+          else cD <- min(D)
+          if(cD <= min(D)) cat("alpha <= 0 because current cpue is minimum or less than any cpue data used for calculating management level\n")
         }
       }
     }
@@ -178,29 +185,39 @@ calc_abc2 <- function(
 #    ABC <- ifelse(cD > BB & cpue[n] > 0, mean.catch*exp(k*(cD-BT)), 0)    # calculation of ABC
     #    alpha <- exp(k*(cD-BT))
     if(is.null(BTyear)){
-      alpha <- type2_func(cD,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      if(!(empir.dist)) alpha <- type2_func(cD,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alpha <- type2_func_empir(cD,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }else{
-      alpha <- type2_func(cD,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      if(!(empir.dist)) alpha <- type2_func(cD,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alpha <- type2_func_empir(cD,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
-    if(smooth.cpue) alpha <- type2_func(cD,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-
+    if(smooth.cpue) {
+      if(!(empir.dist)) alpha <- type2_func(cD,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      #else alpha <- type2_func_empir(cD,smoothed.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+    }
 
     if(is.null(D2alpha)){
       alphafromD <- NULL
     }else{
       if(is.null(BTyear)){
-        alphafromD <- type2_func(D2alpha,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+        if(!(empir.dist)) alphafromD <- type2_func(D2alpha,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+        else alphafromD<- type2_func_empir(D2alpha,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
       }else{
-        alphafromD <- type2_func(D2alpha,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+        if(!(empir.dist)) alphafromD <- type2_func(D2alpha,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+        else alphafromD<- type2_func_empir(D2alpha,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
       }
     }
 
     if(is.null(BTyear)){
-      alphafromD01 <- type2_func(0.1,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      if(!(empir.dist)) alphafromD01 <- type2_func(0.1,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD01 <- type2_func_empir(0.1,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      if(!(empir.dist)) alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD005 <- type2_func_empir(0.05,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }else{
-      alphafromD01 <- type2_func(0.1,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      alphafromD005 <- type2_func(0.05,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      if(!(empir.dist)) alphafromD01 <- type2_func(0.1,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD01 <- type2_func_empir(0.1,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      if(!(empir.dist)) alphafromD005 <- type2_func(0.05,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD005 <- type2_func_empir(0.05,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
 
     ABC <- mean.catch * alpha
@@ -283,9 +300,69 @@ type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0
     #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
 }
 
+type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
+  delta1 <- tune.par[1]   # velocity to go to BT
+  delta2 <- tune.par[2]   # correction factor when D <= BL
+  delta3 <- tune.par[3]   # tuning parameter for updating BT
+  BT <- BT      # Btarget
+  BL <- PL*BT      # Blimit
+  BB <- PB*BT      # Bban
+
+  if(!simple){
+    cum.cpue <- ecdf(cpue)
+    cpue.order <- sort(unique(cpue))
+    cpue.prob <-cum.cpue(cpue.order)
+
+  }else{
+    cum.cpue <- simple_ecdf_seq(cpue)
+    cpue.prob <- sort(unique(cum.cpue))
+  }
+  trans_empir_prob<-function(prob.seq,cpue.prob){
+    empir.prob <- prob.seq
+    n <- length(cpue.prob)
+    for(i in 1:length(prob.seq)){
+      loopclose <-FALSE
+      j<-1
+      while(j < n){
+        if(prob.seq[i] < min(cpue.prob)){
+          empir.prob[i] <- 0
+        }else if(prob.seq[i] >= cpue.prob[j] & prob.seq[i] < cpue.prob[j+1]) {
+          empir.prob[i] <-cpue.prob[j]
+        }else if(prob.seq[i] == cpue.prob[n]) {
+          empir.prob[i] <- cpue.prob[n]
+          loopclose <-TRUE
+        }
+        j <- j+1
+      }
+    }
+    return(empir.prob)
+  }
+
+  cD <- trans_empir_prob(cD,cpue.prob)
+
+  if(simple.empir & cD==0) cD <- (max(cpue)-min(cpue))/1000
+
+  if(cD <= BB) alpha <- 0
+  if(BB < cD & cD < BL){
+    k <- delta1 + delta2* exp(delta3*log(AAV^2+1)) * (BL-cD)/(cD-BB)
+    alpha <- exp(k*(cD-BT))
+  }
+  if(cD >= BL) alpha <- exp(delta1*(cD-BT))
+  assertthat::assert_that(is.numeric(alpha))
+  return(alpha*beta)
+  # cpue.nは必要か？
+  #    k <- ifelse(cD > BB, delta1+(cD <= BL)*delta2*exp(delta3*log(AAV^2+1))*(BL-cD)/(cD-BB), Inf)    #  calculation of k
+  #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
+}
+
 type2_func_wrapper <- function(DL,type=NULL,...){
     if(type=="%") DL <- DL/100
     purrr::map_dbl(DL,type2_func,...)
+}
+
+type2_func_empir_wrapper <- function(DL,cpue,simple,type=NULL,...){
+  if(type=="%") DL <- DL/100
+  purrr::map_dbl(DL,type2_func_empir,cpue=cpue,simple=simple,...)
 }
 
 
@@ -410,6 +487,17 @@ simple_ecdf <- function(cpue, x){
   return(percent)
 }
 
+simple_ecdf_seq<-function(cpue){
+  cum.cpue <-c()
+  i<-1
+  while(i<=length(cpue)){
+    cum.cpue.tmp <- simple_ecdf(cpue,cpue[i])
+    cum.cpue <- c(cum.cpue,cum.cpue.tmp)
+    i <- i +1
+  }
+  return(cum.cpue)
+}
+
 inv_simple_ecdf <- function(cpue, x){
   inv.value <- x*(max(cpue)-min(cpue))+min(cpue)
   return(inv.value)
@@ -471,7 +559,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     # 漁期年/年設定 ----
     ifelse(fishseason==1, year.axis.label <- "漁期年", year.axis.label <- "年")
-
+    # Setting cpue dist
+    empir.dist <- res$arglist$empir.dist
+    simple.empir <- res$arglist$simple.empir
+    smooth.cpue <- res$arglist$smooth.cpue
+    smooth.dist <- res$arglist$smooth.dist
     # plot
     ccdata <- res$arglist$ccdata
     ccdata_forBt <- res$arglist$ccdata
@@ -671,49 +763,91 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     beta <- res$arglist$beta
     BTyear <- res$arglist$BTyear
 
+    ifelse(!is.null(BTyear),ccdata.plot<-ccdata,
+           ccdata.plot<-ccdata_forBt)
     #漁獲管理規則案 HCR ----
-    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
-          #stat_function(fun=type2_func_wrapper,
-          #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-          #              color="gray")+
-          stat_function(fun=type2_func_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-                        color="black",size=1)+
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
-          ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels),
-                                    box.padding=0.5)+ #, nudge_y=1
-          scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE)+#,labels=rev(c(legend.labels)))+
-          theme_bw()+theme_custom()+
-          ggtitle("")+
-          xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
-          theme(legend.position="top",legend.justification = c(1,0))
-
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    if(!empir.dist){
       g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+        #stat_function(fun=type2_func_wrapper,
+        #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+        #              color="gray")+
+        stat_function(fun=type2_func_wrapper,
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+                      color="black",size=1)+
+        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)+
+        geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
+        ggrepel::geom_label_repel(data=data_BRP,
+                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels),
+                                  box.padding=0.5)+ #, nudge_y=1
+        scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE)+#,labels=rev(c(legend.labels)))+
+        theme_bw()+theme_custom()+
+        ggtitle("")+
+        xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+        theme(legend.position="top",legend.justification = c(1,0))
+
+      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+        g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           #stat_function(fun=type2_func_wrapper,
           #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
           #                  color="gray")+
           stat_function(fun=type2_func_wrapper,
-                            args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-                            color="black",size=1)+
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+                        color="black",size=1)+
           geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
           geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
-        ggrepel::geom_label_repel(data=data_BRP,
-                                  mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
-                                  box.padding=0.5, nudge_y=1)+
+          ggrepel::geom_label_repel(data=data_BRP,
+                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
+                                    box.padding=0.5, nudge_y=1)+
           scale_color_manual(name="",values=rev(c(col.BRP)), guide="none")+ #,labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("")+
           xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
+      }
+    }else{ # empir.dist=T
+      g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+        #stat_function(fun=type2_func_wrapper,
+        #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+        #              color="gray")+
+        stat_function(fun=type2_func_empir_wrapper,
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
+                      color="black",size=1) +
+        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
+        geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
+        ggrepel::geom_label_repel(data=data_BRP,
+                                  mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
+                                  box.padding=0.5, nudge_y=1)+
+        scale_color_manual(name="",values=rev(c(col.BRP)), guide="none" )+ #,labels=rev(c(legend.labels)))+
+        theme_bw()+theme_custom()+
+        ggtitle("")+
+        xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+        theme(legend.position="top",legend.justification = c(1,0))
+      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+        g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+          #stat_function(fun=type2_func_wrapper,
+          #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+          #              color="gray")+
+          stat_function(fun=type2_func_empir_wrapper,
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
+                        color="black",size=1) +
+          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
+          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
+          ggrepel::geom_label_repel(data=data_BRP,
+                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
+                                    box.padding=0.5, nudge_y=1)+
+          scale_color_manual(name="",values=rev(c(col.BRP)), guide="none" )+ #,labels=rev(c(legend.labels)))+
+          theme_bw()+theme_custom()+
+          ggtitle("")+
+          xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+          theme(legend.position="top",legend.justification = c(1,0)) +
+          theme(text = element_text(family = font_MAC))
+      }
     }
 
+
+
     #漁獲管理規則案 HCR.Dist ----
-    ifelse(!is.null(BTyear),ccdata.plot<-ccdata,
-           ccdata.plot<-ccdata_forBt)
     current_index_col <- "#1A4472"
 
     model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
