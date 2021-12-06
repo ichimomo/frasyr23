@@ -146,20 +146,20 @@ calc_abc2 <- function(
         if(simple.empir ==TRUE){
           cD <- simple_ecdf(cpue,cpue[n])
           D <- simple_ecdf_seq(cpue)
-          if(cD <= min(D)) cat("alpha = 0 because current cpue is minimum\n")
+          if(cD <= min(D)) cat("alpha = 0 because current cpue is min(cpue)\n")
         }
       }
     }else{
       if(smooth.cpue==TRUE) cD <- cum.cpue3(target.cpue,cpue)
       if(empir.dist==TRUE){
         cD <- cum.cpue4(target.cpue)
-        D <- cum.cpue4(cpue_forBt)
+        D <- cum.cpue4(cpue)
         if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(ccdata$cpue[n:n-n.cpue+1]))
         if(simple.empir ==TRUE){
-          D <- simple_ecdf_seq(cpue_forBt)
-          if(target.cpue > min(D)) cD <- simple_ecdf(cpue_forBt,target.cpue)
+          D <- simple_ecdf_seq(cpue)
+          if(target.cpue > min(D)) cD <- simple_ecdf(cpue,target.cpue)
           else cD <- min(D)
-          if(cD <= min(D)) cat("alpha <= 0 because current cpue is minimum or less than any cpue data used for calculating management level\n")
+          if(cD <= min(D)) cat("alpha <= 0 because current cpue is min(cpue) or less than any cpue (year <= BTyear) \n")
         }
       }
     }
@@ -189,7 +189,7 @@ calc_abc2 <- function(
       else alpha <- type2_func_empir(cD,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }else{
       if(!(empir.dist)) alpha <- type2_func(cD,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alpha <- type2_func_empir(cD,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alpha <- type2_func_empir(cD,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
     if(smooth.cpue) {
       if(!(empir.dist)) alpha <- type2_func(cD,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
@@ -204,7 +204,7 @@ calc_abc2 <- function(
         else alphafromD<- type2_func_empir(D2alpha,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
       }else{
         if(!(empir.dist)) alphafromD <- type2_func(D2alpha,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-        else alphafromD<- type2_func_empir(D2alpha,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+        else alphafromD<- type2_func_empir(D2alpha,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
       }
     }
 
@@ -215,9 +215,9 @@ calc_abc2 <- function(
       else alphafromD005 <- type2_func_empir(0.05,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }else{
       if(!(empir.dist)) alphafromD01 <- type2_func(0.1,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alphafromD01 <- type2_func_empir(0.1,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD01 <- type2_func_empir(0.1,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
       if(!(empir.dist)) alphafromD005 <- type2_func(0.05,target.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alphafromD005 <- type2_func_empir(0.05,cpue_forBt,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alphafromD005 <- type2_func_empir(0.05,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
 
     ABC <- mean.catch * alpha
@@ -340,7 +340,7 @@ type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tun
 
   cD <- trans_empir_prob(cD,cpue.prob)
 
-  if(simple.empir & cD==0) cD <- (max(cpue)-min(cpue))/1000
+  #if(simple.empir & cD==0) cD <- (max(cpue)-min(cpue))/1000
 
   if(cD <= BB) alpha <- 0
   if(BB < cD & cD < BL){
