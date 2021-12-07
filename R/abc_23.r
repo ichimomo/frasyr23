@@ -851,8 +851,19 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     current_index_col <- "#1A4472"
 
     model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
-    model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
-
+    if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
+    else{
+      if(!simple.empir) probs<-cum.cpue(model_dist$cpue)
+      else probs<-simple_ecdf_seq(model_dist$cpue) ##to be fixed
+      probs.difs<-c(probs[1])
+      for(j in 2:length(probs)){
+        if(probs[j-1]!=probs[j]) difs_tmp <- probs[j]-probs[j-1]
+        else difs_tmp <- probs.difs[j-1]
+        probs.difs<-c(probs.difs,difs_tmp)
+      }
+      #plot(model_dist$cpue,probs.difs)
+      model_dist$dens<-probs.difs/sum(probs.difs)
+    }
     g.hcr.dist <- ggplot(data=model_dist)+
       #stat_function(fun=dnorm,args=list(mean=mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue)),color="black",size=1)
       geom_line(aes(x=cpue,y=dens))+
