@@ -845,25 +845,32 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       }
     }
 
-
-
     #漁獲管理規則案 HCR.Dist ----
     current_index_col <- "#1A4472"
 
     model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
     if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
-    else{
-      if(!simple.empir) probs<-cum.cpue(model_dist$cpue)
-      else probs<-simple_ecdf_seq(model_dist$cpue) ##to be fixed
-      probs.difs<-c(probs[1])
-      for(j in 2:length(probs)){
-        if(probs[j-1]!=probs[j]) difs_tmp <- probs[j]-probs[j-1]
-        else difs_tmp <- probs.difs[j-1]
-        probs.difs<-c(probs.difs,difs_tmp)
+    else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
+      if(!simple.empir){
+        cum.cpue4 <- ecdf(ccdata.plot$cpue)
+        cum.probs <- cum.cpue4(model_dist$cpue)
       }
-      #plot(model_dist$cpue,probs.difs)
-      model_dist$dens<-probs.difs/sum(probs.difs)
+      else{
+        cum.probs<-c()
+        for(i in 1:length(model_dist$cpue)){
+          cum.probs <- c(cum.probs,simple_ecdf(ccdata.plot$cpue,model_dist$cpue[i]))
+        }
+      }
+      probs<-c(cum.probs[1])
+      for(j in 2:length(cum.probs)){
+        if(cum.probs[j-1]!=cum.probs[j]) tmp <- cum.probs[j]-cum.probs[j-1]
+        else tmp <- probs[j-1]
+        probs<-c(probs,tmp)
+      }
+      #plot(model_dist$cpue,probs)
+      model_dist$dens<-probs/sum(probs)
     }
+
     g.hcr.dist <- ggplot(data=model_dist)+
       #stat_function(fun=dnorm,args=list(mean=mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue)),color="black",size=1)
       geom_line(aes(x=cpue,y=dens))+
