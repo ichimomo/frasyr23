@@ -150,7 +150,7 @@ calc_abc2 <- function(
         }
       }
     }else{
-      if(smooth.cpue==TRUE) cD <- cum.cpue3(target.cpue,cpue)
+      if(smooth.cpue==TRUE) cD <- cum.cpue3(mean.cpue.current,cpue)
       if(empir.dist==TRUE){
         cD <- cum.cpue4(target.cpue)
         D <- cum.cpue4(cpue)
@@ -193,7 +193,7 @@ calc_abc2 <- function(
     }
     if(smooth.cpue) {
       if(!(empir.dist)) alpha <- type2_func(cD,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      #else alpha <- type2_func_empir(cD,smoothed.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alpha <- type2_func_empir(cD,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
 
     if(is.null(D2alpha)){
@@ -253,7 +253,7 @@ calc_abc2 <- function(
 
     }
     if(smooth.cpue==FALSE) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
-    else cat(stringr::str_c("Recent ", n.cpue, " year's average CPUE value and Level: ",round(mean.cpue,3)," and ",round(cD,3),"\n"))
+    else cat(stringr::str_c("Recent ", n.cpue, " year's average CPUE value and Level: ",round(mean.cpue.current,3)," and ",round(cD,3),"\n"))
             cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
                        "Average catch: ",round(mean.catch,3),"\n",
