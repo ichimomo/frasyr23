@@ -146,6 +146,13 @@ calc_abc2 <- function(
         if(simple.empir ==TRUE){
           cD <- simple_ecdf(cpue,cpue[n])
           D <- simple_ecdf_seq(cpue)
+          if(smooth.cpue==TRUE){
+            tmp.recent.cpue<-c()
+            for(i in 1:n.cpue){
+              tmp.recent.cpue<-c(tmp.recent.cpue,simple_ecdf(cpue,cpue[n-i+1]))
+            }
+            cD <- mean(tmp.recent.cpue)
+          }
           if(cD <= min(D)) cat("alpha = 0 because current cpue is min(cpue)\n")
         }
       }
@@ -157,8 +164,18 @@ calc_abc2 <- function(
         if(smooth.cpue==TRUE) cD <- mean(cum.cpue4(ccdata$cpue[n:n-n.cpue+1]))
         if(simple.empir ==TRUE){
           D <- simple_ecdf_seq(cpue)
-          if(target.cpue > min(D)) cD <- simple_ecdf(cpue,target.cpue)
-          else cD <- min(D)
+          if(target.cpue > min(D)) {
+            cD <- simple_ecdf(cpue,target.cpue)
+            if(smooth.cpue) {
+              tmp.recent.cpue<-c()
+              for(i in 1:n.cpue){
+                tmp.recent.cpue<-c(tmp.recent.cpue,ifelse(cpue[n-i+1]>min(D),simple_ecdf(cpue.ori,cpue[n-i+1]),min(D)))
+                if(cpue[n-i+1]<min(D)) cat(ccdata$year[n-i+1],"years' cpue is replaced min(cpue) because it is less than any cpue(year <=BTyear)")
+              }
+              cD <- mean(tmp.recent.cpue)
+            }
+          }else cD <- min(D)
+
           if(cD <= min(D)) cat("alpha <= 0 because current cpue is min(cpue) or less than any cpue (year <= BTyear) \n")
         }
       }
