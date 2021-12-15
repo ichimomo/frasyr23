@@ -269,7 +269,7 @@ calc_abc2 <- function(
                          "Histrical low CPUE value and Level(",min(ccdata_forBt$year),"-",max(ccdata_forBt$year),"): ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata_forBt[ccdata_forBt$cpue==min(cpue),]$year, ")", "\n"))
 
     }
-    if(smooth.cpue==FALSE | smooth.dist==FALSE) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
+    if(smooth.cpue==FALSE || smooth.dist==FALSE) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
     else cat(stringr::str_c("Recent ", n.cpue, " year's average CPUE value and Level: ",round(mean.cpue.current,3)," and ",round(cD,3),"\n"))
             cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
@@ -288,7 +288,7 @@ calc_abc2 <- function(
                    D=D,
                    alpha=alpha,beta=beta,D2alpha=alphafromD)
 
-    if(smooth.cpue==TRUE | smooth.dist==TRUE) output <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Recent_Status,
+    if(smooth.cpue==TRUE || smooth.dist==TRUE) output <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Recent_Status,
                    AAV=AAV,tune.par=tune.par,ABC=ABC,arglist=arglist,
                    mean.catch=mean.catch,Obs_percent=Obs_percent,Obs_percent_even=Obs_percent_even,
                    D=D,
