@@ -209,8 +209,10 @@ calc_abc2 <- function(
       else alpha <- type2_func_empir(cD,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
     if(smooth.cpue) {
-      if(!(empir.dist)) alpha <- type2_func(cD,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
-      else alpha <- type2_func_empir(cD,cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      if(!is.null(BTyear)){
+        if(!(empir.dist)) alpha <- type2_func(cD,mean.cpue,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      }else if(!(empir.dist)) alpha <- type2_func(cD,mean.cpue.current,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
+      else alpha <- type2_func_empir(cD,smooth.cpue,simple=simple.empir,BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     }
 
     if(is.null(D2alpha)){
