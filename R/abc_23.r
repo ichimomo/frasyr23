@@ -246,7 +246,7 @@ calc_abc2 <- function(
     Obs_percent_even <- icum.cpue(c(0.05,seq(from=0.2,to=0.8,by=0.2),0.95))
     if(is.null(BTyear)){
       Current_Status <- c(D[n],cpue[n])
-    }else{
+    }else{ # BTyear!=NULLではHC level計算年の状態
       Current_Status <- c(D[length(cpue)],ccdata$cpue[n])
     }
     names(Current_Status) <- c("Level","CPUE")
@@ -271,9 +271,15 @@ calc_abc2 <- function(
                          "Histrical low CPUE value and Level(",min(ccdata_forBt$year),"-",max(ccdata_forBt$year),"): ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata_forBt[ccdata_forBt$cpue==min(cpue),]$year, ")", "\n"))
 
     }
-    if(smooth.cpue==FALSE || smooth.dist==FALSE) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
-    else cat(stringr::str_c("Recent ", n.cpue, " year's average CPUE value and Level: ",round(mean.cpue.current,3)," and ",round(cD,3),"\n"))
-            cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
+    if(smooth.cpue==FALSE && smooth.dist==FALSE){
+      if(is.null(BTyear)) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
+      else cat(stringr::str_c("HC-level calculation year(",BTyear,")'s CPUE value and Level: ",round(cpue[length(cpue)],3)," and ",round(D[length(cpue)],3),"\n"))
+    }
+    else {
+      if(is.null(BTyear)) cat(stringr::str_c("Recent ", n.cpue, " years' average CPUE value and Level: ",round(mean.cpue.current,3)," and ",round(cD,3),"\n"))
+      else cat(stringr::str_c("Recent ", n.cpue, " years' [before HC-level calcualtion(",BTyear,")] average CPUE value and Level: ",round(mean.cpue.current,3)," and ",round(cD,3),"\n"))
+    }
+        cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
                        "Average catch: ",round(mean.catch,3),"\n",
                        "ABC in ",max(ccdata$year,na.rm=T)+2,": ",round(ABC,3),"\n",
@@ -573,7 +579,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -586,6 +592,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     # plot
     ccdata <- res$arglist$ccdata
     ccdata_forBt <- res$arglist$ccdata
+    BTyear <- res$arglist$BTyear
+    if(is.null(BTyear) && BThcr==TRUE) stop("BThcr option works if BTyear is not NULL. See the argment of calc_abc2./n")
     if(!is.null(res$arglist$BTyear)) ccdata_forBt <- ccdata[which(ccdata$year <= BTyear),]
     n.catch <- res$arglist$n.catch
     years <- ccdata$year
@@ -780,8 +788,10 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     PB <- res$arglist$PB
     tune.par <- res$arglist$tune.par
     beta <- res$arglist$beta
-    BTyear <- res$arglist$BTyear
 
+    if(!is.null(BTyear)){
+      res.nullBTyear <- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = NULL,summary_abc=FALSE)
+    }
     ifelse(!is.null(BTyear),ccdata.plot<-ccdata,
            ccdata.plot<-ccdata_forBt)
     #漁獲管理規則案 HCR ----
@@ -804,6 +814,10 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
         theme(legend.position="top",legend.justification = c(1,0))
 
+      if(BThcr) g.hcr <- g.hcr +
+          stat_function(fun=type2_func_wrapper,
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=0.5,linetype="dashed")
+
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
         g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           #stat_function(fun=type2_func_wrapper,
@@ -823,6 +837,9 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
+      if(BThcr) g.hcr <- g.hcr +
+          stat_function(fun=type2_func_wrapper,
+                                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=0.5,linetype="dashed")
       }
     }else{ # empir.dist=T
       g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
@@ -842,6 +859,10 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         ggtitle("")+
         xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
         theme(legend.position="top",legend.justification = c(1,0))
+
+      if(BThcr) g.hcr <- g.hcr +
+          stat_function(fun=type2_func_empir_wrapper,
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"), color="grey",size=0.5,linetype="dashed")
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
         g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           #stat_function(fun=type2_func_wrapper,
@@ -861,6 +882,10 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
+
+        if(BThcr) g.hcr <- g.hcr +
+            stat_function(fun=type2_func_empir_wrapper,
+                          args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"), color="grey",size=0.5,linetype="dashed")
       }
     }
 
