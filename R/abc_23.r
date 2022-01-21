@@ -247,14 +247,11 @@ calc_abc2 <- function(
     if(is.null(BTyear)){
       Current_Status <- c(D[n],cpue[n])
     }else{ # BTyear!=NULLではHC level計算年の状態
-      Current_Status <- c(D[length(cpue)],ccdata$cpue[n])
+      Current_Status <- c(cD,target.cpue)
     }
     names(Current_Status) <- c("Level","CPUE")
-    if(is.null(BTyear)){
-      Recent_Status <- c(cD,mean.cpue)
-    }else{
-      Recent_Status <- c(cD,mean.cpue.current)
-    }
+    Recent_Status <- c(cD,mean.cpue)
+
     names(Recent_Status) <- c("Level","CPUE")
 
     names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
@@ -273,11 +270,11 @@ calc_abc2 <- function(
     }
     if(smooth.cpue==FALSE && smooth.dist==FALSE){
       if(is.null(BTyear)) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
-      else cat(stringr::str_c("HC-level calculation year(",BTyear,")'s CPUE value and Level: ",round(cpue[length(cpue)],3)," and ",round(D[length(cpue)],3),"\n"))
+      else cat(stringr::str_c("HC-level calculation year(",BTyear,")'s CPUE value and Level: ",round(cpue[length(cpue)],3)," and ",round(cD,3),"\n"))
     }
     else {
       if(is.null(BTyear)) cat(stringr::str_c("Recent ", n.cpue, " years' average CPUE value and Level: ",round(mean.cpue.current,3)," and ",round(cD,3),"\n"))
-      else cat(stringr::str_c("Recent ", n.cpue, " years' [before HC-level calcualtion(",BTyear,")] average CPUE value and Level: ",round(mean.cpue.current,3)," and ",round(cD,3),"\n"))
+      else cat(stringr::str_c("Recent ", n.cpue, " years' (",BTyear-n.cpue+1,"-",BTyear,") average CPUE value and Level: ",round(mean.cpue,3)," and ",round(cD,3),"\n"))
     }
         cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
