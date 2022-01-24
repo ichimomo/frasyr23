@@ -247,14 +247,11 @@ calc_abc2 <- function(
     if(is.null(BTyear)){
       Current_Status <- c(D[n],cpue[n])
     }else{ # BTyear!=NULLではHC level計算年の状態
-      Current_Status <- c(D[length(cpue)],ccdata$cpue[n])
+      Current_Status <- c(cD,target.cpue)
     }
     names(Current_Status) <- c("Level","CPUE")
-    if(is.null(BTyear)){
-      Recent_Status <- c(cD,mean.cpue)
-    }else{
-      Recent_Status <- c(cD,mean.cpue.current)
-    }
+    Recent_Status <- c(cD,mean.cpue)
+
     names(Recent_Status) <- c("Level","CPUE")
 
     names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
@@ -273,11 +270,11 @@ calc_abc2 <- function(
     }
     if(smooth.cpue==FALSE && smooth.dist==FALSE){
       if(is.null(BTyear)) cat(stringr::str_c("Last year's CPUE value and Level: ",round(cpue[n],3)," and ",round(D[n],3),"\n"))
-      else cat(stringr::str_c("HC-level calculation year(",BTyear,")'s CPUE value and Level: ",round(cpue[length(cpue)],3)," and ",round(D[length(cpue)],3),"\n"))
+      else cat(stringr::str_c("HC-level calculation year(",BTyear,")'s CPUE value and Level: ",round(cpue[length(cpue)],3)," and ",round(cD,3),"\n"))
     }
     else {
       if(is.null(BTyear)) cat(stringr::str_c("Recent ", n.cpue, " years' average CPUE value and Level: ",round(mean.cpue.current,3)," and ",round(cD,3),"\n"))
-      else cat(stringr::str_c("Recent ", n.cpue, " years' [before HC-level calcualtion(",BTyear,")] average CPUE value and Level: ",round(mean.cpue.current,3)," and ",round(cD,3),"\n"))
+      else cat(stringr::str_c("Recent ", n.cpue, " years' (",BTyear-n.cpue+1,"-",BTyear,") average CPUE value and Level: ",round(mean.cpue,3)," and ",round(cD,3),"\n"))
     }
         cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
@@ -598,9 +595,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     n.catch <- res$arglist$n.catch
     years <- ccdata$year
     last.year <- rev(years)[1]
+    #if(!BThcr)
     data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
                          catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
                          type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
+    #else data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),                              type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
     data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
                        value_ratio=res$BRP)
     data_percent <- tibble(x=rep(max(years)+2,11),
@@ -618,8 +617,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     }
     linetype.set <- c("dashed","longdash","solid")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
+    #legend.labels2bt <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC","入力データ最終年利用時のABC")
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量")
+    #legend.labels2bt.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量","入力データ最終年利用時の算定漁獲量")
     legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
+    #legend.labels2bt.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""),paste("入力データ最終年利用時の",max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
     col.BRP.hcr <- col.BRP
     data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
 
@@ -650,14 +652,17 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     if(detABC==1){
       g.catch.title <- "漁獲量のトレンドと算定漁獲量"
       g.catch.abcpoint <- "算定漁獲量"
+      #ifelse(BThcr,legend.labels2 <- legend.labels2bt.1,legend.labels2 <- legend.labels2.1)
       legend.labels2 <- legend.labels2.1
     }else if(detABC==2){
       g.catch.title <- "漁獲量の推移と予測値"
       g.catch.abcpoint <- "予測値"
+      #ifelse(BThcr,legend.labels2 <- legend.labels2bt.2,legend.labels2 <- legend.labels2.2)
       legend.labels2 <- legend.labels2.2
     }else{
       g.catch.title <- "漁獲量のトレンドとABC"
       g.catch.abcpoint <- "ABC"
+      #if(BThcr)legend.labels2 <- legend.labels2bt
     }
 
     #資源量指標値のトレンド ----
@@ -792,7 +797,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     if(!is.null(BTyear)){
       res.nullBTyear <- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = NULL,summary_abc=FALSE)
     }
-    ifelse(!is.null(BTyear),ccdata.plot<-ccdata,
+    ifelse(is.null(BTyear),ccdata.plot<-ccdata,
            ccdata.plot<-ccdata_forBt)
     #漁獲管理規則案 HCR ----
     if(!empir.dist){
@@ -814,11 +819,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
         theme(legend.position="top",legend.justification = c(1,0))
 
-      if(BThcr) g.hcr <- g.hcr +
-          stat_function(fun=type2_func_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=0.5,linetype="dashed")
-
-      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+      ## plot 設定 for mac----
+      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           #stat_function(fun=type2_func_wrapper,
           #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
@@ -841,7 +843,13 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           stat_function(fun=type2_func_wrapper,
                                          args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=0.5,linetype="dashed")
       }
-    }else{ # empir.dist=T
+
+      if(BThcr) g.hcr <- g.hcr +
+          stat_function(fun=type2_func_wrapper,
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=0.5,linetype="dashed")+
+          geom_point(aes(x=res.nullBTyear$Current_Status[1]*100,y=res.nullBTyear$alpha),color=3,size=4)
+    }else{
+  # empir.dist=T ----
       g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
         #stat_function(fun=type2_func_wrapper,
         #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
@@ -860,10 +868,9 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
         theme(legend.position="top",legend.justification = c(1,0))
 
-      if(BThcr) g.hcr <- g.hcr +
-          stat_function(fun=type2_func_empir_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"), color="grey",size=0.5,linetype="dashed")
-      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+
+      ## plot 設定 for mac----
+      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
           #stat_function(fun=type2_func_wrapper,
           #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
@@ -883,10 +890,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
 
-        if(BThcr) g.hcr <- g.hcr +
-            stat_function(fun=type2_func_empir_wrapper,
-                          args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"), color="grey",size=0.5,linetype="dashed")
       }
+      if(BThcr) g.hcr <- g.hcr +
+          stat_function(fun=type2_func_empir_wrapper,
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,cpue=ccdata$cpue,simple=simple.empir,type="%"), color="grey",size=0.5,linetype="dashed")+
+          geom_point(aes(x=res.nullBTyear$Current_Status[1]*100,y=res.nullBTyear$alpha),color=3,size=4)
     }
 
     #漁獲管理規則案 HCR.Dist ----
@@ -961,6 +969,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       #ggrepel::geom_label_repel(data=data_catch,
       #                          mapping=aes(x=max(year)-5, y=catch, label=legend.labels2),
       #                          box.padding=0.5, nudge_y=1)+
+      #scale_color_manual(name="",values=ifelse(BThcr,c(1,2,3),c(1,2)),labels=legend.labels2)+
       scale_color_manual(name="",values=c(1,2),labels=legend.labels2)+
       # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
       #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
@@ -979,6 +988,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         #ggrepel::geom_label_repel(data=data_catch,
         #                          mapping=aes(x=max(year)-5,y=catch[1],label=legend.labels2,family=font_MAC),
         #                          box.padding=0.5, nudge_y=1)+
+        #scale_color_manual(name="",values=ifelse(BThcr,c("black","red","green"),c("black","red")),labels=legend.labels2)+
         scale_color_manual(name="",values=c("black","red"),labels=legend.labels2)+
         # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
         #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
