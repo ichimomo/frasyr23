@@ -301,6 +301,19 @@ calc_abc2 <- function(
   return(output)
 }
 
+#' 2系のCPUEデータに対してABCを返す関数
+#'
+#' @param cD cpueの値
+#' @param BT 目標水準
+#' @param PL 目標水準に対する限界水準の割合
+#' @param PB 目標水準に対する禁漁水準の割合
+#' @param AAV AAV
+#' @param tune.par チューニングパラメタ
+#' @param beta 保守的漁獲の割合
+#'
+#' @export
+#'
+#'
 type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
     delta1 <- tune.par[1]   # velocity to go to BT
     delta2 <- tune.par[2]   # correction factor when D <= BL
@@ -322,6 +335,21 @@ type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0
     #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
 }
 
+#' 2系資源計算を経験分布で計算する時のCPUEデータに対してABCを返す関数
+#'
+#' @param cD cpueの値
+#' @param cpue cpue時系列
+#' @param simple 旧2系的な経験分布にする場合TRUE
+#' @param BT 目標水準
+#' @param PL 目標水準に対する限界水準の割合
+#' @param PB 目標水準に対する禁漁水準の割合
+#' @param AAV AAV
+#' @param tune.par チューニングパラメタ
+#' @param beta 保守的漁獲の割合
+#'
+#' @export
+#'
+#'
 type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
   delta1 <- tune.par[1]   # velocity to go to BT
   delta2 <- tune.par[2]   # correction factor when D <= BL
@@ -377,11 +405,17 @@ type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tun
   #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
 }
 
+#' 2系のCPUEの確率点に対して連続的にABCを返す関数
+#'
+#' @export
 type2_func_wrapper <- function(DL,type=NULL,...){
     if(type=="%") DL <- DL/100
     purrr::map_dbl(DL,type2_func,...)
 }
 
+#' 2系を経験分布で計算する時、CPUEの確率点に対して連続的にABCを返す関数
+#'
+#' @export
 type2_func_empir_wrapper <- function(DL,cpue,simple,type=NULL,...){
   if(type=="%") DL <- DL/100
   purrr::map_dbl(DL,type2_func_empir,cpue=cpue,simple=simple,...)
@@ -508,6 +542,7 @@ simple_ecdf <- function(cpue, x){
   if(percent<0) percent <- 0
   return(percent)
 }
+
 
 simple_ecdf_seq<-function(cpue){
   cum.cpue <-c()
@@ -906,8 +941,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     #漁獲管理規則案 HCR.Dist ----
     current_index_col <- "#1A4472"
 
-    model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
-    if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
+    model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA)
+    if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm = T))
     else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
       if(!simple.empir){
         cum.cpue4 <- ecdf(ccdata.plot$cpue)
