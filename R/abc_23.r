@@ -1758,7 +1758,7 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
   current_index_col <- "#1A4472"
   ccdata.plot<- ccdata_forBt
   model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm = T), by=0.1),  dens=NA)
-  if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
+  if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm=T))
   else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
     if(!simple.empir){
       cum.cpue4 <- ecdf(ccdata.plot$cpue)
