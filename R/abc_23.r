@@ -1467,17 +1467,20 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
   res.multiBT<-list()
   ABCs<-c()
   ABClabels<-c()
+  ccdata.plotbt<-list()
   for(i in 0:(last.year-BTyear-1)){
     if(i==0) res.multiBT[[i+1]]<- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = NULL,summary_abc=FALSE)
     else res.multiBT[[i+1]]<- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = last.year-i,summary_abc=FALSE)
     ABCs<-c(ABCs,res.multiBT[[i+1]]$ABC)
     label <-paste0(i,"年前基準ABC")
     ABClabels<-c(ABClabels,label)
+    ccdata.plotbt[[i+1]]<-res.multiBT[[i+1]]$arglist$ccdata[which(res.multiBT[[i+1]]$arglist$ccdata$year <= res.multiBT[[i+1]]$arglist$BTyear),]
   }
 
   data_catch_ori <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),                              type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
 
   btlabel<-paste0(last.year-BTyear,"年前基準ABC")
+
   data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,rep(last.year+2,last.year-BTyear+1)),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,rev(ABCs)),                              type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),btlabel,rev(ABClabels)))
 
   data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
@@ -1526,7 +1529,6 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
     legend.labels2 <- legend.labels2bt
 
   #資源量指標値のトレンド ----
-
   if(fillarea==TRUE){
     #colfill <- c("olivedrab2", "khaki1", "khaki2", "indianred1")
     colfill <- c("olivedrab2", "khaki1", "white", "white")
@@ -1648,10 +1650,8 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
     }
   }
 
-  ifelse(is.null(BTyear),ccdata.plot<-ccdata,
-         ccdata.plot<-ccdata_forBt)
-
   #漁獲管理規則案 HCR ----
+  ifelse(is.null(BTyear),ccdata.plot<-ccdata,ccdata.plot<-ccdata_forBt)
   if(!empir.dist){
     g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
       #stat_function(fun=type2_func_wrapper,
@@ -1661,6 +1661,7 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
                     args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                     color="black",size=1)+
       geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)+
+
       geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
       ggrepel::geom_label_repel(data=data_BRP,
                                 mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels),
@@ -1680,8 +1681,9 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
         stat_function(fun=type2_func_wrapper,
                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                       color="black",size=1)+
-        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
-        geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
+        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4) +
+
+      geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
         ggrepel::geom_label_repel(data=data_BRP,
                                   mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
                                   box.padding=0.5, nudge_y=1)+
@@ -1691,16 +1693,15 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
         xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
         theme(legend.position="top",legend.justification = c(1,0)) +
         theme(text = element_text(family = font_MAC))
-
     }
 
-    for(i in (last.year-BTyear):1){
+    for(i in 1:(last.year-BTyear)){
       g.hcr <- g.hcr +
         stat_function(fun=type2_func_wrapper,
-                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.multiBT[[i]]$AAV,type="%"), color=rgb(0,0,0,alpha = (i/10)),size=0.5,linetype="dashed")+
-        geom_point(aes(x=res.multiBT[[i+1]]$Current_Status[1]*100,y=res.multiBT[[i+1]]$alpha),color=(2+i),size=4)
-
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.multiBT[[i]]$AAV,type="%"), color="gray",size=0.5,linetype=i+1)+
+        geom_point(aes(x=res.multiBT[[i]]$Current_Status[1]*100,y=res.multiBT[[i]]$alpha),color=i+2,size=3,shape=i+1)
     }
+
   }else{
     # empir.dist=T ----
     g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
@@ -1744,19 +1745,19 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
 
     }
 
-    for(i in (last.year-BTyear):1){
+    for(i in 1:(last.year-BTyear)){
       g.hcr <- g.hcr +
         stat_function(fun=type2_func_empir_wrapper,
-                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.multiBT[[i]]$AAV,cpue=ccdata$cpue,simple=simple.empir,type="%"), color=rgb(0,0,0,alpha = (i/10)),size=0.5,linetype="dashed")+
-        geom_point(aes(x=res.multiBT[[i+1]]$Current_Status[1]*100,y=res.multiBT[[i+1]]$alpha),color=(2+i),size=4)
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.multiBT[[i]]$AAV,cpue=ccdata.plotbt[[i]]$cpue,simple=simple.empir,type="%"), color=rgb(0,0,0,alpha = (i/10)),size=0.5,linetype="dashed")+
+        geom_point(aes(x=res.multiBT[[i]]$Current_Status[1]*100,y=res.multiBT[[i]]$alpha),color=i+2,size=3,shape=i+1)
 
     }
   }
 
   #漁獲管理規則案 HCR.Dist ----
   current_index_col <- "#1A4472"
-
-  model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
+  ccdata.plot<- ccdata_forBt
+  model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm = T), by=0.1),  dens=NA)
   if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
   else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
     if(!simple.empir){
@@ -1820,7 +1821,7 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
 
   #漁獲量のトレンドとABC/算定漁獲量 ----
 
-  CatchABC<-seq(1,(last.year-BTyear+2))
+  CatchABC<-seq((last.year-BTyear+2):1)
   #CatchABC<-c(1,2)
   g.catch <- ccdata %>% ggplot() +
     geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
@@ -1829,7 +1830,7 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
     #                          mapping=aes(x=max(year)-5, y=catch, label=legend.labels2),
     #                          box.padding=0.5, nudge_y=1)+
     #scale_color_manual(name="",values=c(1,2),labels=legend.labels2)+
-    scale_color_manual(name="",values=CatchABC,labels=legend.labels2)+
+    scale_color_manual(name="",values=rev(CatchABC),labels=rev(legend.labels2))+
     # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
     #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
     #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
@@ -1848,7 +1849,7 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
       #                          mapping=aes(x=max(year)-5,y=catch[1],label=legend.labels2,family=font_MAC),
       #                          box.padding=0.5, nudge_y=1)+
       #scale_color_manual(name="",values=c("black","red"),labels=legend.labels2)+
-      #scale_color_manual(name="",values=CatchABC,labels=legend.labels2)+
+      scale_color_manual(name="",values=rev(CatchABC),labels=rev(legend.labels2))+
       # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
       #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
       #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
