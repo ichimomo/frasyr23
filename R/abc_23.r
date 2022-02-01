@@ -1233,69 +1233,72 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
   linetype.set <- c("22","41","solid")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
-      g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
-        theme_bw()+theme_custom()+
-        ggtitle("")+
-        xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
-        theme(legend.position="top",legend.justification = c(1,0))
-        for(i in 1:length(res.list)){
-          res <- res.list[[i]]
-          data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
-                           value_ratio=res$BRP)
-          BT <- res$arglist$BT
-          PL <- res$arglist$PL
-          PB <- res$arglist$PB
-          tune.par <- res$arglist$tune.par
-          beta <- res$arglist$beta
-          g.hcr <- g.hcr +
-          #            stat_function(fun=type2_func_wrapper,
-          #                          args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,AAV=res$AAV,type="%"),
-          #                       color="gray")+
-          stat_function(fun=type2_func_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-                        color="black",size=1,linetype=i)+
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)
-        }
-      g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-          ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=c(1.1,1.0,0.9), label=legend.labels.hcr),
-                                    box.padding=0.5)+
-          scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
-
-
-      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-        g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
-          theme_bw(base_family = font_MAC)+theme_custom()+
-          ggtitle("")+
-          xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
-          theme(legend.position="top",legend.justification = c(1,0))+
-          theme(text = element_text(family = font_MAC))
-
-       for(i in 1:length(res.list)){
-          res <- res.list[[i]]
-          data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
-                           value_ratio=res$BRP)
-          BT <- res$arglist$BT
-          PL <- res$arglist$PL
-          PB <- res$arglist$PB
-          tune.par <- res$arglist$tune.par
-          beta <- res$arglist$beta
-          g.hcr <- g.hcr +
-          #            stat_function(fun=type2_func_wrapper,
-          #                          args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,AAV=res$AAV,type="%"),
-          #                       color="gray")+
-          stat_function(fun=type2_func_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-                        color="black",size=1,linetype=i)+
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)
-      }
-      g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-                       ggrepel::geom_label_repel(data=data_BRP,
-                       mapping=aes(x=value_ratio*100, y=c(1.1,1.0,0.9), label=legend.labels.hcr,family=font_MAC),
-                       box.padding=0.5)+
-                       scale_color_manual(name="",values=rev(c(col.BRP)),guide=FALSE) #label=rev(legend.labels.hcr))
+  Currentalphas<-c()
+  for(i in 1:length(res.list)){
+    Currentalphas<-rbind(Currentalphas,tibble(x=res.list[[i]]$Current_Status[1]*100,y=res.list[[i]]$alpha))
   }
-    g.hcr
+  col.hcr.points <- seq(2,1+length(res.list))
+
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+      theme_bw(base_family = font_MAC)+theme_custom()+
+      ggtitle("")+
+      xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+      theme(legend.position="top",legend.justification = c(1,0))+
+      theme(text = element_text(family = font_MAC))
+  }else{
+    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+      theme_bw()+theme_custom()+
+      ggtitle("")+
+      xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+      theme(legend.position="top",legend.justification = c(1,0))
+    }
+
+      for(i in 1:length(res.list)){
+          res <- res.list[[i]]
+          data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
+                           value_ratio=res$BRP)
+          BT <- res$arglist$BT
+          PL <- res$arglist$PL
+          PB <- res$arglist$PB
+          tune.par <- res$arglist$tune.par
+          beta <- res$arglist$beta
+          empir.dist<- res$arglist$empir.dist
+          simple.empir<-res$arglist$simple.empir
+          if(is.null(res$arglist$BTyear)) ccdata.plot<-res$arglist$ccdata
+          else ccdata.plot<-res$arglist$ccdata[which(res$arglist$ccdata$year <= res$arglist$BTyear),]
+
+          if(!empir.dist) g.hcr <- g.hcr +
+          #            stat_function(fun=type2_func_wrapper,
+          #                          args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,AAV=res$AAV,type="%"),
+          #                       color="gray")+
+          stat_function(fun=type2_func_wrapper,
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+                        color="black",size=1,linetype=i)
+          else g.hcr <- g.hcr +
+            stat_function(fun=type2_func_empir_wrapper,
+                          args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
+                          color="black",size=1,linetype=i)
+      }
+
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+    g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+      ggrepel::geom_label_repel(data=data_BRP,
+                                mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr,family=font_MAC),
+                                box.padding=0.5)
+
+  }else{
+    g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+      ggrepel::geom_label_repel(data=data_BRP,
+                                mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr),
+                                box.padding=0.5)
+
+  }
+      g.hcr <- g.hcr +
+        geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4) +
+          scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+
+    return(g.hcr)
 }
 
 #' 2系・3系のABC計算関数．岡村さん作成のプロトタイプ．チェック用に使う．
