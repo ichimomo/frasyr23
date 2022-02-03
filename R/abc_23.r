@@ -627,13 +627,16 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     }else{
       legend.labels <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
     }
+    label.y.position<-c(0.5,1.0,0.7)
+    label.y.nudge<-c(0.1,0.1,0.1)
+
     linetype.set <- c("dashed","longdash","solid")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
-    legend.labels2bt <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC","入力データ最終年利用時のABC")
+    legend.labels2bt <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC","最終年データ利用のABC")
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量")
-    legend.labels2bt.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量","入力データ最終年利用時の算定")
+    legend.labels2bt.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量","最終年データ利用の算定")
     legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
-    legend.labels2bt.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"入力データ最終年利用時の予測値")
+    legend.labels2bt.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
     col.BRP.hcr <- col.BRP
     data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
 
@@ -658,6 +661,9 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       }else{
         col.BRP <- c("#00533E","#edb918","#C73C2E")
       }
+
+      label.y.position<-c(0.5,1.0)
+      label.y.nudge<-c(0.1,0.1)
     }
 
     # ABC決定可能/不可能設定 ----
@@ -802,113 +808,85 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
      }
     }
 
+    #漁獲管理規則案 HCR ----
     ifelse(is.null(BTyear),ccdata.plot<-ccdata,
            ccdata.plot<-ccdata_forBt)
 
-    #漁獲管理規則案 HCR ----
+    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) #プロット枠
     if(!empir.dist){
-      g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+      g.hcr <- g.hcr +
         #stat_function(fun=type2_func_wrapper,
         #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
         #              color="gray")+
         stat_function(fun=type2_func_wrapper,
                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-                      color="black",size=1)+
-        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)+
-        geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
-        ggrepel::geom_label_repel(data=data_BRP,
-                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels),
-                                  box.padding=0.5)+ #, nudge_y=1
-        scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE)+#,labels=rev(c(legend.labels)))+
-        theme_bw()+theme_custom()+
-        ggtitle("")+
-        xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
-        theme(legend.position="top",legend.justification = c(1,0))
+                      color="black",size=1)
+    }else{ # 経験分布利用 empir.dist=T ----
+        g.hcr <- g.hcr +
+        stat_function(fun=type2_func_empir_wrapper,
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
+                        color="black",size=1)
+    }
 
-      ## plot 設定 for mac----
-      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-        g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
-          #stat_function(fun=type2_func_wrapper,
-          #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-          #                  color="gray")+
-          stat_function(fun=type2_func_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-                        color="black",size=1)+
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # 図中ラベルと軸ラベルの設定 mac ----
+      if(res$BRP[3]==0) #禁漁水準=0の時
+       g.hcr <- g.hcr +
+        ggrepel::geom_label_repel(data=data_BRP,
+                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.5), label=legend.labels,family = font_MAC),
+                                  box.padding=0.5,nudge_y=c(0.1,-0.1) )
+      else  g.hcr <- g.hcr +
           ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
-                                    box.padding=0.5, nudge_y=1)+
+                                    mapping=aes(x=value_ratio*100, y=c(0.5,0.5,0.7), label=legend.labels,family = font_MAC),
+                                    box.padding=0.5,nudge_y =c(0.1,-0.1,0.1) )
+
+        g.hcr <- g.hcr+
           scale_color_manual(name="",values=rev(c(col.BRP)), guide="none")+ #,labels=rev(c(legend.labels)))+
           theme_bw()+theme_custom()+
           ggtitle("")+
           xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
-      if(BThcr) g.hcr <- g.hcr +
-          stat_function(fun=type2_func_wrapper,
-                                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=1,linetype="dashed")
-      }
-
-      if(BThcr) g.hcr <- g.hcr +
-          stat_function(fun=type2_func_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=0.5,linetype="dashed")+
-          geom_point(aes(x=res.nullBTyear$Current_Status[1]*100,y=res.nullBTyear$alpha),color=3,size=4)
-    }else{
-  # empir.dist=T ----
-      g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
-        #stat_function(fun=type2_func_wrapper,
-        #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-        #              color="gray")+
-        stat_function(fun=type2_func_empir_wrapper,
-                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
-                      color="black",size=1) +
-        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
-        geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
-        ggrepel::geom_label_repel(data=data_BRP,
-                                  mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
-                                  box.padding=0.5, nudge_y=1)+
-        scale_color_manual(name="",values=rev(c(col.BRP)), guide="none" )+ #,labels=rev(c(legend.labels)))+
+      }else{ # 図中ラベルと軸ラベルの設定 mac以外 ----
+        if(res$BRP[3]==0) #禁漁水準=0の時
+          g.hcr <- g.hcr +
+           ggrepel::geom_label_repel(data=data_BRP,
+                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.5), label=legend.labels),
+                                  box.padding=0.5, nudge_y=c(0.1,-0.1))
+        else g.hcr <- g.hcr +
+            ggrepel::geom_label_repel(data=data_BRP,
+                                      mapping=aes(x=value_ratio*100, y=c(0.5,0.5,0.7), label=legend.labels),
+                                      box.padding=0.5, nudge_y=c(0.1,-0.1,0.1))
+      g.hcr <- g.hcr +
+        scale_color_manual(name="",values=rev(c(col.BRP)), guide="none")+#,labels=rev(c(legend.labels)))+
         theme_bw()+theme_custom()+
         ggtitle("")+
         xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
         theme(legend.position="top",legend.justification = c(1,0))
-
-
-      ## plot 設定 for mac----
-      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-        g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
-          #stat_function(fun=type2_func_wrapper,
-          #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
-          #              color="gray")+
-          stat_function(fun=type2_func_empir_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
-                        color="black",size=1) +
-          geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
-          geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
-          ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
-                                    box.padding=0.5, nudge_y=1)+
-          scale_color_manual(name="",values=rev(c(col.BRP)), guide="none" )+ #,labels=rev(c(legend.labels)))+
-          theme_bw()+theme_custom()+
-          ggtitle("")+
-          xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
-          theme(legend.position="top",legend.justification = c(1,0)) +
-          theme(text = element_text(family = font_MAC))
-
       }
-      if(BThcr) g.hcr <- g.hcr +
-          stat_function(fun=type2_func_empir_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,cpue=ccdata$cpue,simple=simple.empir,type="%"), color="grey",size=1,linetype="dashed")+
+
+    g.hcr <- g.hcr +
+      geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)+
+      geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)
+
+    ## BTyear!=NULLの場合、BTyear==NULLの結果を同時に出力するオプション ----
+    if(BThcr){
+        if(!empir.dist) g.hcr <- g.hcr +
+          stat_function(fun=type2_func_wrapper,
+                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=0.5,linetype="dashed")+
           geom_point(aes(x=res.nullBTyear$Current_Status[1]*100,y=res.nullBTyear$alpha),color=3,size=4)
-    }
+        else g.hcr <- g.hcr +
+            stat_function(fun=type2_func_empir_wrapper,
+                          args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,cpue=ccdata$cpue,simple=simple.empir,type="%"), color="grey",size=1,linetype="dashed")+
+            geom_point(aes(x=res.nullBTyear$Current_Status[1]*100,y=res.nullBTyear$alpha),color=3,size=4)
+      }
 
     #漁獲管理規則案 HCR.Dist ----
     current_index_col <- "#1A4472"
 
     model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
-    if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
-    else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
+    if(!empir.dist) {
+      model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
+    }else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
       if(!simple.empir){
         cum.cpue4 <- ecdf(ccdata.plot$cpue)
         cum.probs <- cum.cpue4(model_dist$cpue)
