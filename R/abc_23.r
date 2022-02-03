@@ -844,11 +844,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       if(res$BRP[3]==0) #禁漁水準=0の時
        g.hcr <- g.hcr +
         ggrepel::geom_label_repel(data=data_BRP,
-                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.5), label=legend.labels,family = font_MAC),
+                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels,family = font_MAC),
                                   box.padding=0.5,nudge_y=c(0.1,-0.1) )
       else  g.hcr <- g.hcr +
           ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=c(0.5,0.5,0.7), label=legend.labels,family = font_MAC),
+                                    mapping=aes(x=value_ratio*100, y=c(0.5,0.4,0.7), label=legend.labels,family = font_MAC),
                                     box.padding=0.5,nudge_y =c(0.1,-0.1,0.1) )
 
         g.hcr <- g.hcr+
@@ -862,11 +862,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         if(res$BRP[3]==0) #禁漁水準=0の時
           g.hcr <- g.hcr +
            ggrepel::geom_label_repel(data=data_BRP,
-                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.5), label=legend.labels),
+                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels),
                                   box.padding=0.5, nudge_y=c(0.1,-0.1))
         else g.hcr <- g.hcr +
             ggrepel::geom_label_repel(data=data_BRP,
-                                      mapping=aes(x=value_ratio*100, y=c(0.5,0.5,0.7), label=legend.labels),
+                                      mapping=aes(x=value_ratio*100, y=c(0.5,0.4,0.7), label=legend.labels),
                                       box.padding=0.5, nudge_y=c(0.1,-0.1,0.1))
       g.hcr <- g.hcr +
         scale_color_manual(name="",values=rev(c(col.BRP)), guide="none")+#,labels=rev(c(legend.labels)))+
