@@ -811,7 +811,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     #漁獲管理規則案 HCR ----
     ifelse(is.null(BTyear),ccdata.plot<-ccdata,
            ccdata.plot<-ccdata_forBt)
-
+　　#プロットの順番；枠、資源量水準vsアルファ、管理水準縦線、ラベル、軸ラベル、abc計算に用いる現状ポイント
     g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) #プロット枠
     if(!empir.dist){
       g.hcr <- g.hcr +
@@ -821,12 +821,24 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         stat_function(fun=type2_func_wrapper,
                       args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                       color="black",size=1)
+      ## BTyear!=NULLの場合、最新年のデータまで入れたデータでの結果を同時出力
+      if(BThcr) g.hcr <- g.hcr +
+          stat_function(fun=type2_func_wrapper,
+                                              args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=0.5,linetype="dashed")
+
     }else{ # 経験分布利用 empir.dist=T ----
         g.hcr <- g.hcr +
-        stat_function(fun=type2_func_empir_wrapper,
+           stat_function(fun=type2_func_empir_wrapper,
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
                         color="black",size=1)
+        ## BTyear!=NULLの場合、最新年のデータまで入れたデータでの結果を同時出力
+        if(BThcr) g.hcr <- g.hcr +
+            stat_function(fun=type2_func_empir_wrapper,
+                          args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,cpue=ccdata$cpue,simple=simple.empir,type="%"), color="grey",size=1,linetype="dashed")
     }
+
+    g.hcr <- g.hcr +
+      geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # 図中ラベルと軸ラベルの設定 mac ----
       if(res$BRP[3]==0) #禁漁水準=0の時
@@ -865,18 +877,13 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       }
 
     g.hcr <- g.hcr +
-      geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)+
-      geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)
+      geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)
 
-    ## BTyear!=NULLの場合、BTyear==NULLの結果を同時に出力するオプション ----
+    ## BTyear!=NULLの場合、BTyear==NULLの現状ポイントを出力 ----
     if(BThcr){
         if(!empir.dist) g.hcr <- g.hcr +
-          stat_function(fun=type2_func_wrapper,
-                        args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,type="%"), color="grey",size=0.5,linetype="dashed")+
           geom_point(aes(x=res.nullBTyear$Current_Status[1]*100,y=res.nullBTyear$alpha),color=3,size=4)
         else g.hcr <- g.hcr +
-            stat_function(fun=type2_func_empir_wrapper,
-                          args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.nullBTyear$AAV,cpue=ccdata$cpue,simple=simple.empir,type="%"), color="grey",size=1,linetype="dashed")+
             geom_point(aes(x=res.nullBTyear$Current_Status[1]*100,y=res.nullBTyear$alpha),color=3,size=4)
       }
 
