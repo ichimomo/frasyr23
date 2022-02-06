@@ -1426,6 +1426,199 @@ theme_custom <- function(){
           axis.line.y=element_line(size= 0.3528))
 }
 
+#' 複数の2系ABC計算結果を同時プロットするための関数
+#'
+#' @param res.list calc_abc2の返り値。比較結果が多すぎるとみづらくなるので一度に比較するのは５つまで。
+#' @param fishseason  X軸のラベルを変更（0なら年、1なら漁期年)
+#' @param abc4  北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE））
+#' @param cpueunit  資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）
+#' @param leftalign  資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）
+#' @param RP  資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）
+#' @export
+#'
+plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0, abc4=FALSE, cpueunit="", fillarea=FALSE, RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE){
+  font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
+
+  #結果比較の限界は５個まで
+  if(length(res.list)>5) stop("The max number in res.list is 5.\n")
+
+  # 漁期年/年設定 ----
+  ifelse(fishseason==1, year.axis.label <- "漁期年", year.axis.label <- "年")
+
+  # 漁獲量とABC出力設定 ----
+  years <- res.list[[1]]$arglist$ccdata$year
+  last.year <- rev(years)[1]
+  labels2<-labels2.1<-labels2.2<-c()
+
+  for(i in 1:length(res.list)){
+    if(i==1) data_catch<- tibble(year=c((last.year-res.list[[i]]$arglist$n.catch+1):last.year,last.year+2),
+                                 catch=c(rep(res.list[[i]]$mean.catch,res.list[[i]]$arglist$n.catch),res.list[[i]]$ABC),
+                                 type=c(rep(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),res.list[[i]]$arglist$n.catch),paste0(i,"番目ABC")))
+    else data_catch <- rbind(data_catch,tibble(year=last.year+2,
+                                               catch=c(res.list[[i]]$ABC),
+                                               type=c(paste0(i,"番目ABC"))))
+    labels2 <- c(labels2,paste0(i,"番目ABC"))
+    labels2.1 <- c(labels2.1,paste0(i,"番目算定漁獲量"))
+    labels2.2 <- c(labels2.2,paste(i,"番目",max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
+  }
+
+  legend.labels2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),labels2)
+  legend.labels2.1 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),labels2.1)
+  legend.labels2.2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),labels2.2)
+
+  col.BRP.hcr <- col.BRP
+  data_BRP_hcr <- tibble(BRP=names(res.list[[1]]$BRP),value_obs=res.list[[1]]$Obs_BRP, value_ratio=res.list[[1]]$BRP)
+
+  legend.labels.hcr <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
+
+  #   # PB=0の時の禁漁水準削除設定 ----
+  #   if(res.list[[1]]$BRP[3] == 0) {
+  #     if(proposal==TRUE){
+  #       legend.labels <- c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案")
+  #     }else{
+  #       legend.labels <- c("目標管理基準値（目標水準）","限界管理基準値（限界水準）")
+  #     }
+  #     linetype.set <- c("22","41")
+  #     if(abc4==TRUE){
+  #       col.BRP <- c("blue","red")
+  #     }else{
+  #       col.BRP <- c("#00533E","#edb918")
+  #     }
+  #     data_BRP2 <- data_BRP
+  #     data_BRP <- tibble(BRP=names(res.list[[1]]$BRP[-3]),value_obs=res.list[[1]]$Obs_BRP[-3],value_ratio=res.list[[1]]$BRP[-3])
+  #   }else{
+  #     if(abc4==TRUE){
+  #       col.BRP <- c("blue","red","orange")
+  #     }else{
+  #       col.BRP <- c("#00533E","#edb918","#C73C2E")
+  #     }
+  #   }
+
+  # ABC決定可能/不可能設定 ----
+  if(detABC==1){
+    g.catch.title <- "漁獲量のトレンドと算定漁獲量"
+    g.catch.abcpoint <- "算定漁獲量"
+    legend.labels2 <- legend.labels2.1
+  }else if(detABC==2){
+    g.catch.title <- "漁獲量の推移と予測値"
+    g.catch.abcpoint <- "予測値"
+    legend.labels2 <- legend.labels2.2
+  }else{
+    g.catch.title <- "漁獲量のトレンドとABC"
+    g.catch.abcpoint <- "ABC"
+  }
+
+  linetype.set <- c("22","41","solid")
+
+  # 資源量指標値のトレンド ----
+  if(isTRUE(abc4)){
+    g.cpue4<-plot_abc2(res = res.list[[1]],stock.name=stock.name, fishseason=fishseason, abc4=abc4, fillarea=fillarea, cpueunit=cpueunit, RP=RP, leftalign=leftalign, hcrdist=hcrdist)$graph.component[[1]]
+    g.cpue4<-plot_abc2(res = res.list[[1]],stock.name=stock.name, fishseason=fishseason, abc4=abc4, fillarea=fillarea, cpueunit=cpueunit, RP=RP, leftalign=leftalign, hcrdist=hcrdist)$graph.component[[2]]
+  }else{
+    g.cpue <- plot_abc2(res = res.list[[1]],stock.name=stock.name, fishseason=fishseason, abc4=abc4, fillarea=fillarea, cpueunit=cpueunit, RP=RP, leftalign=leftalign, hcrdist=hcrdist)$graph.component[[1]]
+  }
+
+  # 漁獲管理規則 HCR ----
+  if("arglist"%in%names(res.list)) res.list <- list(res.list)
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+      theme_bw(base_family = font_MAC)+theme_custom()+
+      ggtitle("")+
+      xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+      theme(legend.position="top",legend.justification = c(1,0))+
+      theme(text = element_text(family = font_MAC))
+  }else{
+    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+      theme_bw()+theme_custom()+
+      ggtitle("")+
+      xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+      theme(legend.position="top",legend.justification = c(1,0))
+  }
+
+  Currentalphas<-c()
+  size.hcr.points<-c()
+  for(i in 1:length(res.list)){
+    Currentalphas<-rbind(Currentalphas,tibble(x=res.list[[i]]$Current_Status[1]*100,y=res.list[[i]]$alpha))
+    size.hcr.points<- c(size.hcr.points, (5-(i-1)))
+  }
+  col.hcr.points <- seq(2,1+length(res.list))
+
+  for(i in 1:length(res.list)){
+    res <- res.list[[i]]
+    data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
+                       value_ratio=res$BRP)
+    BT <- res$arglist$BT
+    PL <- res$arglist$PL
+    PB <- res$arglist$PB
+    tune.par <- res$arglist$tune.par
+    beta <- res$arglist$beta
+    empir.dist<- res$arglist$empir.dist
+    simple.empir<-res$arglist$simple.empir
+    if(is.null(res$arglist$BTyear)) ccdata.plot<-res$arglist$ccdata
+    else ccdata.plot<-res$arglist$ccdata[which(res$arglist$ccdata$year <= res$arglist$BTyear),]
+
+    if(!empir.dist) g.hcr <- g.hcr +
+      stat_function(fun=type2_func_wrapper,
+                    args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+                    color=rgb(0+((i-1)/5),0+((i-1)/5),0+((i-1)/5)),size=1,linetype="solid")
+    else g.hcr <- g.hcr +
+      stat_function(fun=type2_func_empir_wrapper,
+                    args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
+                    color=rgb(0+((i-1)/5),0+((i-1)/5),0+((i-1)/5)),size=1,linetype="solid")
+    g.hcr <- g.hcr +
+      geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 1-((i-1)/5), linetype = ifelse(i==1,"solid",i*11))
+
+  }
+  g.hcr <- g.hcr +
+    geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=size.hcr.points)
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+    g.hcr <- g.hcr+
+      ggrepel::geom_label_repel(data=data_BRP,                                              mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr,family = font_MAC),
+                                box.padding=0.5)+
+      scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+  }else{
+    g.hcr <- g.hcr+
+      ggrepel::geom_label_repel(data=data_BRP,                                              mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr),
+                                box.padding=0.5)+
+      scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+  }
+
+  # 漁獲量のトレンドとABC ----
+  CatchABC<-seq(1:(length(res.list)+1))
+  g.catch <- res.list[[1]]$arglist$ccdata %>% ggplot() +
+    geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+    geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+    scale_color_manual(name="",values=rev(CatchABC),labels=rev(legend.labels2))
+
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){# plot 設定 for mac
+    g.catch <- g.catch +
+      geom_path(aes(x=year,y=catch),size=1)+
+      ylab("漁獲量（トン）")+xlab(year.axis.label)+
+      ggtitle("")+
+      ylim(0,NA)+ theme_custom()+
+      theme(legend.position="top",legend.justification = c(1,0)) +
+      theme(text = element_text(family = font_MAC))
+  }else{
+    g.catch <- g.catch +
+      geom_path(aes(x=year,y=catch),size=1)+
+      ylab("漁獲量（トン）")+xlab(year.axis.label)+
+      ggtitle("")+
+      ylim(0,NA)+ theme_custom()+
+      theme(legend.position="top",legend.justification = c(1,0))
+  }
+
+  # 出力設定 ----
+  if(isTRUE(abc4)){
+    graph.component <- list(g.cpue4,g.cpue,g.hcr.g.catch)
+    graph.combined <- gridExtra::grid.arrange(g.cpue4,g.cpue,g.hcr,g.catch,ncol=2,top=stock.name)
+    return(list(graph.component=graph.component,graph.combined=graph.combined))
+  }  else{
+    graph.component <- list(g.cpue,g.hcr,g.catch)
+    graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr,g.catch,ncol=3,top=stock.name)
+    return(list(graph.component=graph.component,graph.combined=graph.combined))
+  }
+}
+
 #' 2系のABC計算をBTオプションありで計算した結果を比較してプロットするための関数
 #'
 #' @param res calc_abc2の返り値、ただしBTyear!=NULL
