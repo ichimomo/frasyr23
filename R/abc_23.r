@@ -1438,7 +1438,7 @@ theme_custom <- function(){
 #' @export
 #'
 
-plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, hcrdist=FALSE){
+plot_abc2_fixHC_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, hcrdist=FALSE,outABCs=FALSE){
   # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
   # 漁期年/年設定 ----
@@ -1863,25 +1863,26 @@ plot_abc2_multiBT <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fi
   }
 
   # 出力設定 ----
+  #if(outABCs) print(ABCs)
   if(isTRUE(hcrdist)){
     if(isTRUE(abc4)){
       graph.component <- list(g.cpue4,g.cpue,g.hcr.dist,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue4,g.cpue,g.hcr.dist,g.hcr,g.catch,ncol=3,top=stock.name)
-      return(list(graph.component=graph.component,graph.combined=graph.combined))
+      return(list(ABCs=ABCs,graph.component=graph.component,graph.combined=graph.combined))
     }else{
       graph.component <- list(g.cpue,g.hcr.dist,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr.dist,g.hcr,g.catch,ncol=2,top=stock.name)
-      return(list(graph.component=graph.component,graph.combined=graph.combined))
+      return(list(ABCs=ABCs,graph.component=graph.component,graph.combined=graph.combined))
     }
   }else{
     if(isTRUE(abc4)){
       graph.component <- list(g.cpue4,g.cpue,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue4,g.cpue,g.hcr,g.catch,ncol=2,top=stock.name)
-      return(list(graph.component=graph.component,graph.combined=graph.combined))
+      return(list(ABCs=ABCs,graph.component=graph.component,graph.combined=graph.combined))
     }else{
       graph.component <- list(g.cpue,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr,g.catch,ncol=3,top=stock.name)
-      return(list(graph.component=graph.component,graph.combined=graph.combined))
+      return(list(ABCs=ABCs,graph.component=graph.component,graph.combined=graph.combined))
     }
   }
 }

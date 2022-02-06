@@ -7,7 +7,7 @@ ccdata.stock<-list()
 for(i in 1:length(unique(datafile$Stock))){
   ccdata.stock[[i]] <- datafile %>% filter(Stock==Stocks[i])
 }
-
+ABCs<-c()
 names(ccdata.stock[[1]])
 for(i in 1:length(Stocks)){
   if(max(ccdata.stock[[i]]$Year)-min(ccdata.stock[[i]]$Year)<=4) next
@@ -15,9 +15,10 @@ for(i in 1:length(Stocks)){
   cpuetmp <- cpuetmp[-na.omit(cpuetmp)]
   if(length(cpuetmp) <=4 ) next
   ccdata<-data.frame(year=ccdata.stock[[i]]$Year,cpue=ccdata.stock[[i]]$CPUE,catch=ccdata.stock[[i]]$Catch)
-  filename<-paste0("~/Desktop/",Stocks[i],".png")
-  resabc2 <-calc_abc2(ccdata,BTyear=(max(ccdata$year)-4),summary_abc = F)
+  filename<-paste0("~/Desktop/2kei-stocks/",Stocks[i],"_2ndbest_bt5year.png")
+  resabc2 <-calc_abc2(ccdata,BTyear=(max(ccdata$year)-4),tune.par = c(0.4,0.4,0.8),summary_abc = F)
   #resabc2 <-calc_abc2(ccdata,summary_abc = F)
-  graph_abc2 <-plot_abc2(resabc2,BThcr = T,detABC = 0)
-  ggsave(width=420,height=150,dpi=200,units="mm", graph_abc2[[2]],file=filename)
+  graph_abc2 <-plot_abc2_fixHC_seqOut(resabc2,outABCs = T)
+  ABCs<-graph_abc2[[1]]
+  ggsave(width=420,height=150,dpi=200,units="mm", graph_abc2[[3]],file=filename)
 }
