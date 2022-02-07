@@ -301,6 +301,19 @@ calc_abc2 <- function(
   return(output)
 }
 
+#' 2系のCPUEデータに対してABCを返す関数
+#'
+#' @param cD cpueの値
+#' @param BT 目標水準
+#' @param PL 目標水準に対する限界水準の割合
+#' @param PB 目標水準に対する禁漁水準の割合
+#' @param AAV AAV
+#' @param tune.par チューニングパラメタ
+#' @param beta 保守的漁獲の割合
+#'
+#' @export
+#'
+#'
 type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
     delta1 <- tune.par[1]   # velocity to go to BT
     delta2 <- tune.par[2]   # correction factor when D <= BL
@@ -322,6 +335,21 @@ type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0
     #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
 }
 
+#' 2系資源計算を経験分布で計算する時のCPUEデータに対してABCを返す関数
+#'
+#' @param cD cpueの値
+#' @param cpue cpue時系列
+#' @param simple 旧2系的な経験分布にする場合TRUE
+#' @param BT 目標水準
+#' @param PL 目標水準に対する限界水準の割合
+#' @param PB 目標水準に対する禁漁水準の割合
+#' @param AAV AAV
+#' @param tune.par チューニングパラメタ
+#' @param beta 保守的漁獲の割合
+#'
+#' @export
+#'
+#'
 type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
   delta1 <- tune.par[1]   # velocity to go to BT
   delta2 <- tune.par[2]   # correction factor when D <= BL
@@ -377,11 +405,17 @@ type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tun
   #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
 }
 
+#' 2系のCPUEの確率点に対して連続的にABCを返す関数
+#'
+#' @export
 type2_func_wrapper <- function(DL,type=NULL,...){
     if(type=="%") DL <- DL/100
     purrr::map_dbl(DL,type2_func,...)
 }
 
+#' 2系を経験分布で計算する時、CPUEの確率点に対して連続的にABCを返す関数
+#'
+#' @export
 type2_func_empir_wrapper <- function(DL,cpue,simple,type=NULL,...){
   if(type=="%") DL <- DL/100
   purrr::map_dbl(DL,type2_func_empir,cpue=cpue,simple=simple,...)
@@ -509,6 +543,7 @@ simple_ecdf <- function(cpue, x){
   return(percent)
 }
 
+
 simple_ecdf_seq<-function(cpue){
   cum.cpue <-c()
   i<-1
@@ -627,8 +662,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     }else{
       legend.labels <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
     }
-    label.y.position<-c(0.5,1.0,0.7)
-    label.y.nudge<-c(0.1,0.1,0.1)
+    #label.y.position<-c(0.5,0.4,0.8)
+    #label.y.nudge<-c(0.1,-0.1,0.1)
 
     linetype.set <- c("dashed","longdash","solid")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
@@ -662,8 +697,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         col.BRP <- c("#00533E","#edb918","#C73C2E")
       }
 
-      label.y.position<-c(0.5,1.0)
-      label.y.nudge<-c(0.1,0.1)
+      #label.y.position<-c(0.5,0.4)
+      #label.y.nudge<-c(0.1,-0.1)
     }
 
     # ABC決定可能/不可能設定 ----
@@ -701,7 +736,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       minyears <- min(years)-2
     }
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
       g.cpue <- ccdata %>% ggplot() +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
@@ -785,7 +820,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       g.cpue4 <- g.cpue4 + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
      }
 
-     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
        g.cpue4 <- ccdata %>% ggplot() +
          geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
          geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
@@ -890,10 +925,9 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     #漁獲管理規則案 HCR.Dist ----
     current_index_col <- "#1A4472"
 
-    model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
-    if(!empir.dist) {
-      model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
-    }else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
+    model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA)
+    if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm = T))
+    else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
       if(!simple.empir){
         cum.cpue4 <- ecdf(ccdata.plot$cpue)
         cum.probs <- cum.cpue4(model_dist$cpue)
@@ -926,7 +960,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       guides(colour="none")+
       coord_flip()
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
     g.hcr.dist <- g.hcr.dist +
       geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color=current_index_col,size=1,linetype="dashed")+
       geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(dens)*0.85,family=font_MAC,label="(現在の資源水準)"),color=current_index_col,size=4)
@@ -936,7 +970,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(dens)*0.85,label="(現在の資源水準)"),color=current_index_col,size=4)
     }
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
     g.hcr.dist <- g.hcr.dist +  ggtitle("")+
       scale_x_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
       #scale_y_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
@@ -1385,7 +1419,7 @@ theme_custom <- function(){
 #' 複数の2系ABC計算結果を同時プロットするための関数
 #'
 #' @param res.list calc_abc2の返り値。比較結果が多すぎるとみづらくなるので一度に比較するのは５つまで。
-#' @param fishseason  X軸のラベルを変更（0なら年、1なら漁期年)
+#' @param fishseason  X軸のラベルを変更（0なら年、1なら漁期年）
 #' @param abc4  北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE））
 #' @param cpueunit  資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）
 #' @param leftalign  資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）
@@ -1418,9 +1452,9 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
     labels2.2 <- c(labels2.2,paste(i,"番目",max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
   }
 
-  legend.labels2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),labels2)
-  legend.labels2.1 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),labels2.1)
-  legend.labels2.2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),labels2.2)
+  legend.labels2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),rev(labels2))
+  legend.labels2.1 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),rev(labels2.1))
+  legend.labels2.2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),rev(labels2.2))
 
   col.BRP.hcr <- col.BRP
   data_BRP_hcr <- tibble(BRP=names(res.list[[1]]$BRP),value_obs=res.list[[1]]$Obs_BRP, value_ratio=res.list[[1]]$BRP)
@@ -1540,7 +1574,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   }
 
   # 漁獲量のトレンドとABC ----
-  CatchABC<-seq(1:(length(res.list)+1))
+  CatchABC<-c(1,rev(seq(2,(length(res.list)+1))))
   g.catch <- res.list[[1]]$arglist$ccdata %>% ggplot() +
     geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
     geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
@@ -1572,5 +1606,467 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
     graph.component <- list(g.cpue,g.hcr,g.catch)
     graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr,g.catch,ncol=3,top=stock.name)
     return(list(graph.component=graph.component,graph.combined=graph.combined))
+  }
+}
+
+#' 2系のABC計算をBTyearオプションありで計算（資源水準導出のためのCPUE時系列制御）した結果をBTyearなしの場合まで連続的に比較してプロットするための関数
+#'
+#' @param res calc_abc2の返り値、ただしBTyear!=NULL
+#' @param fishseason  X軸のラベルを変更（0なら年、1なら漁期年)
+#' @param abc4  北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE）
+#' @param fillarea  資源量指標値の図にkobeプロットに似た色を塗る（TRUEなら塗る、デフォルトはFALSE）
+#' @param cpueunit  資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）
+#' @param leftalign  資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）
+#' @param RP  資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）
+#' @export
+#'
+
+plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, hcrdist=FALSE){
+  # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
+
+  # 漁期年/年設定 ----
+  ifelse(fishseason==1, year.axis.label <- "漁期年", year.axis.label <- "年")
+  # Setting cpue dist
+  empir.dist <- res$arglist$empir.dist
+  simple.empir <- res$arglist$simple.empir
+  smooth.cpue <- res$arglist$smooth.cpue
+  smooth.dist <- res$arglist$smooth.dist
+  # plot
+  ccdata <- res$arglist$ccdata
+  ccdata_forBt <- res$arglist$ccdata
+  BTyear <- res$arglist$BTyear
+  if(is.null(BTyear)) stop("This function works if BTyear was set in calc_abc2.\n")
+  ccdata_forBt <- ccdata[which(ccdata$year <= BTyear),]
+  n.catch <- res$arglist$n.catch
+  years <- ccdata$year
+  last.year <- rev(years)[1]
+
+  BT <- res$arglist$BT
+  PL <- res$arglist$PL
+  PB <- res$arglist$PB
+  tune.par <- res$arglist$tune.par
+  beta <- res$arglist$beta
+
+  res.multiBTyear<-list()
+  ABCs<-c()
+  ABClabels<-c()
+  ccdata.plotbt<-list()
+  for(i in 0:(last.year-BTyear-1)){
+    if(i==0) res.multiBTyear[[i+1]]<- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = NULL,summary_abc=FALSE)
+    else res.multiBTyear[[i+1]]<- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = last.year-i,summary_abc=FALSE)
+    ABCs<-c(ABCs,res.multiBTyear[[i+1]]$ABC)
+    label <-paste0(i,"年前基準ABC")
+    ABClabels<-c(ABClabels,label)
+    ccdata.plotbt[[i+1]]<-res.multiBTyear[[i+1]]$arglist$ccdata[which(res.multiBTyear[[i+1]]$arglist$ccdata$year <= res.multiBTyear[[i+1]]$arglist$BTyear),]
+  }
+
+  data_catch_ori <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),                              type=c(rep(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),n.catch),"ABC"))
+
+  btlabel<-paste0(last.year-BTyear,"年前基準ABC")
+
+  data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,rep(last.year+2,last.year-BTyear+1)),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,rev(ABCs)),                              type=c(rep(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),n.catch),btlabel,rev(ABClabels)))
+
+  data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
+                     value_ratio=res$BRP)
+  data_percent <- tibble(x=rep(max(years)+2,11),
+                         y=res$Obs_percent,
+                         label=str_c(c(0.05,seq(from=0.1,to=0.9,by=0.1),0.95)*100,"%"))
+  data_percent_even <- tibble(x=rep(max(years)+2,6),
+                              y=res$Obs_percent_even,
+                              label=str_c(c(0.05,seq(from=0.2,to=0.8,by=0.2),0.95)*100,"%"))
+  font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
+
+  legend.labels <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
+
+  linetype.set <- c("dashed","longdash","solid")
+  legend.labels2 <-c(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),"ABC")
+  legend.labels2bt <-c(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),btlabel,rev(ABClabels))
+
+  col.BRP.hcr <- col.BRP
+  data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
+
+  # PB=0の時の禁漁水準削除設定 ----
+  if(res$BRP[3] == 0) {
+
+    legend.labels <- c("目標管理基準値（目標水準）","限界管理基準値（限界水準）")
+
+    linetype.set <- c("22","41")
+    if(abc4==TRUE){
+      col.BRP <- c("blue","red")
+    }else{
+      col.BRP <- c("#00533E","#edb918")
+    }
+    data_BRP2 <- data_BRP
+    data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],value_ratio=res$BRP[-3])
+  }else{
+    if(abc4==TRUE){
+      col.BRP <- c("blue","red","orange")
+    }else{
+      col.BRP <- c("#00533E","#edb918","#C73C2E")
+    }
+  }
+
+  # ABC決定可能/不可能設定 ----
+  g.catch.title <- "漁獲量のトレンドとABC"
+  g.catch.abcpoint <- "ABC"
+  legend.labels2 <- legend.labels2bt
+
+  #資源量指標値のトレンド ----
+  if(fillarea==TRUE){
+    #colfill <- c("olivedrab2", "khaki1", "khaki2", "indianred1")
+    colfill <- c("olivedrab2", "khaki1", "white", "white")
+  }else{
+    colfill <- c("white", "white", "white", "white")
+  }
+
+  #minyearを追加しポリゴンをコントロール。最後にxlimで制御
+  if(leftalign==TRUE){
+    minyears <- min(ccdata[!is.na(ccdata$cpue),]$year)
+  }else{
+    minyears <- min(years)-2
+  }
+
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    g.cpue <- ccdata %>% ggplot() +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[3],data_BRP2$value_obs[3],data_BRP2$value_obs[2],data_BRP2$value_obs[2])), aes(x=x,y=y), fill=colfill[3]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(0,0,data_BRP2$value_obs[3],data_BRP2$value_obs[3])), aes(x=x,y=y), fill=colfill[4]) +
+      geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
+      geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
+      geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,family=font_MAC,label="(資源量水準)"),size=4)
+    if(RP==TRUE){
+      g.cpue <- g.cpue +
+        geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=rev(col.BRP), linetype=rev(linetype.set)), size = 0.9*1.5)+
+        #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels,family = font_MAC), box.padding=0.5, nudge_x=1)+
+        scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
+        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
+    }else{
+      g.cpue <- g.cpue +
+        geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+        scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
+    }
+    g.cpue <- g.cpue +
+      geom_path(aes(x=year,y=cpue),size=1)+
+      theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
+      ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()
+
+    g.cpue <- g.cpue +
+      ggtitle("")+
+      theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines')) +
+      theme(text = element_text(family = font_MAC))
+    if(leftalign==TRUE){
+      g.cpue <- g.cpue + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
+    }
+  }else{
+    g.cpue <- ccdata %>% ggplot() +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[3],data_BRP2$value_obs[3],data_BRP2$value_obs[2],data_BRP2$value_obs[2])), aes(x=x,y=y), fill=colfill[3]) +
+      geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(0,0,data_BRP2$value_obs[3],data_BRP2$value_obs[3])), aes(x=x,y=y), fill=colfill[4]) +
+      geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
+      geom_text(data=data_percent_even, aes(x=x,y=y*1.05,label=label))+
+      geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,label="(資源量水準)"),size=4)
+    if(RP==TRUE){
+      g.cpue <- g.cpue +
+        geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=rev(col.BRP), linetype=rev(linetype.set)), size = 0.9*1.5)+
+        #ggrepel::geom_label_repel(data=data_BRP, mapping=aes(x=min(years)+0.5, y=value_obs+0.5, label=legend.labels), box.padding=0.5, nudge_x=1)+
+        scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
+        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
+    }else{
+      g.cpue <- g.cpue +
+        geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+        scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
+    }
+    g.cpue <- g.cpue +
+      geom_path(data=ccdata, aes(x=year,y=cpue),size=1)+
+      theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
+      ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()
+    g.cpue <- g.cpue +
+      ggtitle("") + theme(legend.position="top", legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'),legend.justification=c(1,0))
+    if(leftalign==TRUE){
+      g.cpue <- g.cpue + xlim(minyears, max(ccdata[!is.na(ccdata$cpue),]$year)+4)
+    }
+  }
+
+  if(isTRUE(abc4)){
+    hanrei_label <- rev(c(paste(min(ccdata[!is.na(ccdata$cpue),]$year),"～",max(ccdata[!is.na(ccdata$cpue),]$year),"年", gsub("年","",year.axis.label), "の平均水準",sep=""),"過去最低値"))  ##OS200702
+    g.cpue4 <- ccdata %>% ggplot() +
+      geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
+      geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
+      geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,label="(指標値の水準)"),size=4)+
+      geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs[1], color=col.BRP[2], linetype ="twodash"), size = 0.9*1.5, show.legend =TRUE)+
+      geom_hline(mapping=aes(yintercept=min(cpue, na.rm=TRUE), color=col.BRP[1], linetype ="longdash"), size = 0.9*1.5, show.legend =TRUE)+
+      #ggrepel::geom_label_repel(mapping=aes(x=c(min(years, na.rm=TRUE)+0.5,min(years, na.rm=TRUE)+0.5), y=c(min(cpue, na.rm=TRUE),data_BRP$value_obs[1]), label=rev(c("平均水準","過去最低値"))),
+      #                          box.padding=0.5, nudge_x=1)+
+      scale_linetype_manual(name="", values=(c("twodash","longdash")), labels=hanrei_label) +
+      scale_color_manual(name="",values=rev(c(col.BRP)), labels=hanrei_label)+
+      geom_path(aes(x=year,y=cpue),linetype=1,size=1)+
+      theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
+      ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
+      ggtitle("")+
+      theme(legend.position="top",legend.justification = c(1,0), legend.key.width = unit(5, 'lines'))
+    if(leftalign==TRUE){
+      g.cpue4 <- g.cpue4 + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
+    }
+
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
+      g.cpue4 <- ccdata %>% ggplot() +
+        geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
+        geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
+        geom_text(aes(x=max(years)-1,y=min(data_percent_even$y)*0.75,family=font_MAC,label="(指標値の水準)"),size=4)+
+        geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs[1], color=col.BRP[2]), size = 0.9*1.5, linetype = 2)+
+        geom_hline(mapping=aes(yintercept=min(cpue, na.rm=TRUE), color=col.BRP[1]), size = 0.9*2, linetype = 4)+
+        #ggrepel::geom_label_repel(mapping=aes(x=c(min(years, na.rm=TRUE)+0.5,min(years, na.rm=TRUE)+0.5), y=c(min(cpue, na.rm=TRUE),data_BRP$value_obs[1]), label=rev(c("平均水準","過去最低値"))),
+        #                          box.padding=0.5, nudge_x=1)+
+        scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(paste(min(ccdata[!is.na(ccdata$cpue),]$year),"～",max(ccdata[!is.na(ccdata$cpue),]$year),"の平均水準",sep=""),"過去最低値")))+
+        geom_path(aes(x=year,y=cpue),linetype=1,size=1)+
+        theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
+        ggtitle("資源量指標値のトレンド")+
+        ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()+
+        ggtitle("")+
+        theme(legend.position="top",legend.justification = c(1,0))+
+        theme(text = element_text(family = font_MAC))
+      if(leftalign==TRUE){
+        g.cpue4 <- g.cpue4 + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
+      }
+    }
+  }
+
+  #漁獲管理規則案 HCR ----
+  ifelse(is.null(BTyear),ccdata.plot<-ccdata,ccdata.plot<-ccdata_forBt)
+  if(!empir.dist){
+    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+      #stat_function(fun=type2_func_wrapper,
+      #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+      #              color="gray")+
+      stat_function(fun=type2_func_wrapper,
+                    args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+                    color="black",size=1)+
+      geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color=2,size=4)+
+
+      geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
+      ggrepel::geom_label_repel(data=data_BRP,
+                                mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels),
+                                box.padding=0.5)+ #, nudge_y=1
+      scale_color_manual(name="",values=rev(c(col.BRP)), guide=FALSE)+#,labels=rev(c(legend.labels)))+
+      theme_bw()+theme_custom()+
+      ggtitle("")+
+      xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+      theme(legend.position="top",legend.justification = c(1,0))
+
+    ## plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+      g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+        #stat_function(fun=type2_func_wrapper,
+        #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+        #                  color="gray")+
+        stat_function(fun=type2_func_wrapper,
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+                      color="black",size=1)+
+        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4) +
+
+        geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
+        ggrepel::geom_label_repel(data=data_BRP,
+                                  mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
+                                  box.padding=0.5, nudge_y=1)+
+        scale_color_manual(name="",values=rev(c(col.BRP)), guide="none")+ #,labels=rev(c(legend.labels)))+
+        theme_bw()+theme_custom()+
+        ggtitle("")+
+        xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+        theme(legend.position="top",legend.justification = c(1,0)) +
+        theme(text = element_text(family = font_MAC))
+    }
+
+    for(i in 1:(last.year-BTyear)){
+      g.hcr <- g.hcr +
+        stat_function(fun=type2_func_wrapper,
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.multiBTyear[[i]]$AAV,type="%"), color="gray",size=0.5,linetype=i+1)+
+        geom_point(aes(x=res.multiBTyear[[i]]$Current_Status[1]*100,y=res.multiBTyear[[i]]$alpha),color=i+2,size=3,shape=i+1)
+    }
+
+  }else{
+    # empir.dist=T ----
+    g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+      #stat_function(fun=type2_func_wrapper,
+      #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+      #              color="gray")+
+      stat_function(fun=type2_func_empir_wrapper,
+                    args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
+                    color="black",size=1) +
+      geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
+      geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
+      ggrepel::geom_label_repel(data=data_BRP,
+                                mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
+                                box.padding=0.5, nudge_y=1)+
+      scale_color_manual(name="",values=rev(c(col.BRP)), guide="none" )+ #,labels=rev(c(legend.labels)))+
+      theme_bw()+theme_custom()+
+      ggtitle("")+
+      xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+      theme(legend.position="top",legend.justification = c(1,0))
+
+    ## plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+      g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+        #stat_function(fun=type2_func_wrapper,
+        #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
+        #              color="gray")+
+        stat_function(fun=type2_func_empir_wrapper,
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
+                      color="black",size=1) +
+        geom_point(aes(x=res$Current_Status[1]*100,y=res$alpha),color="red",size=4)+
+        geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)+
+        ggrepel::geom_label_repel(data=data_BRP,
+                                  mapping=aes(x=value_ratio*100, y=1.1, label=legend.labels,family = font_MAC),
+                                  box.padding=0.5, nudge_y=1)+
+        scale_color_manual(name="",values=rev(c(col.BRP)), guide="none" )+ #,labels=rev(c(legend.labels)))+
+        theme_bw()+theme_custom()+
+        ggtitle("")+
+        xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
+        theme(legend.position="top",legend.justification = c(1,0)) +
+        theme(text = element_text(family = font_MAC))
+
+    }
+
+    for(i in 1:(last.year-BTyear)){
+      g.hcr <- g.hcr +
+        stat_function(fun=type2_func_empir_wrapper,
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.multiBTyear[[i]]$AAV,cpue=ccdata.plotbt[[i]]$cpue,simple=simple.empir,type="%"), color=rgb(0,0,0,alpha = (i/10)),size=0.5,linetype="dashed")+
+        geom_point(aes(x=res.multiBTyear[[i]]$Current_Status[1]*100,y=res.multiBTyear[[i]]$alpha),color=i+2,size=3,shape=i+1)
+
+    }
+  }
+
+  #漁獲管理規則案 HCR.Dist ----
+  current_index_col <- "#1A4472"
+  ccdata.plot<- ccdata_forBt
+  model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm = T), by=0.1),  dens=NA)
+  if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm=T))
+  else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
+    if(!simple.empir){
+      cum.cpue4 <- ecdf(ccdata.plot$cpue)
+      cum.probs <- cum.cpue4(model_dist$cpue)
+    }
+    else{
+      cum.probs<-c()
+      for(i in 1:length(model_dist$cpue)){
+        cum.probs <- c(cum.probs,simple_ecdf(ccdata.plot$cpue,model_dist$cpue[i]))
+      }
+    }
+    probs<-c(cum.probs[1])
+    for(j in 2:length(cum.probs)){
+      if(cum.probs[j-1]!=cum.probs[j]) tmp <- cum.probs[j]-cum.probs[j-1]
+      else tmp <- probs[j-1]
+      probs<-c(probs,tmp)
+    }
+    #plot(model_dist$cpue,probs)
+    model_dist$dens<-probs/sum(probs)
+  }
+
+  g.hcr.dist <- ggplot(data=model_dist)+
+    #stat_function(fun=dnorm,args=list(mean=mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue)),color="black",size=1)
+    geom_line(aes(x=cpue,y=dens))+
+    geom_area(data=filter(model_dist, cpue < res$Current_Status[2]), aes(x=cpue, y=dens), fill="grey")
+
+  g.hcr.dist <-  g.hcr.dist +
+    geom_vline(data=data_BRP,mapping=aes(xintercept=value_obs,color=BRP), size = 0.9*1.5, linetype = linetype.set) +
+    scale_linetype_manual(name="", values=rev(c(linetype.set)), labels=rev(c(legend.labels))) +
+    scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))+
+    guides(colour="none")+
+    coord_flip()
+
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    g.hcr.dist <- g.hcr.dist +
+      geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color=current_index_col,size=1,linetype="dashed")+
+      geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(dens)*0.85,family=font_MAC,label="(現在の資源水準)"),color=current_index_col,size=4)
+  }else{
+    g.hcr.dist <- g.hcr.dist +
+      geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color=current_index_col,size=1,linetype="dashed")+
+      geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(dens)*0.85,label="(現在の資源水準)"),color=current_index_col,size=4)
+  }
+
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    g.hcr.dist <- g.hcr.dist +  ggtitle("")+
+      scale_x_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
+      #scale_y_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
+      xlab("資源量指標値")+ylab("")+
+      theme_bw()+theme_custom()+
+      theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'),axis.text.x = element_blank()) +
+      theme(text = element_text(family = font_MAC))
+  }else{
+    g.hcr.dist <- g.hcr.dist +  ggtitle("")+
+      scale_x_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
+      #scale_y_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
+      xlab("資源量指標値")+ylab("")+
+      theme_bw()+theme_custom()+
+      theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'),axis.text.x = element_blank())
+  }
+
+  #漁獲量のトレンドとABC/算定漁獲量 ----
+
+  CatchABC<-seq((last.year-BTyear+2):1)
+  #CatchABC<-c(1,2)
+  g.catch <- ccdata %>% ggplot() +
+    geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+    geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+    #ggrepel::geom_label_repel(data=data_catch,
+    #                          mapping=aes(x=max(year)-5, y=catch, label=legend.labels2),
+    #                          box.padding=0.5, nudge_y=1)+
+    #scale_color_manual(name="",values=c(1,2),labels=legend.labels2)+
+    scale_color_manual(name="",values=rev(CatchABC),labels=rev(legend.labels2))+
+    # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
+    #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
+    #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
+    #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
+    geom_path(aes(x=year,y=catch),size=1)+
+    ylab("漁獲量（トン）")+xlab(year.axis.label)+
+    ggtitle("")+
+    ylim(0,NA)+ theme_custom()+
+    theme(legend.position="top",legend.justification = c(1,0))
+
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){# plot 設定 for mac
+    g.catch <- ccdata %>% ggplot() +
+      geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+      geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+      #ggrepel::geom_label_repel(data=data_catch,
+      #                          mapping=aes(x=max(year)-5,y=catch[1],label=legend.labels2,family=font_MAC),
+      #                          box.padding=0.5, nudge_y=1)+
+      #scale_color_manual(name="",values=c("black","red"),labels=legend.labels2)+
+      scale_color_manual(name="",values=rev(CatchABC),labels=rev(legend.labels2))+
+      # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
+      #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
+      #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
+      #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
+      geom_path(aes(x=year,y=catch),size=1)+
+      ylab("漁獲量（トン）")+xlab(year.axis.label)+
+      ggtitle("")+
+      ylim(0,NA)+ theme_custom()+
+      theme(legend.position="top",legend.justification = c(1,0)) +
+      theme(text = element_text(family = font_MAC))
+  }
+
+  # 出力設定 ----
+  #if(outABCs) print(ABCs)
+  outABC <- data.frame(label=c(ABClabels,btlabel),ABC=c(ABCs,res$ABC))
+  if(isTRUE(hcrdist)){
+    if(isTRUE(abc4)){
+      graph.component <- list(g.cpue4,g.cpue,g.hcr.dist,g.hcr,g.catch)
+      graph.combined <- gridExtra::grid.arrange(g.cpue4,g.cpue,g.hcr.dist,g.hcr,g.catch,ncol=3,top=stock.name)
+      return(list(ABC=outABC,graph.component=graph.component,graph.combined=graph.combined))
+    }else{
+      graph.component <- list(g.cpue,g.hcr.dist,g.hcr,g.catch)
+      graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr.dist,g.hcr,g.catch,ncol=2,top=stock.name)
+      return(list(ABC=outABC,graph.component=graph.component,graph.combined=graph.combined))
+    }
+  }else{
+    if(isTRUE(abc4)){
+      graph.component <- list(g.cpue4,g.cpue,g.hcr,g.catch)
+      graph.combined <- gridExtra::grid.arrange(g.cpue4,g.cpue,g.hcr,g.catch,ncol=2,top=stock.name)
+      return(list(ABC=outABC,graph.component=graph.component,graph.combined=graph.combined))
+    }else{
+      graph.component <- list(g.cpue,g.hcr,g.catch)
+      graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr,g.catch,ncol=3,top=stock.name)
+      return(list(ABC=outABC,graph.component=graph.component,graph.combined=graph.combined))
+    }
   }
 }
