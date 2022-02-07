@@ -1452,9 +1452,9 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
     labels2.2 <- c(labels2.2,paste(i,"番目",max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
   }
 
-  legend.labels2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),labels2)
-  legend.labels2.1 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),labels2.1)
-  legend.labels2.2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),labels2.2)
+  legend.labels2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),rev(labels2))
+  legend.labels2.1 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),rev(labels2.1))
+  legend.labels2.2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),rev(labels2.2))
 
   col.BRP.hcr <- col.BRP
   data_BRP_hcr <- tibble(BRP=names(res.list[[1]]$BRP),value_obs=res.list[[1]]$Obs_BRP, value_ratio=res.list[[1]]$BRP)
@@ -1574,7 +1574,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   }
 
   # 漁獲量のトレンドとABC ----
-  CatchABC<-seq(1:(length(res.list)+1))
+  CatchABC<-c(1,rev(seq(2,(length(res.list)+1))))
   g.catch <- res.list[[1]]$arglist$ccdata %>% ggplot() +
     geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
     geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
@@ -1621,7 +1621,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' @export
 #'
 
-plot_abc2_fixHC_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, hcrdist=FALSE,outABCs=FALSE){
+plot_abc2_fixHC_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, hcrdist=FALSE){
   # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
   # 漁期年/年設定 ----
@@ -1660,11 +1660,11 @@ plot_abc2_fixHC_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALS
     ccdata.plotbt[[i+1]]<-res.multiBT[[i+1]]$arglist$ccdata[which(res.multiBT[[i+1]]$arglist$ccdata$year <= res.multiBT[[i+1]]$arglist$BTyear),]
   }
 
-  data_catch_ori <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),                              type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
+  data_catch_ori <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),                              type=c(rep(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),n.catch),"ABC"))
 
   btlabel<-paste0(last.year-BTyear,"年前基準ABC")
 
-  data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,rep(last.year+2,last.year-BTyear+1)),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,rev(ABCs)),                              type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),btlabel,rev(ABClabels)))
+  data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,rep(last.year+2,last.year-BTyear+1)),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,rev(ABCs)),                              type=c(rep(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),n.catch),btlabel,rev(ABClabels)))
 
   data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
                      value_ratio=res$BRP)
@@ -1679,8 +1679,8 @@ plot_abc2_fixHC_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALS
   legend.labels <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
 
   linetype.set <- c("dashed","longdash","solid")
-  legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
-  legend.labels2bt <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),btlabel,rev(ABClabels))
+  legend.labels2 <-c(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),"ABC")
+  legend.labels2bt <-c(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),btlabel,rev(ABClabels))
 
   col.BRP.hcr <- col.BRP
   data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
@@ -2047,25 +2047,26 @@ plot_abc2_fixHC_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALS
 
   # 出力設定 ----
   #if(outABCs) print(ABCs)
+  outABC <- data.frame(label=c(ABClabels,btlabel),ABC=c(ABCs,res$ABC))
   if(isTRUE(hcrdist)){
     if(isTRUE(abc4)){
       graph.component <- list(g.cpue4,g.cpue,g.hcr.dist,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue4,g.cpue,g.hcr.dist,g.hcr,g.catch,ncol=3,top=stock.name)
-      return(list(ABCs=ABCs,graph.component=graph.component,graph.combined=graph.combined))
+      return(list(ABC=outABC,graph.component=graph.component,graph.combined=graph.combined))
     }else{
       graph.component <- list(g.cpue,g.hcr.dist,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr.dist,g.hcr,g.catch,ncol=2,top=stock.name)
-      return(list(ABCs=ABCs,graph.component=graph.component,graph.combined=graph.combined))
+      return(list(ABC=outABC,graph.component=graph.component,graph.combined=graph.combined))
     }
   }else{
     if(isTRUE(abc4)){
       graph.component <- list(g.cpue4,g.cpue,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue4,g.cpue,g.hcr,g.catch,ncol=2,top=stock.name)
-      return(list(ABCs=ABCs,graph.component=graph.component,graph.combined=graph.combined))
+      return(list(ABC=outABC,graph.component=graph.component,graph.combined=graph.combined))
     }else{
       graph.component <- list(g.cpue,g.hcr,g.catch)
       graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr,g.catch,ncol=3,top=stock.name)
-      return(list(ABCs=ABCs,graph.component=graph.component,graph.combined=graph.combined))
+      return(list(ABC=outABC,graph.component=graph.component,graph.combined=graph.combined))
     }
   }
 }
