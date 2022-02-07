@@ -301,6 +301,19 @@ calc_abc2 <- function(
   return(output)
 }
 
+#' 2系のCPUEデータに対してABCを返す関数
+#'
+#' @param cD cpueの値
+#' @param BT 目標水準
+#' @param PL 目標水準に対する限界水準の割合
+#' @param PB 目標水準に対する禁漁水準の割合
+#' @param AAV AAV
+#' @param tune.par チューニングパラメタ
+#' @param beta 保守的漁獲の割合
+#'
+#' @export
+#'
+#'
 type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
     delta1 <- tune.par[1]   # velocity to go to BT
     delta2 <- tune.par[2]   # correction factor when D <= BL
@@ -322,6 +335,21 @@ type2_func <- function(cD,cpue.n,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0
     #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
 }
 
+#' 2系資源計算を経験分布で計算する時のCPUEデータに対してABCを返す関数
+#'
+#' @param cD cpueの値
+#' @param cpue cpue時系列
+#' @param simple 旧2系的な経験分布にする場合TRUE
+#' @param BT 目標水準
+#' @param PL 目標水準に対する限界水準の割合
+#' @param PB 目標水準に対する禁漁水準の割合
+#' @param AAV AAV
+#' @param tune.par チューニングパラメタ
+#' @param beta 保守的漁獲の割合
+#'
+#' @export
+#'
+#'
 type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tune.par=c(0.5,0.5,0.4),beta=1.0){
   delta1 <- tune.par[1]   # velocity to go to BT
   delta2 <- tune.par[2]   # correction factor when D <= BL
@@ -377,11 +405,17 @@ type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tun
   #    ifelse(cD > BB & cpue.n > 0, exp(k*(cD-BT)), 0)    # calculation of ABC
 }
 
+#' 2系のCPUEの確率点に対して連続的にABCを返す関数
+#'
+#' @export
 type2_func_wrapper <- function(DL,type=NULL,...){
     if(type=="%") DL <- DL/100
     purrr::map_dbl(DL,type2_func,...)
 }
 
+#' 2系を経験分布で計算する時、CPUEの確率点に対して連続的にABCを返す関数
+#'
+#' @export
 type2_func_empir_wrapper <- function(DL,cpue,simple,type=NULL,...){
   if(type=="%") DL <- DL/100
   purrr::map_dbl(DL,type2_func_empir,cpue=cpue,simple=simple,...)
@@ -508,6 +542,7 @@ simple_ecdf <- function(cpue, x){
   if(percent<0) percent <- 0
   return(percent)
 }
+
 
 simple_ecdf_seq<-function(cpue){
   cum.cpue <-c()
@@ -701,7 +736,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       minyears <- min(years)-2
     }
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
       g.cpue <- ccdata %>% ggplot() +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
@@ -785,7 +820,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       g.cpue4 <- g.cpue4 + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
      }
 
-     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
        g.cpue4 <- ccdata %>% ggplot() +
          geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
          geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
@@ -890,10 +925,9 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     #漁獲管理規則案 HCR.Dist ----
     current_index_col <- "#1A4472"
 
-    model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue), by=0.1),  dens=NA)
-    if(!empir.dist) {
-      model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue),sd=sd(ccdata.plot$cpue))
-    }else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
+    model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA)
+    if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm = T))
+    else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
       if(!simple.empir){
         cum.cpue4 <- ecdf(ccdata.plot$cpue)
         cum.probs <- cum.cpue4(model_dist$cpue)
@@ -926,7 +960,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       guides(colour="none")+
       coord_flip()
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
     g.hcr.dist <- g.hcr.dist +
       geom_vline(data=data_BRP,mapping=aes(xintercept=res$Current_Status[2]),color=current_index_col,size=1,linetype="dashed")+
       geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(dens)*0.85,family=font_MAC,label="(現在の資源水準)"),color=current_index_col,size=4)
@@ -936,7 +970,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         geom_text(aes(x=ifelse(res$Current_Status[2]<mean(ccdata.plot$cpue)/3,mean(ccdata.plot$cpue)/2,mean(ccdata.plot$cpue)/4),y=max(dens)*0.85,label="(現在の資源水準)"),color=current_index_col,size=4)
     }
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
     g.hcr.dist <- g.hcr.dist +  ggtitle("")+
       scale_x_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
       #scale_y_continuous(limits=c(0,max(ccdata$cpue,na.rm=T)*1.05)) +
@@ -2035,4 +2069,3 @@ plot_abc2_fixHC_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALS
     }
   }
 }
-
