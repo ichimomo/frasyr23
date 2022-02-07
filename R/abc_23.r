@@ -662,8 +662,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     }else{
       legend.labels <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
     }
-    label.y.position<-c(0.5,1.0,0.7)
-    label.y.nudge<-c(0.1,0.1,0.1)
+    #label.y.position<-c(0.5,0.4,0.8)
+    #label.y.nudge<-c(0.1,-0.1,0.1)
 
     linetype.set <- c("dashed","longdash","solid")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
@@ -697,8 +697,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         col.BRP <- c("#00533E","#edb918","#C73C2E")
       }
 
-      label.y.position<-c(0.5,1.0)
-      label.y.nudge<-c(0.1,0.1)
+      #label.y.position<-c(0.5,0.4)
+      #label.y.nudge<-c(0.1,-0.1)
     }
 
     # ABC決定可能/不可能設定 ----
@@ -1419,7 +1419,7 @@ theme_custom <- function(){
 #' 複数の2系ABC計算結果を同時プロットするための関数
 #'
 #' @param res.list calc_abc2の返り値。比較結果が多すぎるとみづらくなるので一度に比較するのは５つまで。
-#' @param fishseason  X軸のラベルを変更（0なら年、1なら漁期年)
+#' @param fishseason  X軸のラベルを変更（0なら年、1なら漁期年）
 #' @param abc4  北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE））
 #' @param cpueunit  資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）
 #' @param leftalign  資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）
