@@ -847,7 +847,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     ifelse(is.null(BTyear),ccdata.plot<-ccdata,
            ccdata.plot<-ccdata_forBt)
 　　#プロットの順番；枠、資源量水準vsアルファ、管理水準縦線、ラベル、軸ラベル、abc計算に用いる現状ポイント
-    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) #プロット枠
+    g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) #プロット枠
     if(!empir.dist){
       g.hcr <- g.hcr +
         #stat_function(fun=type2_func_wrapper,
@@ -875,7 +875,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     g.hcr <- g.hcr +
       geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # 図中ラベルと軸ラベルの設定 mac ----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## 図中ラベルと軸ラベルの設定 mac ----
       if(res$BRP[3]==0) #禁漁水準=0の時
        g.hcr <- g.hcr +
         ggrepel::geom_label_repel(data=data_BRP,
@@ -893,7 +893,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
-      }else{ # 図中ラベルと軸ラベルの設定 mac以外 ----
+      }else{ ## 図中ラベルと軸ラベルの設定 mac以外 ----
         if(res$BRP[3]==0) #禁漁水準=0の時
           g.hcr <- g.hcr +
            ggrepel::geom_label_repel(data=data_BRP,
