@@ -111,7 +111,7 @@ abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
 ## 比較
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC))
 # グラフをセーブする場合
-# ggsave(file="hcr2_compare.png",width=5,height=3)
+# ggsave(file="hcr2_compare.png",width=5,height=5)
 
 ```
 ![](./tools/hcr2_compare.png)
