@@ -1657,7 +1657,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
     ABCs<-c(ABCs,res.multiBTyear[[i+1]]$ABC)
     label <-paste0(i,"年前基準ABC")
     ABClabels<-c(ABClabels,label)
-    ccdata.plotbt[[i+1]]<-res.multiBTyear[[i+1]]$arglist$ccdata[which(res.multiBTyear[[i+1]]$arglist$ccdata$year <= res.multiBTyear[[i+1]]$arglist$BTyear),]
+    ifelse(i==0,ccdata.plotbt[[i+1]]<-res.multiBTyear[[i+1]]$arglist$ccdata,ccdata.plotbt[[i+1]]<-res.multiBTyear[[i+1]]$arglist$ccdata[which(res.multiBTyear[[i+1]]$arglist$ccdata$year <= res.multiBTyear[[i+1]]$arglist$BTyear),])
   }
 
   data_catch_ori <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),                              type=c(rep(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),n.catch),"ABC"))
@@ -1931,9 +1931,8 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
     for(i in 1:(last.year-BTyear)){
       g.hcr <- g.hcr +
         stat_function(fun=type2_func_empir_wrapper,
-                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.multiBTyear[[i]]$AAV,cpue=ccdata.plotbt[[i]]$cpue,simple=simple.empir,type="%"), color=rgb(0,0,0,alpha = (i/10)),size=0.5,linetype="dashed")+
-        geom_point(aes(x=res.multiBTyear[[i]]$Current_Status[1]*100,y=res.multiBTyear[[i]]$alpha),color=i+2,size=3,shape=i+1)
-
+                      args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res.multiBTyear[[i]]$AAV,cpue=ccdata.plotbt[[i]]$cpue,simple=simple.empir,type="%"), color="gray",size=0.5,linetype=i+1) +
+        geom_point(aes(x=res.multiBTyear[[i]]$Current_Status[1]*100,y=res.multiBTyear[[i]]$alpha),color=i+2,size=3,shape=i+1)#color=rgb(0,0,0,alpha = (i/10)),size=0.5,linetype="dashed")+
     }
   }
 
