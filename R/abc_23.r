@@ -638,13 +638,12 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     tune.par <- res$arglist$tune.par
     beta <- res$arglist$beta
 
-    if(!BThcr)
+    if(BThcr==FALSE)
     data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
                          catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
                          type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
     else{
       res.nullBTyear <- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = NULL,summary_abc=FALSE)
-
       data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),                              type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
     }
 
@@ -848,7 +847,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     ifelse(is.null(BTyear),ccdata.plot<-ccdata,
            ccdata.plot<-ccdata_forBt)
 　　#プロットの順番；枠、資源量水準vsアルファ、管理水準縦線、ラベル、軸ラベル、abc計算に用いる現状ポイント
-    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) #プロット枠
+    g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) #プロット枠
     if(!empir.dist){
       g.hcr <- g.hcr +
         #stat_function(fun=type2_func_wrapper,
@@ -876,7 +875,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     g.hcr <- g.hcr +
       geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # 図中ラベルと軸ラベルの設定 mac ----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## 図中ラベルと軸ラベルの設定 mac ----
       if(res$BRP[3]==0) #禁漁水準=0の時
        g.hcr <- g.hcr +
         ggrepel::geom_label_repel(data=data_BRP,
@@ -894,7 +893,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
           xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
           theme(legend.position="top",legend.justification = c(1,0)) +
           theme(text = element_text(family = font_MAC))
-      }else{ # 図中ラベルと軸ラベルの設定 mac以外 ----
+      }else{ ## 図中ラベルと軸ラベルの設定 mac以外 ----
         if(res$BRP[3]==0) #禁漁水準=0の時
           g.hcr <- g.hcr +
            ggrepel::geom_label_repel(data=data_BRP,
@@ -925,12 +924,14 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     #漁獲管理規則案 HCR.Dist ----
     current_index_col <- "#1A4472"
+    # cpueの桁数に応じてHCR.Distのcpue刻み幅をかえる
+    model_dist<-c()
+    ifelse( floor(log10(max(ccdata.plot$cpue,na.rm = T))+1) < 4, model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA), model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=10^floor(log10(max(ccdata.plot$cpue,na.rm = T))+1)/1000),  dens=NA) )
 
-    model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA)
     if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm = T))
     else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
       if(!simple.empir){
-        cum.cpue4 <- ecdf(ccdata.plot$cpue)
+        cum.cpue4 <- ecdf(na.omit(ccdata.plot$cpue))
         cum.probs <- cum.cpue4(model_dist$cpue)
       }
       else{
@@ -1260,7 +1261,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
   col.hcr.points <- seq(2,1+length(res.list))
 
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+    g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
       theme_bw(base_family = font_MAC)+theme_custom()+
       ggtitle("")+
       xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
@@ -1512,14 +1513,14 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   # 漁獲管理規則 HCR ----
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+    g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
       theme_bw(base_family = font_MAC)+theme_custom()+
       ggtitle("")+
       xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
       theme(legend.position="top",legend.justification = c(1,0))+
       theme(text = element_text(family = font_MAC))
   }else{
-    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+    g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
       theme_bw()+theme_custom()+
       ggtitle("")+
       xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
@@ -1837,7 +1838,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
   #漁獲管理規則案 HCR ----
   ifelse(is.null(BTyear),ccdata.plot<-ccdata,ccdata.plot<-ccdata_forBt)
   if(!empir.dist){
-    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+    g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
       #stat_function(fun=type2_func_wrapper,
       #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
       #              color="gray")+
@@ -1858,7 +1859,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
 
     ## plot 設定 for mac----
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-      g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+      g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
         #stat_function(fun=type2_func_wrapper,
         #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
         #                  color="gray")+
@@ -1888,7 +1889,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
 
   }else{
     # empir.dist=T ----
-    g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+    g.hcr <-ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
       #stat_function(fun=type2_func_wrapper,
       #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
       #              color="gray")+
@@ -1908,7 +1909,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
 
     ## plot 設定 for mac----
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-      g.hcr <-ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+      g.hcr <-ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
         #stat_function(fun=type2_func_wrapper,
         #        args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
         #              color="gray")+
@@ -1940,7 +1941,8 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
   #漁獲管理規則案 HCR.Dist ----
   current_index_col <- "#1A4472"
   ccdata.plot<- ccdata_forBt
-  model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm = T), by=0.1),  dens=NA)
+  model_dist<-c()
+  ifelse( floor(log10(max(ccdata.plot$cpue,na.rm = T))+1) < 4, model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA), model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=10^floor(log10(max(ccdata.plot$cpue,na.rm = T))+1)/1000),  dens=NA) )
   if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm=T))
   else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
     if(!simple.empir){
