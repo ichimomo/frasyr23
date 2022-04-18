@@ -926,6 +926,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     # cpueの桁数に応じてHCR.Distのcpue刻み幅をかえる
     model_dist<-c()
     ifelse( floor(log10(max(ccdata.plot$cpue))+1) < 4, model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA), model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=10^floor(log10(max(ccdata.plot$cpue))+1)/1000),  dens=NA) )
+
     if(empir.dist==FALSE) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm = T))
     else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
       if(simple.empir==FALSE){
@@ -1939,10 +1940,10 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
   #漁獲管理規則案 HCR.Dist ----
   current_index_col <- "#1A4472"
   ccdata.plot<- ccdata_forBt
-  model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm = T), by=0.1),  dens=NA)
-  if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm=T))
+  ifelse( floor(log10(max(ccdata.plot$cpue))+1) < 4, model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA), model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=10^floor(log10(max(ccdata.plot$cpue))+1)/1000),  dens=NA) )
+  if(empir.dist==FALSE) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm=T))
   else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
-    if(!simple.empir){
+    if(simple.empir==FALSE){
       cum.cpue4 <- ecdf(ccdata.plot$cpue)
       cum.probs <- cum.cpue4(model_dist$cpue)
     }
