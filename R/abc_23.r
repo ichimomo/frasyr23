@@ -637,13 +637,12 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     tune.par <- res$arglist$tune.par
     beta <- res$arglist$beta
 
-    if(!BThcr)
+    if(BThcr==FALSE)
     data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
                          catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
                          type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
     else{
       res.nullBTyear <- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = NULL,summary_abc=FALSE)
-
       data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),                              type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
     }
 
@@ -924,11 +923,13 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     #漁獲管理規則案 HCR.Dist ----
     current_index_col <- "#1A4472"
+    # cpueの桁数に応じてHCR.Distのcpue刻み幅をかえる
+    model_dist<-c()
+    ifelse( floor(log10(max(ccdata.plot$cpue))+1) < 4, model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA), model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=10^floor(log10(max(ccdata.plot$cpue))+1)/1000),  dens=NA) )
 
-    model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA)
-    if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm = T))
+    if(empir.dist==FALSE) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm = T))
     else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
-      if(!simple.empir){
+      if(simple.empir==FALSE){
         cum.cpue4 <- ecdf(ccdata.plot$cpue)
         cum.probs <- cum.cpue4(model_dist$cpue)
       }
@@ -1939,10 +1940,10 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
   #漁獲管理規則案 HCR.Dist ----
   current_index_col <- "#1A4472"
   ccdata.plot<- ccdata_forBt
-  model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm = T), by=0.1),  dens=NA)
-  if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm=T))
+  ifelse( floor(log10(max(ccdata.plot$cpue))+1) < 4, model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA), model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=10^floor(log10(max(ccdata.plot$cpue))+1)/1000),  dens=NA) )
+  if(empir.dist==FALSE) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm=T))
   else{ # empir.dist = T で累積確率から個々の確率を求めて総和(1)で割って密度にする
-    if(!simple.empir){
+    if(simple.empir==FALSE){
       cum.cpue4 <- ecdf(ccdata.plot$cpue)
       cum.probs <- cum.cpue4(model_dist$cpue)
     }
