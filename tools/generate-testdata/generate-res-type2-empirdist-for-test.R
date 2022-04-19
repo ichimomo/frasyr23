@@ -70,7 +70,9 @@ alpha<-alpha*beta
 
 ABC <- mean.catch * alpha
 Obs_BRP <- c(icum.cpue(BT), icum.cpue(BL), icum.cpue(BB))
+names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
 Current_Status <- c(D[n],cpue[n])
+names(Current_Status) <- c("Level","CPUE")
 
 aka_abc2_empir <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Current_Status,AAV=AAV,tune.par=tune.par,ABC=ABC)
 
