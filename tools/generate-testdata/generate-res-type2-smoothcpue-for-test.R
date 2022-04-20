@@ -63,7 +63,27 @@ for(i in n.cpue:l.cpue){
   smoothed.cpue <- cbind(smoothed.cpue,mean(cpue[(i-n.cpue+1):i],na.rm = TRUE))
 }
 
-newcpue<- c(rep(NA,n.cpue),smoothed.cpue)
-aka_abc2_sm3cpuedist <- abc_t23(catch=data_aka$catch,cpue = newcpue)
+D <- pnorm(scale(smoothed.cpue),0,1)
+mD <- attributes(D)$'scaled:center'
+sD <- attributes(D)$'scaled:scale'
+icum.cpue <- function(x) sD*qnorm(x,0,1)+mD   # inverse function from D to CPUE
+
+ifelse(delta3 > 0, AAV <- aav.f(data_aka$cpue), AAV <- 0)
+
+if(cD <= BB) alpha <- 0
+if(BB < cD & cD < BL){
+  k <- delta1 + delta2* exp(delta3*log(AAV^2+1)) * (BL-cD)/(cD-BB)
+  alpha <- exp(k*(cD-BT))
+}
+if(cD >= BL) alpha <- exp(delta1*(cD-BT))
+alpha<-alpha*beta
+
+ABC <- mean.catch * alpha
+Obs_BRP <- c(icum.cpue(BT), icum.cpue(BL), icum.cpue(BB))
+names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
+Recent_Status <- c(cD,mean.cpue)
+names(Recent_Status) <- c("Level","CPUE")
+
+aka_abc2_sm3cpuedist<- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Recent_Status,AAV=AAV,tune.par=tune.par,ABC=ABC)
 
 save(aka_abc2_sm3cpuedist,file="./inst/extdata/res_aka_abc2_sm3cpuedist.rda")
