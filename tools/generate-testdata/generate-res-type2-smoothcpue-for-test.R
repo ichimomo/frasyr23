@@ -62,3 +62,8 @@ smoothed.cpue <- c()
 for(i in n.cpue:l.cpue){
   smoothed.cpue <- cbind(smoothed.cpue,mean(cpue[(i-n.cpue+1):i],na.rm = TRUE))
 }
+
+newcpue<- c(rep(NA,n.cpue),smoothed.cpue)
+aka_abc2_sm3cpuedist <- abc_t23(catch=data_aka$catch,cpue = newcpue)
+
+save(aka_abc2_sm3cpuedist,file="./inst/extdata/res_aka_abc2_sm3cpuedist.rda")
