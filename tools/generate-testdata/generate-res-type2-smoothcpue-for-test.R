@@ -63,7 +63,8 @@ for(i in n.cpue:l.cpue){
   smoothed.cpue <- cbind(smoothed.cpue,mean(cpue[(i-n.cpue+1):i],na.rm = TRUE))
 }
 
-D <- pnorm(scale(smoothed.cpue),0,1)
+D <- pnorm(scale(as.numeric(smoothed.cpue)),0,1)
+cD <- pnorm(mean.cpue,mean(smoothed.cpue),sd(smoothed.cpue))
 mD <- attributes(D)$'scaled:center'
 sD <- attributes(D)$'scaled:scale'
 icum.cpue <- function(x) sD*qnorm(x,0,1)+mD   # inverse function from D to CPUE
