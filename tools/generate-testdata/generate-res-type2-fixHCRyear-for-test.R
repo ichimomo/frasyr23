@@ -27,16 +27,14 @@ n<-nrow(data_aka)
 l.catch <- length(data_aka$catch)
 mean.catch <- mean(data_aka$catch[(l.catch-n.catch+1):l.catch],na.rm = TRUE)
 
-ccdata_forBt <- data_aka[which(data_aka$year <= BTyear),]
-cpue <- ccdata_forBt$cpue
-ori.cpue <- cpue
-cpue <- cpue[!is.na(ccdata_forBt$cpue)]
-target.cpue <- data_aka$cpue[nrow(data_aka$cpue)]
+ccdata_fixedBT <- data_aka[which(data_aka$year <= BTyear),]
+cpue <- na.omit(ccdata_fixedBT$cpue)
+target.cpue <- data_aka$cpue[nrow(data_aka)]
 
-cD <- pnorm(target.cpue,mean(cpue),sd(cpue))
 D <- pnorm(scale(cpue),0,1)
 mD <- attributes(D)$'scaled:center'
 sD <- attributes(D)$'scaled:scale'
+cD <- pnorm((target.cpue-mD)/sD,0,1)
 icum.cpue <- function(x) sD*qnorm(x,0,1)+mD   # inverse function from D to CPUE
 
 ifelse(delta3 > 0, AAV <- aav.f(data_aka$cpue), AAV <- 0)
@@ -52,7 +50,7 @@ alpha<-alpha*beta
 ABC <- mean.catch * alpha
 Obs_BRP <- c(icum.cpue(BT), icum.cpue(BL), icum.cpue(BB))
 names(BRP) <- names(Obs_BRP) <- c("Target","Limit","Ban")
-Current_Status <- c(D[n],cpue[n])
+Current_Status <- c(cD,target.cpue)
 names(Current_Status) <- c("Level","CPUE")
 
 aka_abc2_bt2010 <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Current_Status,AAV=AAV,tune.par=tune.par,ABC=ABC)
