@@ -71,11 +71,11 @@ calc_abc2 <- function(
     } else{
       if(BTyear > max(ccdata$year)) stop("BTyear year must be set less than max(ccdata$year)!")
       if(BTyear < min(ccdata$year)) stop("BTyear year must be set larger than min(ccdata$year)!")
-      ccdata_forBt <- ccdata[which(ccdata$year <= BTyear),]
+      ccdata_fixedBT <- ccdata[which(ccdata$year <= BTyear),]
 
-      cpue <- ccdata_forBt$cpue
+      cpue <- ccdata_fixedBT$cpue
       ori.cpue <- cpue
-      cpue <- cpue[!is.na(ccdata_forBt$cpue)]
+      cpue <- cpue[!is.na(ccdata_fixedBT$cpue)]
       target.cpue <- ccdata$cpue[nrow(ccdata)]
     }
     ori.catch <- ccdata$catch
@@ -190,7 +190,7 @@ calc_abc2 <- function(
 
     if (delta3 > 0){
         if(AAV=="auto"){
-            AAV <- aav.f(ori.cpue)
+            AAV <- aav.f(ccdata$cpue)
         }
         else{
             AAV <- AAV
@@ -266,7 +266,7 @@ calc_abc2 <- function(
     }else{
       cat(stringr::str_c("Target CPUE value and Level: ",round(Obs_BRP[1],2)," and ", round(BRP[1],2) ,"\n",
                          "Limit CPUE value and Level: ",round(Obs_BRP[2],2)," and ", round(BRP[2],2) ,"\n",
-                         "Histrical low CPUE value and Level(",min(ccdata_forBt$year),"-",max(ccdata_forBt$year),"): ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata_forBt[ccdata_forBt$cpue==min(cpue),]$year, ")", "\n"))
+                         "Histrical low CPUE value and Level(",min(ccdata_fixedBT$year),"-",max(ccdata_fixedBT$year),"): ",round(min(cpue),3)," and ", round(min(D),3), "  (", ccdata_fixedBT[ccdata_fixedBT$cpue==min(cpue),]$year, ")", "\n"))
 
     }
     if(smooth.cpue==FALSE && smooth.dist==FALSE){
@@ -624,10 +624,10 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     smooth.dist <- res$arglist$smooth.dist
     # plot
     ccdata <- res$arglist$ccdata
-    ccdata_forBt <- res$arglist$ccdata
+    ccdata_fixedBT <- res$arglist$ccdata
     BTyear <- res$arglist$BTyear
     if(is.null(BTyear) && BThcr==TRUE) stop("BThcr option works if BTyear is not NULL. See the argment of calc_abc2./n")
-    if(!is.null(res$arglist$BTyear)) ccdata_forBt <- ccdata[which(ccdata$year <= BTyear),]
+    if(!is.null(res$arglist$BTyear)) ccdata_fixedBT <- ccdata[which(ccdata$year <= BTyear),]
     n.catch <- res$arglist$n.catch
     years <- ccdata$year
     last.year <- rev(years)[1]
@@ -845,7 +845,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     #漁獲管理規則案 HCR ----
     ifelse(is.null(BTyear),ccdata.plot<-ccdata,
-           ccdata.plot<-ccdata_forBt)
+           ccdata.plot<-ccdata_fixedBT)
 　　#プロットの順番；枠、資源量水準vsアルファ、管理水準縦線、ラベル、軸ラベル、abc計算に用いる現状ポイント
     g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) #プロット枠
     if(!empir.dist){
@@ -1635,10 +1635,10 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
   smooth.dist <- res$arglist$smooth.dist
   # plot
   ccdata <- res$arglist$ccdata
-  ccdata_forBt <- res$arglist$ccdata
+  ccdata_fixedBT <- res$arglist$ccdata
   BTyear <- res$arglist$BTyear
   if(is.null(BTyear)) stop("This function works if BTyear was set in calc_abc2.\n")
-  ccdata_forBt <- ccdata[which(ccdata$year <= BTyear),]
+  ccdata_fixedBT <- ccdata[which(ccdata$year <= BTyear),]
   n.catch <- res$arglist$n.catch
   years <- ccdata$year
   last.year <- rev(years)[1]
@@ -1836,7 +1836,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
   }
 
   #漁獲管理規則案 HCR ----
-  ifelse(is.null(BTyear),ccdata.plot<-ccdata,ccdata.plot<-ccdata_forBt)
+  ifelse(is.null(BTyear),ccdata.plot<-ccdata,ccdata.plot<-ccdata_fixedBT)
   if(!empir.dist){
     g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
       #stat_function(fun=type2_func_wrapper,
@@ -1940,7 +1940,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
 
   #漁獲管理規則案 HCR.Dist ----
   current_index_col <- "#1A4472"
-  ccdata.plot<- ccdata_forBt
+  ccdata.plot<- ccdata_fixedBT
   model_dist<-c()
   ifelse( floor(log10(max(ccdata.plot$cpue,na.rm = T))+1) < 4, model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=0.1),  dens=NA), model_dist <- data.frame(cpue=seq(0, max(ccdata.plot$cpue,na.rm=T), by=10^floor(log10(max(ccdata.plot$cpue,na.rm = T))+1)/1000),  dens=NA) )
   if(!empir.dist) model_dist$dens <- dnorm(model_dist$cpue,mean = mean(ccdata.plot$cpue,na.rm=T),sd=sd(ccdata.plot$cpue,na.rm=T))
