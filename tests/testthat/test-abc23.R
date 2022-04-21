@@ -119,5 +119,17 @@ test_that("type23 option check",{
     for(i in 1:length(testcontents)){
         expect_equal(eval(parse(text=paste("aka_abc2_sm3cpuedist_check$",testcontents[i]))), eval(parse(text=paste("aka_abc2_sm3cpuedist$",testcontents[i]))),label=c(testcontents[i]))
     }
+
+
+    # 管理基準計算年固定
+    aka_abc2_bt2010_check <- calc_abc2(data_aka,BTyear = 2010,summary_abc = F)
+    # 上記結果の読み込み
+    load(system.file("extdata","res_aka_abc2_bt2010.rda",package = "frasyr23"))
+    # テスト内容
+    testcontents<-c("BRP","Obs_BRP","Current_Status","AAV","ABC")
+    # 結果の照合
+    for(i in 1:length(testcontents)){
+        expect_equal(eval(parse(text=paste("aka_abc2_bt2010_check$",testcontents[i]))), eval(parse(text=paste("aka_abc2_bt2010$",testcontents[i]))),label=c(testcontents[i]))
+    }
 })
 
