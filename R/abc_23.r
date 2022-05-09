@@ -54,6 +54,7 @@ calc_abc2 <- function(
   simple.empir = FALSE, # option for empirical cpue dist
   beta = 1.0,
   D2alpha = NULL,
+  BTyear = NULL,
   summary_abc = TRUE # 浜辺加筆（'20/07/10）
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
