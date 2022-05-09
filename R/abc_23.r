@@ -25,8 +25,10 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' @param n.catch 過去の漁獲量を平均する年数（デフォルトの値は5）
 #' @param n.cpue 過去の資源量指標値を平均する年数（デフォルトの値は3）,期間中にnaを含む場合はrm.na
 #' @param smooth.cpue ABC算出時に平均化CPUEを使うか（デフォルトはFALSE）
+#' @param smooth.dist CPUEの分布に平滑化（n.cpue年移動平均）したCPUEをつかって正規分布に当てる
 #' @param empir.dist CPUEの分布に経験分布を用いる（デフォルトはFALSEで正規分布を仮定）
 #' @param simple.empir CPUEの分布に経験分布を用いるときに旧2系的に分布を仮定する（デフォルトはFALSE）empir.dist==Tとした上で追加。
+#' @param BTyear 管理目標水準を計算するときのCPUE時系列最終年を手動で決める（デフォルトはNULLでccdata$cpueの最終年）
 #' @examples
 #' library(frasyr23)
 #' catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
@@ -50,6 +52,7 @@ calc_abc2 <- function(
   n.catch=5,   #  period for averaging the past catches
   n.cpue=3,   #  period for averaging the past cpues
   smooth.cpue = FALSE,  # option using smoothed cpue
+  smooth.dist = FALSE,  # option for cpue dist using smoothed cpue
   empir.dist = FALSE,   # option for cpue dist
   simple.empir = FALSE, # option for empirical cpue dist
   beta = 1.0,
