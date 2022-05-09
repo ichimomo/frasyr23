@@ -4,7 +4,7 @@
 \alias{plot_hcr2}
 \title{2系のHCRを比較するための関数}
 \usage{
-plot_hcr2(res.list, stock.name = NULL)
+plot_hcr2(res.list, stock.name = NULL, proposal = TRUE)
 }
 \arguments{
 \item{res.list}{calc_abc2の返り値のリスト}

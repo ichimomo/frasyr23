@@ -4,9 +4,17 @@
 \alias{abc_t23_proto1}
 \title{2系・3系のABC計算関数．岡村さん作成のプロトタイプ．チェック用に使う．}
 \usage{
-abc_t23_proto1(catch, cpue = NULL, BT = 0.8, tune.par = c(0.5, 0.4,
-  0.4), PL = 0.7, PB = 0, catch.only = FALSE, default = TRUE,
-  n.catch = 5)
+abc_t23_proto1(
+  catch,
+  cpue = NULL,
+  BT = 0.8,
+  tune.par = c(0.5, 0.4, 0.4),
+  PL = 0.7,
+  PB = 0,
+  catch.only = FALSE,
+  default = TRUE,
+  n.catch = 5
+)
 }
 \description{
 2系・3系のABC計算関数．岡村さん作成のプロトタイプ．チェック用に使う．
