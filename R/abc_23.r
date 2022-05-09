@@ -97,7 +97,12 @@ calc_abc2 <- function(
     n <- length(catch)   # the number of catch data
     l.catch <- length(ori.catch)
     l.cpue <- length(ori.cpue)
-
+                      
+    smoothed.cpue <- c()
+    for(i in n.cpue:l.cpue){
+      smoothed.cpue <- cbind(smoothed.cpue,mean(ori.cpue[(i-n.cpue+1):i],na.rm = TRUE))
+    }
+                      
     cum.cpue <- function(x) pnorm(scale(x),0,1) # cumulative normal distribution
     cum.cpue2 <- function(x) pnorm(x,mean(x),sd(x)) # cumulative normal distribution
     cum.cpue3 <- function(y,x) pnorm(y,mean(x),sd(x)) # cumulative normal distribution
