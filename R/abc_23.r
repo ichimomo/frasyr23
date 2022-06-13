@@ -97,12 +97,12 @@ calc_abc2 <- function(
     n <- length(catch)   # the number of catch data
     l.catch <- length(ori.catch)
     l.cpue <- length(ori.cpue)
-                      
+
     smoothed.cpue <- c()
     for(i in n.cpue:l.cpue){
       smoothed.cpue <- cbind(smoothed.cpue,mean(ori.cpue[(i-n.cpue+1):i],na.rm = TRUE))
     }
-                      
+
     cum.cpue <- function(x) pnorm(scale(x),0,1) # cumulative normal distribution
     cum.cpue2 <- function(x) pnorm(x,mean(x),sd(x)) # cumulative normal distribution
     cum.cpue3 <- function(y,x) pnorm(y,mean(x),sd(x)) # cumulative normal distribution
@@ -626,7 +626,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline1=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -888,6 +888,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     g.hcr <- g.hcr +
       geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)
+
+      g.hcr <- g.hcr + scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1.0))
+
+    if(hcrhline1) g.hcr <- g.hcr +
+      geom_hline(yintercept=1,color="gray",linetype=2)
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## 図中ラベルと軸ラベルの設定 mac ----
       if(res$BRP[3]==0) #禁漁水準=0の時
@@ -1258,7 +1263,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE,hcrhline1=FALSE){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
@@ -1282,7 +1287,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
       theme(legend.position="top",legend.justification = c(1,0))+
       theme(text = element_text(family = font_MAC))
   }else{
-    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+    g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
       theme_bw()+theme_custom()+
       ggtitle("")+
       xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
@@ -1315,6 +1320,10 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
                           args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
                           color="black",size=1,linetype=i)
       }
+
+  g.hcr <-  g.hcr + scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1.0))
+  if(hcrhline1) g.hcr <- g.hcr +
+    geom_hline(yintercept=1,color="gray",linetype=2)
 
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
     g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
