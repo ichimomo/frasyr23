@@ -97,12 +97,12 @@ calc_abc2 <- function(
     n <- length(catch)   # the number of catch data
     l.catch <- length(ori.catch)
     l.cpue <- length(ori.cpue)
-                      
+
     smoothed.cpue <- c()
     for(i in n.cpue:l.cpue){
       smoothed.cpue <- cbind(smoothed.cpue,mean(ori.cpue[(i-n.cpue+1):i],na.rm = TRUE))
     }
-                      
+
     cum.cpue <- function(x) pnorm(scale(x),0,1) # cumulative normal distribution
     cum.cpue2 <- function(x) pnorm(x,mean(x),sd(x)) # cumulative normal distribution
     cum.cpue3 <- function(y,x) pnorm(y,mean(x),sd(x)) # cumulative normal distribution
@@ -888,6 +888,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     g.hcr <- g.hcr +
       geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)
+    g.hcr <- g.hcr + scale_y_continuous(breaks = seq(0,1.2,length=7),limits=c(0,1.2))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## 図中ラベルと軸ラベルの設定 mac ----
       if(res$BRP[3]==0) #禁漁水準=0の時
