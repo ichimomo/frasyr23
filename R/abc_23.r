@@ -626,7 +626,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline1=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline1=TRUE,hcrhline2=FALSE,hcrhline_sperse=FALSE,bitabita=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -889,20 +889,33 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     g.hcr <- g.hcr +
       geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)
 
-      g.hcr <- g.hcr + scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1.0))
+    if(hcrhline1) hlinebreaks <- c(0,0.2,0.4,0.6,0.8,1.0)
 
-    if(hcrhline1) g.hcr <- g.hcr +
-      geom_hline(yintercept=1,color="gray",linetype=2)
+    if(hcrhline2) hlinebreaks <- c(0,0.25,0.5,0.75,1.0)
+
+    if(!bitabita) g.hcr <- g.hcr + scale_y_continuous(breaks = hlinebreaks)
+    else{
+      g.hcr <- g.hcr + scale_x_continuous(expand = c(0,0),limits = c(0,105)) + scale_y_continuous(expand = c(0,0),breaks = hlinebreaks)
+    }
+
+    if(!hcrhline_sperse)
+      g.hcr <- g.hcr +
+      geom_hline(yintercept=hlinebreaks,color="gray",linetype=2)
+    else{
+      hcrAuxiliaryhline <- c(0,0.5,1.0)
+      g.hcr <- g.hcr +
+        geom_hline(yintercept=hcrAuxiliaryhline,color="gray",linetype=2)
+      }
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## 図中ラベルと軸ラベルの設定 mac ----
       if(res$BRP[3]==0) #禁漁水準=0の時
        g.hcr <- g.hcr +
         ggrepel::geom_label_repel(data=data_BRP,
-                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels,family = font_MAC),
+                                  mapping=aes(x=value_ratio*100, y=c(0.55,0.35), label=legend.labels,family = font_MAC),
                                   box.padding=0.5,nudge_y=c(0.1,-0.1) )
       else  g.hcr <- g.hcr +
           ggrepel::geom_label_repel(data=data_BRP,
-                                    mapping=aes(x=value_ratio*100, y=c(0.5,0.4,0.7), label=legend.labels,family = font_MAC),
+                                    mapping=aes(x=value_ratio*100, y=c(0.55,0.35,0.7), label=legend.labels,family = font_MAC),
                                     box.padding=0.5,nudge_y =c(0.1,-0.1,0.1) )
 
         g.hcr <- g.hcr+
@@ -916,11 +929,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
         if(res$BRP[3]==0) #禁漁水準=0の時
           g.hcr <- g.hcr +
            ggrepel::geom_label_repel(data=data_BRP,
-                                  mapping=aes(x=value_ratio*100, y=c(0.5,0.4), label=legend.labels),
+                                  mapping=aes(x=value_ratio*100, y=c(0.55,0.35), label=legend.labels),
                                   box.padding=0.5, nudge_y=c(0.1,-0.1))
         else g.hcr <- g.hcr +
             ggrepel::geom_label_repel(data=data_BRP,
-                                      mapping=aes(x=value_ratio*100, y=c(0.5,0.4,0.7), label=legend.labels),
+                                      mapping=aes(x=value_ratio*100, y=c(0.55,0.35,0.7), label=legend.labels),
                                       box.padding=0.5, nudge_y=c(0.1,-0.1,0.1))
       g.hcr <- g.hcr +
         scale_color_manual(name="",values=rev(c(col.BRP)), guide="none")+#,labels=rev(c(legend.labels)))+
