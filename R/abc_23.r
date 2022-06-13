@@ -1263,7 +1263,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE,hcrhline1=FALSE){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
@@ -1287,7 +1287,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
       theme(legend.position="top",legend.justification = c(1,0))+
       theme(text = element_text(family = font_MAC))
   }else{
-    g.hcr <- ggplot(data=data.frame(X=c(0,120)), aes(x=X)) +
+    g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
       theme_bw()+theme_custom()+
       ggtitle("")+
       xlab("資源量水準(%)")+ylab(str_c("漁獲量を増減させる係数"))+
@@ -1320,6 +1320,10 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE){
                           args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
                           color="black",size=1,linetype=i)
       }
+
+  g.hcr <-  g.hcr + scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1.0))
+  if(hcrhline1) g.hcr <- g.hcr +
+    geom_hline(yintercept=1,color="gray",linetype=2)
 
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
     g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
