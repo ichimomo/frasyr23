@@ -626,7 +626,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline1=TRUE,hcrhline2=FALSE,hcrhline_sperse=FALSE,bitabita=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline1=TRUE,hcrhline2=FALSE,hcrhline_sperse=FALSE,bitabita=FALSE,bitabita2=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -895,7 +895,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     if(!bitabita) g.hcr <- g.hcr + scale_y_continuous(breaks = hlinebreaks)
     else{
-      g.hcr <- g.hcr + scale_x_continuous(expand = c(0,0),limits = c(0,105)) + scale_y_continuous(expand = c(0,0),breaks = hlinebreaks)
+      if(!bitabita2) g.hcr <- g.hcr + scale_x_continuous(expand = c(0,0),limits = c(0,105)) + scale_y_continuous(expand = c(0,0),breaks = hlinebreaks)
+      else g.hcr <- g.hcr + scale_x_continuous(expand = c(0,0),limits = c(0,100)) + scale_y_continuous(expand = c(0,0),breaks = hlinebreaks)
     }
 
     if(!hcrhline_sperse)
