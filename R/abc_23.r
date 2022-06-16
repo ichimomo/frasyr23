@@ -895,7 +895,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     if(hcrhline==0) hlinebreaks <- c(0,0.5,1.0)
 
-    if(!bitabita) g.hcr <- g.hcr + scale_y_continuous(breaks = hlinebreaks)
+    if(!plotexactframe) g.hcr <- g.hcr + scale_y_continuous(breaks = hlinebreaks)
     else g.hcr <- g.hcr + scale_x_continuous(expand = c(0,0),limits = c(0,100)) + scale_y_continuous(expand = c(0,0),breaks = hlinebreaks)
 
     if(!hcrhline_sperse)
