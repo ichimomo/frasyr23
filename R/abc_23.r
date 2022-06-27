@@ -646,7 +646,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     ccdata <- res$arglist$ccdata
     ccdata_fixedBT <- res$arglist$ccdata
     BTyear <- res$arglist$BTyear
-    if(is.null(BTyear) && BThcr==TRUE) stop("BThcr option works if BTyear is not NULL. See the argment of calc_abc2./n")
+    if(is.null(BTyear) && BThcr==TRUE) stop("BThcr option works if BTyear is not NULL. See the argments in calc_abc2./n")
     if(!is.null(res$arglist$BTyear)) ccdata_fixedBT <- ccdata[which(ccdata$year <= BTyear),]
     n.catch <- res$arglist$n.catch
     years <- ccdata$year
@@ -662,7 +662,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       if(!res$arglist$nextyear_abc) data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
                                                          catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
                                                          type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
-      elsedata_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1),
+      else data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1),
                                catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
                                type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
 
@@ -698,8 +698,13 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     legend.labels2bt <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC","最終年データ利用のABC")
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量")
     legend.labels2bt.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量","最終年データ利用の算定")
-    legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
-    legend.labels2bt.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
+    if(!res$arglist$nextyear_abc){
+      legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
+      legend.labels2bt.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
+    } else{
+      legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
+      legend.labels2bt.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
+    }
     col.BRP.hcr <- col.BRP
     data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
 
