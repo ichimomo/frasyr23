@@ -1263,7 +1263,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE,hcrhline1=FALSE){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE,hcrhline1=FALSE, vline=TRUE, is_point=TRUE){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
@@ -1325,22 +1325,27 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE,hcrhline1=FALSE){
   if(hcrhline1) g.hcr <- g.hcr +
     geom_hline(yintercept=1,color="gray",linetype=2)
 
-  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-    g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-      ggrepel::geom_label_repel(data=data_BRP,
+  if(vline==TRUE){
+      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+          g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+              ggrepel::geom_label_repel(data=data_BRP,
                                 mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr,family=font_MAC),
                                 box.padding=0.5)
-
-  }else{
-    g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-      ggrepel::geom_label_repel(data=data_BRP,
-                                mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr),
-                                box.padding=0.5)
-
+          
+      }else{
+          g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+              ggrepel::geom_label_repel(data=data_BRP,
+                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr),
+                                        box.padding=0.5)
+          
+      }
   }
+
+  if(is_point){
       g.hcr <- g.hcr +
         geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4) +
           scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+  }
 
     return(g.hcr)
 }
