@@ -632,7 +632,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline1=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline1=FALSE,ignore_naCatch_point=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -649,6 +649,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     if(is.null(BTyear) && BThcr==TRUE) stop("BThcr option works if BTyear is not NULL. See the argments in calc_abc2./n")
     if(!is.null(res$arglist$BTyear)) ccdata_fixedBT <- ccdata[which(ccdata$year <= BTyear),]
     n.catch <- res$arglist$n.catch
+    #latestCatchna <- res$arglist$latestCatchna
+    #if(!is.null(latestCatchna)) ignore_naCatch_point<-TRUE
     years <- ccdata$year
     last.year <- rev(years)[1]
 
@@ -658,21 +660,33 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     tune.par <- res$arglist$tune.par
     beta <- res$arglist$beta
 
-    if(BThcr==FALSE){
-      if(!res$arglist$nextyear_abc) data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
-                                                         catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
-                                                         type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
-      else data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1),
-                               catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
-                               type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC"))
-
+    catch.abc.na<-0
+    if(ignore_naCatch_point){
+       mean.catch.abc <- ccdata$catch[(length(ccdata$catch)-n.catch+1):length(ccdata$catch)]
+       catch.abc.na <- sum(as.numeric(is.na(mean.catch.abc)))
+      if(prod(!is.na(mean.catch.abc))) stop("ignore_naCatch_point option works if catch[lastyear-n.catch+1:lastyear] contains NA.")
     }
 
+    if(BThcr==FALSE){
+      if(!res$arglist$nextyear_abc){ # 2年後ABC算出
+        data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
+                                                         catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
+                                                         type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC"))
+      }else{ # 1年後ABC算出
+        data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1),
+                               catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
+                               type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC"))
+      }
+    }
     else{
       res.nullBTyear <- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = NULL,summary_abc=FALSE)
-      if(!res$arglist$nextyear_abc){data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),                              type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
+      if(!res$arglist$nextyear_abc){data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),res$ABC,res.nullBTyear$ABC,                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
       }
-      else data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1,last.year+1),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),                              type=c(rep(str_c(res$arglist$n.catch,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
+      else data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1,last.year+1),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
+    }
+    if(catch.abc.na!=0) {
+      data_catch2 <- data_catch
+      data_catch2$catch[which(is.na(ccdata$catch[(length(ccdata$catch)-n.catch+1):length(ccdata$catch)]))] <-NA
     }
 
     data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
@@ -694,16 +708,16 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     #label.y.nudge<-c(0.1,-0.1,0.1)
 
     linetype.set <- c("dashed","longdash","solid")
-    legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC")
-    legend.labels2bt <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC","最終年データ利用のABC")
-    legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量")
-    legend.labels2bt.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量","最終年データ利用の算定")
+    legend.labels2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"ABC")
+    legend.labels2bt <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"ABC","最終年データ利用のABC")
+    legend.labels2.1 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"算定漁獲量")
+    legend.labels2bt.1 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"算定漁獲量","最終年データ利用の算定")
     if(!res$arglist$nextyear_abc){
-      legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
-      legend.labels2bt.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
+      legend.labels2.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
+      legend.labels2bt.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
     } else{
-      legend.labels2.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
-      legend.labels2bt.2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
+      legend.labels2.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
+      legend.labels2bt.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
     }
     col.BRP.hcr <- col.BRP
     data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
@@ -1032,14 +1046,21 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     if(BThcr==T) CatchABC<-c(1,2,3)
     else CatchABC<-c(1,2)
 
-    g.catch <- ccdata %>% ggplot() +
+    if(!ignore_naCatch_point) { #
+      g.catch <- ccdata %>% ggplot() +
       geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-      geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+      geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)
+    }else{
+      g.catch <- ccdata %>% ggplot() +
+        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+        geom_point(data=data_catch2,mapping=aes(x=year,y=catch,color=type),lwd=3)
+    }
+
       #ggrepel::geom_label_repel(data=data_catch,
       #                          mapping=aes(x=max(year)-5, y=catch, label=legend.labels2),
       #                          box.padding=0.5, nudge_y=1)+
       #scale_color_manual(name="",values=c(1,2),labels=legend.labels2)+
-      scale_color_manual(name="",values=CatchABC,labels=legend.labels2)+
+    g.catch <- g.catch +scale_color_manual(name="",values=CatchABC,labels=legend.labels2)+
       # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
       #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
       #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
@@ -1051,18 +1072,26 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       theme(legend.position="top",legend.justification = c(1,0))
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){# plot 設定 for mac
-      g.catch <- ccdata %>% ggplot() +
-        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-        geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
-        #ggrepel::geom_label_repel(data=data_catch,
-        #                          mapping=aes(x=max(year)-5,y=catch[1],label=legend.labels2,family=font_MAC),
-        #                          box.padding=0.5, nudge_y=1)+
-        #scale_color_manual(name="",values=c("black","red"),labels=legend.labels2)+
-        scale_color_manual(name="",values=CatchABC,labels=legend.labels2)+
-        # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
-        #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
-        #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
-        #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
+      if(!ignore_naCatch_point) { #
+        g.catch <- ccdata %>% ggplot() +
+          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+          geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)
+        }else{
+        g.catch <- ccdata %>% ggplot() +
+          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
+          geom_point(data=data_catch2,mapping=aes(x=year,y=catch,color=type),lwd=3)
+        }
+          #ggrepel::geom_label_repel(data=data_catch,
+          #                          mapping=aes(x=max(year)-5,y=catch[1],label=legend.labels2,family=font_MAC),
+          #                          box.padding=0.5, nudge_y=1)+
+          #scale_color_manual(name="",values=c("black","red"),labels=legend.labels2)+
+        g.catch <- g.catch + scale_color_manual(name="",values=CatchABC,labels=legend.labels2)
+          # geom_point(data=dplyr::filter(data_catch,type=="ABC"),
+          #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
+          #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
+          #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
+
+      g.catch <- g.catch+
         geom_path(aes(x=year,y=catch),size=1)+
         ylab("漁獲量（トン）")+xlab(year.axis.label)+
         ggtitle("")+
