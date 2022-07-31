@@ -1499,7 +1499,7 @@ theme_custom <- function(){
 #' @param RP  資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）
 #' @export
 #'
-plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0, abc4=FALSE, cpueunit="", fillarea=FALSE, RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE){
+plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0, abc4=FALSE, cpueunit="", fillarea=FALSE, RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,ignore_naCatch_point=FALSE){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
 
   #結果比較の限界は５個まで
@@ -1508,26 +1508,51 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   # 漁期年/年設定 ----
   ifelse(fishseason==1, year.axis.label <- "漁期年", year.axis.label <- "年")
 
+  catch.abc.na<-0
+  if(ignore_naCatch_point){
+    for(i in 1:length(res.list)){
+      mean.catch.abc <- res.list[[i]]$arglist$ccdata$catch[(length(ccdata$catch)-n.catch+1):length(ccdata$catch)]
+      catch.abc.na <- sum(as.numeric(is.na(mean.catch.abc)))
+      if(prod(!is.na(mean.catch.abc))) stop("ignore_naCatch_point option works if catch[lastyear-n.catch+1:lastyear] contains NA.")
+    }
+  }
+
+
   # 漁獲量とABC出力設定 ----
   years <- res.list[[1]]$arglist$ccdata$year
   last.year <- rev(years)[1]
   labels2<-labels2.1<-labels2.2<-c()
 
   for(i in 1:length(res.list)){
-    if(i==1) data_catch<- tibble(year=c((last.year-res.list[[i]]$arglist$n.catch+1):last.year,last.year+2),
-                                 catch=c(rep(res.list[[i]]$mean.catch,res.list[[i]]$arglist$n.catch),res.list[[i]]$ABC),
-                                 type=c(rep(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),res.list[[i]]$arglist$n.catch),paste0(i,"番目ABC")))
-    else data_catch <- rbind(data_catch,tibble(year=last.year+2,
-                                               catch=c(res.list[[i]]$ABC),
-                                               type=c(paste0(i,"番目ABC"))))
+    if(!res$arglist$nextyear_abc){
+      if(i==1) data_catch<- tibble(year=c((last.year-res.list[[i]]$arglist$n.catch+1):last.year,last.year+2),
+                                   catch=c(rep(res.list[[i]]$mean.catch,res.list[[i]]$arglist$n.catch),res.list[[i]]$ABC),
+                                   type=c(rep(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch-catch.abc.na,"年平均)"),res.list[[i]]$arglist$n.catch),paste0(i,"番目ABC")))
+      else data_catch <- rbind(data_catch,tibble(year=last.year+2,
+                                                 catch=c(res.list[[i]]$ABC),
+                                                 type=c(paste0(i,"番目ABC"))))
+    }else{
+      if(i==1) data_catch<- tibble(year=c((last.year-res.list[[i]]$arglist$n.catch+1):last.year,last.year+1),
+                                   catch=c(rep(res.list[[i]]$mean.catch,res.list[[i]]$arglist$n.catch),res.list[[i]]$ABC),
+                                   type=c(rep(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch-catch.abc.na,"年平均)"),res.list[[i]]$arglist$n.catch),paste0(i,"番目ABC")))
+      else data_catch <- rbind(data_catch,tibble(year=last.year+1,
+                                                 catch=c(res.list[[i]]$ABC),
+                                                 type=c(paste0(i,"番目ABC"))))
+    }
+
     labels2 <- c(labels2,paste0(i,"番目ABC"))
     labels2.1 <- c(labels2.1,paste0(i,"番目算定漁獲量"))
     labels2.2 <- c(labels2.2,paste(i,"番目",max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
   }
 
-  legend.labels2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),rev(labels2))
-  legend.labels2.1 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),rev(labels2.1))
-  legend.labels2.2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch,"年平均)"),rev(labels2.2))
+  if(catch.abc.na!=0) {
+    data_catch2 <- data_catch
+    data_catch2$catch[which(is.na(ccdata$catch[(length(ccdata$catch)-n.catch+1):length(ccdata$catch)]))] <-NA
+  }
+
+  legend.labels2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch-catch.abc.na,"年平均)"),rev(labels2))
+  legend.labels2.1 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch-catch.abc.na,"年平均)"),rev(labels2.1))
+  legend.labels2.2 <-c(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch-catch.abc.na,"年平均)"),rev(labels2.2))
 
   col.BRP.hcr <- col.BRP
   data_BRP_hcr <- tibble(BRP=names(res.list[[1]]$BRP),value_obs=res.list[[1]]$Obs_BRP, value_ratio=res.list[[1]]$BRP)
