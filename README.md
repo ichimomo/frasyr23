@@ -77,7 +77,7 @@ data_example2 <- data.frame(year=2001:2012,cpue=cpue,catch=catch2)
 
 # この場合は、ABC算出に使う最近年漁獲量は6年を指定（ただし、最終年データはna.rm=Tにより最近年5年平均になる）
 # plot_abc2では6年の漁獲量がプロットされてしまうので、ignore_naCatch_pointオプションを使用
-abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,nextyear_abc=T)
+abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,timelag0=T)
 graph2_ex_nexty2 <- plot_abc2(abc2_ex_nexty2,ignore_naCatch_point=T)
 ```
 
