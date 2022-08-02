@@ -72,8 +72,8 @@ abc2_ex_nexty <- calc_abc2(data_example,nextyear_abc=T)
 graph2_ex_nexty <- plot_abc2(abc2_ex_nexty)
 
 # 漁獲量・CPUE時系列データの最終年の1年後のABCを表示するが、漁獲量は最終年データがない場合
-cpue2 <- c(10,9,8,4,8,11,10,2,3,2,5,NA)
-data_example2 <- data.frame(year=2001:2012,cpue=cpue2,catch=catch)
+catch2 <- c(15,20,13,14,11,10,5,10,3,2,1,NA)
+data_example2 <- data.frame(year=2001:2012,cpue=cpue,catch=catch2)
 
 # この場合は、ABC算出に使う最近年漁獲量は6年を指定（ただし、最終年データはna.rm=Tにより実質使われない）
 # plot_abc2では6年の漁獲が出てしまうので、ignore_naCatch_pointオプションを使用
