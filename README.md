@@ -67,6 +67,19 @@ graph2_ex <- plot_abc2(abc2_ex,hcrdist=T)
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
 
+# 漁獲量・CPUE時系列データの最終年の1年後のABCを表示する場合
+abc2_ex_nexty <- calc_abc2(data_example,nextyear_abc=T)
+graph2_ex_nexty <- plot_abc2(abc2_ex_nexty)
+
+# 漁獲量・CPUE時系列データの最終年の1年後のABCを表示するが、漁獲量は最終年データがない場合
+catch2 <- c(15,20,13,14,11,10,5,10,3,2,1,NA)
+data_example2 <- data.frame(year=2001:2012,cpue=cpue,catch=catch2)
+
+# この場合は、ABC算出に使う最近年漁獲量は6年を指定（ただし、最終年データはna.rm=Tにより最近年5年平均になる）
+# plot_abc2では6年の漁獲量がプロットされてしまうので、ignore_naCatch_pointオプションを使用
+abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,nextyear_abc=T)
+graph2_ex_nexty2 <- plot_abc2(abc2_ex_nexty2,ignore_naCatch_point=T)
+
 ```
 
 # 実データの解析例とグラフ
@@ -145,3 +158,16 @@ abc2_ex_bt2010 <- calc_abc2(data_example, BTyear=2010)
 
 ```
 
+# プロットオプション
+```
+# 複数のABC算出結果オブジェクトをHCR,ABCのプロットで同時に出力し比較する（ただし、最大５つまで）
+## デフォルトのパラメータ
+abc2_aka <- calc_abc2(data_aka,beta=1)
+## 保守的なABC
+abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
+## BTを0.7、チューニングパラメータδを(0.4,0.7,1.0)にした場合のABC
+abc2_aka_BT07 <- calc_abc2(data_aka,BT=0.7,tune.par=c(0.4,0.7,1.0))
+
+graph_abc2_multires <- plot_abc2_multires(list(abc2_aka,abc2_aka_conservABC,abc2_aka_BT07))
+
+```
