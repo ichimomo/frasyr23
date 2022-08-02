@@ -29,7 +29,7 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' @param empir.dist CPUEの分布に経験分布を用いる（デフォルトはFALSEで正規分布を仮定）
 #' @param simple.empir CPUEの分布に経験分布を用いるときに旧2系的に分布を仮定する（デフォルトはFALSE）empir.dist==Tとした上で追加。
 #' @param BTyear 管理目標水準を計算するときのCPUE時系列最終年を手動で決める（デフォルトはNULLでccdata$cpueの最終年）
-#' @param nextyear_abc 入力データ最終年の翌年のABCとして算出できるケース（デフォルトはFALSE）
+#' @param timelag0 入力データ最終年の翌年のABCとして算出できるケース（デフォルトはFALSE）
 #' @examples
 #' library(frasyr23)
 #' catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
@@ -59,7 +59,7 @@ calc_abc2 <- function(
   beta = 1.0,
   D2alpha = NULL,
   BTyear = NULL,
-  nextyear_abc = FALSE,
+  timelag0 = FALSE,
   summary_abc = TRUE # 浜辺加筆（'20/07/10）
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
@@ -296,7 +296,7 @@ calc_abc2 <- function(
         cat(stringr::str_c("AAV of CPUE: ",round(AAV,3),"\n",
                        "alpha: ",round(alpha,3),"\n",
                        "Average catch: ",round(mean.catch,3),"\n"))
-        if(!nextyear_abc){
+        if(!timelag0){
           cat(stringr::str_c("ABC in ",max(ccdata$year,na.rm=T)+2,": ",round(ABC,3),"\n"))
         }else{
           cat(stringr::str_c("ABC in ",max(ccdata$year,na.rm=T)+1,": ",round(ABC,3),"\n"))
@@ -672,7 +672,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     }
 
     if(BThcr==FALSE){
-      if(!res$arglist$nextyear_abc){ # 2年後ABC算出
+      if(!res$arglist$timelag0){ # 2年後ABC算出
         data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
                                                          catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
                                                          type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC"))
@@ -684,7 +684,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     }
     else{
       res.nullBTyear <- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = NULL,summary_abc=FALSE)
-      if(!res$arglist$nextyear_abc){data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),res$ABC,res.nullBTyear$ABC,                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
+      if(!res$arglist$timelag0){data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),res$ABC,res.nullBTyear$ABC,                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
       }
       else data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1,last.year+1),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
     }
@@ -716,7 +716,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     legend.labels2bt <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"ABC","最終年データ利用のABC")
     legend.labels2.1 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"算定漁獲量")
     legend.labels2bt.1 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"算定漁獲量","最終年データ利用の算定")
-    if(!res$arglist$nextyear_abc){
+    if(!res$arglist$timelag0){
       legend.labels2.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
       legend.labels2bt.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
     } else{
@@ -1527,7 +1527,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   labels2<-labels2.1<-labels2.2<-c()
 
   for(i in 1:length(res.list)){
-    if(!res.list[[1]]$arglist$nextyear_abc){
+    if(!res.list[[1]]$arglist$timelag0){
       if(i==1) data_catch<- tibble(year=c((last.year-res.list[[i]]$arglist$n.catch+1):last.year,last.year+2),
                                    catch=c(rep(res.list[[i]]$mean.catch,res.list[[i]]$arglist$n.catch),res.list[[i]]$ABC),
                                    type=c(rep(str_c("平均漁獲量(",res.list[[1]]$arglist$n.catch-catch.abc.na,"年平均)"),res.list[[i]]$arglist$n.catch),paste0(i,"番目ABC")))

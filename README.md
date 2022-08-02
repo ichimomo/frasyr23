@@ -68,7 +68,7 @@ graph2_ex <- plot_abc2(abc2_ex,hcrdist=T)
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
 
 # 漁獲量・CPUE時系列データの最終年の1年後のABCを表示する場合
-abc2_ex_nexty <- calc_abc2(data_example,nextyear_abc=T)
+abc2_ex_nexty <- calc_abc2(data_example,timelag0=T)
 graph2_ex_nexty <- plot_abc2(abc2_ex_nexty)
 
 # 漁獲量・CPUE時系列データの最終年の1年後のABCを表示するが、漁獲量は最終年データがない場合
@@ -77,7 +77,7 @@ data_example2 <- data.frame(year=2001:2012,cpue=cpue,catch=catch2)
 
 # この場合は、ABC算出に使う最近年漁獲量は6年を指定（ただし、最終年データはna.rm=Tにより実質使われない）
 # plot_abc2では6年の漁獲が出てしまうので、ignore_naCatch_pointオプションを使用
-abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,nextyear_abc=T)
+abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,timelag0=T)
 graph2_ex_nexty2 <- plot_abc2(abc2_ex_nexty2,ignore_naCatch_point=T)
 
 ```
