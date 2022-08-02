@@ -158,3 +158,16 @@ abc2_ex_bt2010 <- calc_abc2(data_example, BTyear=2010)
 
 ```
 
+# プロットオプション
+```
+# 複数のABC算出結果オブジェクトをHCR,ABCのプロットで同時に出力し比較する（ただし、最大５つまで）
+## デフォルトのパラメータ
+abc2_aka <- calc_abc2(data_aka,beta=1)
+## 保守的なABC
+abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
+## BTを0.7、チューニングパラメータδを(0.4,0.7,1.0)にした場合のABC
+abc2_aka_BT07 <- calc_abc2(data_aka,BT=0.7,tune.par=c(0.4,0.7,1.0))
+
+graph_abc2_multires <- plot_abc2_multires(list(abc2_aka,abc2_aka_conservABC,abc2_aka_BT07))
+
+```
