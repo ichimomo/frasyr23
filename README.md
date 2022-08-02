@@ -75,11 +75,10 @@ graph2_ex_nexty <- plot_abc2(abc2_ex_nexty)
 catch2 <- c(15,20,13,14,11,10,5,10,3,2,1,NA)
 data_example2 <- data.frame(year=2001:2012,cpue=cpue,catch=catch2)
 
-# この場合は、ABC算出に使う最近年漁獲量は6年を指定（ただし、最終年データはna.rm=Tにより実質使われない）
-# plot_abc2では6年の漁獲が出てしまうので、ignore_naCatch_pointオプションを使用
-abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,timelag0=T)
+# この場合は、ABC算出に使う最近年漁獲量は6年を指定（ただし、最終年データはna.rm=Tにより最近年5年平均になる）
+# plot_abc2では6年の漁獲量がプロットされてしまうので、ignore_naCatch_pointオプションを使用
+abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,nextyear_abc=T)
 graph2_ex_nexty2 <- plot_abc2(abc2_ex_nexty2,ignore_naCatch_point=T)
-
 ```
 
 # 実データの解析例とグラフ
