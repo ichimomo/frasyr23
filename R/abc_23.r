@@ -629,14 +629,15 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @param cpueunit  資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）
 #' @param leftalign  資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）
 #' @param RP  資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）
-#' @param hcrhline1 HCRのプロットで縦軸の漁獲量を増減させる係数=1に補助線を入れる
-#'
+#' @param hcrhscale HCRのプロットで縦軸の目盛幅をいくつ刻むか（sparseで0.5刻み、middleで0.25刻み、denseで0.2刻み）
+#' @param hcrhline HCRのプロットで縦軸の漁獲量を増減させる係数に補助線を入れる（noneで補助線なし、oneでy=1、hscaleで縦軸目盛に補助線をひく）
+#' @param plotexactframe HCRのプロットで縦軸横軸の0をプロット枠とあわせるか、余裕を持たせるか（デフォルトはFALSEで枠いっぱい）
 #' @param ignore_naCatch_point ABC算出に使う最近年の漁獲量にNAが入っている場合、表示上NAとなる年のポイントと年数を引く
 #'
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline=1,hcrhline_sperse=FALSE,bitabita=FALSE,ignore_naCatch_point=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE, BThcr=FALSE,hcrhline="none",hcrhscale="middle",plotexactframe=FALSE,ignore_naCatch_point=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -926,23 +927,22 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     g.hcr <- g.hcr +
       geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9*1.5, linetype = linetype.set)
 
-    if(hcrhline==2) hlinebreaks <- c(0,0.2,0.4,0.6,0.8,1.0)
+    if(hcrhscale=="sparse") hlinebreaks <- c(0,0.5,1.0)
+    if(hcrhscale=="middle") hlinebreaks <- c(0,0.25,0.5,0.75,1.0)
+    if(hcrhscale=="dense") hlinebreaks <- c(0,0.2,0.4,0.6,0.8,1.0)
 
-    if(hcrhline==1) hlinebreaks <- c(0,0.25,0.5,0.75,1.0)
-
-    if(hcrhline==0) hlinebreaks <- c(0,0.5,1.0)
-
-    if(!bitabita) g.hcr <- g.hcr + scale_y_continuous(breaks = hlinebreaks)
+    if(!plotexactframe) g.hcr <- g.hcr + scale_y_continuous(breaks = hlinebreaks)
     else g.hcr <- g.hcr + scale_x_continuous(expand = c(0,0),limits = c(0,100)) + scale_y_continuous(expand = c(0,0),breaks = hlinebreaks)
 
-    if(!hcrhline_sperse)
-      g.hcr <- g.hcr +
-      geom_hline(yintercept=hlinebreaks,color="gray",linetype=2)
-    else {
-      hcrAuxiliaryhline <- c(0,0.5,1.0)
+    if(hcrhline=="none") hcrAuxiliaryhline <- c()
+    if(hcrhline=="one") hcrAuxiliaryhline <- c(1.0)
+    if(hcrhline=="sparse") hcrAuxiliaryhline <- c(0,0.5,1.0)
+    if(hcrhline=="middle") hcrAuxiliaryhline <- c(0,0.25,0.5,0.75,1.0)
+    if(hcrhline=="dense") hcrAuxiliaryhline <- c(0,0.2,0.4,0.6,0.8,1.0)
+    if(hcrhline=="hscale") hcrAuxiliaryhline <- hlinebreaks
+
       g.hcr <- g.hcr +
         geom_hline(yintercept=hcrAuxiliaryhline,color="gray",linetype=2)
-      }
 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## 図中ラベルと軸ラベルの設定 mac ----
       if(res$BRP[3]==0) #禁漁水準=0の時
@@ -991,7 +991,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
             geom_point(aes(x=res.nullBTyear$Current_Status[1]*100,y=res.nullBTyear$alpha),color=3,size=4)
       }
 
-    if(bitabita) g.hcr <- g.hcr + theme(plot.margin = margin(0,15,0,10))
+    if(plotexactframe) g.hcr <- g.hcr + theme(plot.margin = margin(0,15,0,10))
 
     #漁獲管理規則案 HCR.Dist ----
     current_index_col <- "#1A4472"
@@ -1326,11 +1326,12 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 #' 2系のHCRを比較するための関数
 #'
 #' @param res.list calc_abc2の返り値のリスト
+#' @param stock.name
 #'
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE,hcrhline1=FALSE, vline=TRUE, is_point=TRUE){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, is_point=TRUE){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
@@ -1388,9 +1389,21 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE,hcrhline1=FALSE, vl
                           color="black",size=1,linetype=i)
       }
 
-  g.hcr <-  g.hcr + scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1.0))
-  if(hcrhline1) g.hcr <- g.hcr +
-    geom_hline(yintercept=1,color="gray",linetype=2)
+  if(hscale=="sparse") hlinebreaks <- c(0,0.5,1.0)
+  if(hscale=="middle") hlinebreaks <- c(0,0.25,0.5,0.75,1.0)
+  if(hscale=="dense") hlinebreaks <- c(0,0.2,0.4,0.6,0.8,1.0)
+
+  if(hline=="none") hcrAuxiliaryhline <- c()
+  if(hline=="one") hcrAuxiliaryhline <- c(1.0)
+  if(hline=="sparse") hcrAuxiliaryhline <- c(0,0.5,1.0)
+  if(hline=="middle") hcrAuxiliaryhline <- c(0,0.25,0.5,0.75,1.0)
+  if(hline=="dense") hcrAuxiliaryhline <- c(0,0.2,0.4,0.6,0.8,1.0)
+  if(hline=="hscale") hcrAuxiliaryhline <- hlinebreaks
+
+  if(!plotexactframe) g.hcr <- g.hcr + scale_y_continuous(breaks = hlinebreaks)
+  else g.hcr <- g.hcr + scale_x_continuous(expand = c(0,0),limits = c(0,100)) + scale_y_continuous(expand = c(0,0),breaks = hlinebreaks)
+
+  g.hcr <-  g.hcr + geom_hline(yintercept=hcrAuxiliaryhline,color="gray",linetype=2)
 
   if(vline==TRUE){
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
