@@ -121,7 +121,7 @@ abc2_aka <- calc_abc2(data_aka,beta=1)
 ## 保守的なABC
 abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
 ## 比較
-plot_hcr2(list(abc2_aka,abc2_aka_conservABC))
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),hcrhscale="dense")
 # グラフをセーブする場合
 # ggsave(file="hcr2_compare.png",width=5,height=5)
 
@@ -164,8 +164,10 @@ abc2_aka <- calc_abc2(data_aka)
 graph_aka <- plot_abc2(abc2_aka, hcrhscale="sparse")
 
 # plot_abc2のHCRについて、縦軸の補助線をhcrhlineオプション("none","one","hscale")で選べる
-abc2_aka <- calc_abc2(data_aka)
 graph_aka <- plot_abc2(abc2_aka, hcrhscale="dense", hcrhline="one")
+
+# plot_abc2のHCRについて、縦軸横軸の0をプロット枠ぴったりにする
+graph_aka <- plot_abc2(abc2_aka, hcrhscale="sparse", hcrhline="hscale", plotexactframe=T)
 
 # plot_hcr2においてvlineオプションで横軸の管理基準値補助線をつけるか否か選べる
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vline=F)
