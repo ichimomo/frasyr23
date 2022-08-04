@@ -121,7 +121,7 @@ abc2_aka <- calc_abc2(data_aka,beta=1)
 ## 保守的なABC
 abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
 ## 比較
-plot_hcr2(list(abc2_aka,abc2_aka_conservABC),hcrhscale="dense")
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),hscale="dense")
 # グラフをセーブする場合
 # ggsave(file="hcr2_compare.png",width=5,height=5)
 
