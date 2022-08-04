@@ -159,7 +159,7 @@ abc2_ex_bt2010 <- calc_abc2(data_example, BTyear=2010)
 
 # プロットオプション
 ```
-# plot_abc2のHCRについて、縦軸の目盛はhcrhscaleオプションで0.2,0.25,0.5刻みがそれぞれhscale="dense","middle","sparse"で選べる
+# plot_abc2のHCRについて、縦軸の目盛はhcrhscaleオプションで0.2,0.25,0.5刻みがそれぞれhcrhscale="dense","middle","sparse"で選べる
 abc2_aka <- calc_abc2(data_aka)
 graph_aka <- plot_abc2(abc2_aka, hcrhscale="sparse")
 
