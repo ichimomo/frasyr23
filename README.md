@@ -159,6 +159,20 @@ abc2_ex_bt2010 <- calc_abc2(data_example, BTyear=2010)
 
 # プロットオプション
 ```
+# plot_abc2のHCRについて、縦軸の目盛はhcrhscaleオプションで0.2,0.25,0.5刻みがそれぞれhscale="dense","middle","sparse"で選べる
+abc2_aka <- calc_abc2(data_aka)
+graph_aka <- plot_abc2(abc2_aka, hcrhscale="sparse")
+
+# plot_abc2のHCRについて、縦軸の補助線をhcrhlineオプション("none","one","hscale")で選べる
+abc2_aka <- calc_abc2(data_aka)
+graph_aka <- plot_abc2(abc2_aka, hcrhscale="dense", hcrhline="one")
+
+# plot_hcr2においてvlineオプションで横軸の管理基準値補助線をつけるか否か選べる
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vline=F)
+
+# plot_hcr2において現在の資源量水準に興味がなく、HCRの曲線のみ表示したい場合、is_pointオプションをFにする
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),is_point=F)
+
 # 複数のABC算出結果オブジェクトをHCR,ABCのプロットで同時に出力し比較する（ただし、最大５つまで）
 ## デフォルトのパラメータ
 abc2_aka <- calc_abc2(data_aka,beta=1)
