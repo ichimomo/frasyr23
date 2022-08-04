@@ -1332,6 +1332,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 #'
 
 plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, is_point=TRUE){
+
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
@@ -1417,7 +1418,6 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
               ggrepel::geom_label_repel(data=data_BRP,
                                         mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr),
                                         box.padding=0.5)
-
       }
   }
 
@@ -1425,6 +1425,8 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
       g.hcr <- g.hcr +
         geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4) +
           scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+  }else{
+    g.hcr <- g.hcr + scale_color_manual(name="",values=rev(c(col.BRP)),guide="none")
   }
 
     return(g.hcr)
