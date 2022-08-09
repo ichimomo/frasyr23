@@ -22,7 +22,7 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
 # 主な関数
 - 2系の計算
    - calc_abc2 ABCの計算　
-      - 　オプションは[計算オプション](https://github.com/ichimomo/frasyr23#%E8%A8%88%E7%AE%97%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
+      - オプションは[計算オプション](https://github.com/ichimomo/frasyr23#%E8%A8%88%E7%AE%97%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
    - plot_abc2 結果のプロット
       - オプションは[プロットオプション](https://github.com/ichimomo/frasyr23#%E3%83%97%E3%83%AD%E3%83%83%E3%83%88%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
 
