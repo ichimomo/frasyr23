@@ -121,7 +121,7 @@ plot_hcr2(list(abc2_aka,abc2_aka_conservABC),hscale="dense")
 
 ```
 # ABC算定の際、漁獲量を増減させる係数と最近年の漁獲量をかけるが、デフォルトでは5年平均漁獲量としているが、これを変更する場合、n.catchオプションで指定する
-# アカガレイデータ
+## アカガレイデータ
 data(data_aka)
 abc2_aka_catch6 <- calc_abc2(data_aka,n.catch=6)
 
@@ -133,21 +133,17 @@ abc2_aka_bt2010 <- calc_abc2(data_aka, BTyear=2010)
 
 # 資源量指標値をCPUEデータそのものを利用するのではなく平滑化したり、
 # 水準計算に正規分布ではなく経験分布を使ったり、さらには水準を計算する年を固定するオプションがあります(MSEでのパフォーマンスは公式に評価していません)
-
-# 例データ
+## 例データ
 catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
 cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
 data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
 # ABC計算の際、現時点(CPUE時系列最終年)での資源量指標値に最近年移動平均CPUE(n.cpue年)を使う
 abc2_ex_smD <- calc_abc2(data_example, smooth.cpue=T, n.cpue=3)
-
 # 資源量指標値を求める際、CPUE時系列データを一度平滑化(n.cpue年)してから正規分布に当てる
 abc2_ex_smooth_dist <- calc_abc2(data_example, smooth.dist=T, n.cpue=3)
-
 # 資源量指標値を求める際、CPUE時系列データを標準正規分布ではなく経験分布(累積経験分布関数ecdfを使う)に当てる
 abc2_ex_empir_dist <- calc_abc2(data_example, empir.dist=T)
-
 # 資源量指標値を求める際、CPUE時系列データを経験分布に当てるが、過去最大・最小をそれぞれ1,0として相対値を求める簡素なものを使う
 abc2_ex_simple_em_dist <- calc_abc2(data_example, empir.dist=T,simple.empir=T)
 
