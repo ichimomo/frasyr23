@@ -25,7 +25,8 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
       - オプションは[計算オプション](https://github.com/ichimomo/frasyr23#%E8%A8%88%E7%AE%97%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
    - plot_abc2 結果のプロット
       - オプションは[プロットオプション](https://github.com/ichimomo/frasyr23#%E3%83%97%E3%83%AD%E3%83%83%E3%83%88%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
-
+   - plot_hcr2 HCRの図のみプロット、複数の結果の比較も可能
+      - 詳細は[HCRのみ描画し、比較する](https://github.com/ichimomo/frasyr23#hcr%E3%81%AE%E3%81%BF%E6%8F%8F%E7%94%BB%E3%81%97%E6%AF%94%E8%BC%83%E3%81%99%E3%82%8B)を参照 
 
 # Rコード例
 ```
@@ -65,8 +66,7 @@ graph2_ex_nexty <- plot_abc2(abc2_ex_nexty)
 # 漁獲量・CPUE時系列データの最終年の1年後のABCを表示するが、漁獲量は最終年データがない場合
 catch2 <- c(15,20,13,14,11,10,5,10,3,2,1,NA)
 data_example2 <- data.frame(year=2001:2012,cpue=cpue,catch=catch2)
-
-# この場合は、ABC算出に使う最近年漁獲量は6年を指定（ただし、最終年データはna.rm=Tにより最近年5年平均になる）
+# この場合は、ABC算出に使う最近年漁獲量は6年を指定（ただし、最終年データはna.rm=Tにより実質最近年5年平均漁獲量になる）
 # plot_abc2では6年の漁獲量がプロットされてしまうので、ignore_naCatch_pointオプションを使用
 abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,timelag0=T)
 graph2_ex_nexty2 <- plot_abc2(abc2_ex_nexty2,ignore_naCatch_point=T)
@@ -106,12 +106,11 @@ graph2_aka <- plot_abc2(abc2_aka, detABC=2, fillarea=FALSE, RP=FALSE, cpueunit="
 
 # HCRのみ描画し、比較する
 ```
-# 2系
-## デフォルトのパラメータ
+# 2系のデフォルトのパラメータ
 abc2_aka <- calc_abc2(data_aka,beta=1)
-## 保守的なABC
+# 保守的なABC
 abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
-## 比較
+# 上記２つの比較
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),hscale="dense")
 # グラフをセーブする場合
 # ggsave(file="hcr2_compare.png",width=5,height=5)
@@ -123,6 +122,15 @@ plot_hcr2(list(abc2_aka,abc2_aka_conservABC),hscale="dense")
 # 計算オプション
 
 ```
+# ABC算定の際、漁獲量を増減させる係数と最近年の漁獲量をかけるが、デフォルトでは5年平均漁獲量としているが、これを変更する場合、n.catchオプションで指定する
+# アカガレイデータ
+data(data_aka)
+abc2_aka <- calc_abc2(data_aka,n.catch=6)
+
+# 管理水準を求める際、CPUE時系列の最終年ではなく、CPUEデータの初出年から特定の年(BTyear)までの時系列を使う
+abc2_aka_bt2010 <- calc_abc2(data_aka, BTyear=2010)
+
+
 # 資源量指標値をCPUEデータそのものを利用するのではなく平滑化したり、
 # 水準計算に正規分布ではなく経験分布を使ったり、さらには水準を計算する年を固定するオプションがあります(MSEでのパフォーマンスは公式に評価していません)
 
@@ -142,9 +150,6 @@ abc2_ex_empir_dist <- calc_abc2(data_example, empir.dist=T)
 
 # 資源量指標値を求める際、CPUE時系列データを経験分布に当てるが、過去最大・最小をそれぞれ1,0として相対値を求める簡素なものを使う
 abc2_ex_simple_em_dist <- calc_abc2(data_example, empir.dist=T,simple.empir=T)
-
-# 管理水準を求める際、CPUE時系列の最終年ではなく、CPUEデータの初出年から特定の年(BTyear)までの時系列を使う
-abc2_ex_bt2010 <- calc_abc2(data_example, BTyear=2010)
 
 ```
 
