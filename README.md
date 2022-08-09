@@ -187,11 +187,13 @@ graph_aka <- plot_abc2(abc2_aka, hcrhscale="dense", hcrhline="one")
 # 縦軸横軸の0をプロット枠ぴったりにする
 graph_aka <- plot_abc2(abc2_aka, hcrhscale="sparse", hcrhline="hscale", plotexactframe=T)
 
+
 # plot_hcr2のHCRについて表示オプションを選べます
 # vlineオプションで横軸の管理基準値補助線をつけるか否か選べる
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vline=F)
 # 現在の資源量水準に興味がなく、HCRの曲線のみ表示したい場合、is_pointオプションをFにする
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),is_point=F)
+
 
 # 複数のABC算出結果オブジェクトをHCR,ABCのプロットで同時に出力し比較する（ただし、最大５つまで）
 ## デフォルトのパラメータ
