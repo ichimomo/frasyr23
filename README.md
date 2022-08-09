@@ -36,7 +36,7 @@ catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
 cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
 data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
-# 2系としてABC算出(デフォルトのパラメータは目標水準BT=0.8、限界水準BL=BT*PL=0.8*0.7=0.56、禁漁水準=0、調整パラメータtune.par=c(0.5,0.4,0.4))　様々なオプションは[計算オプション]を参照
+# 2系としてABC算出(デフォルトのパラメータは目標水準BT=0.8、限界水準BL=BT*PL=0.8*0.7=0.56、禁漁水準=0、調整パラメータtune.par=c(0.5,0.4,0.4))
 abc2_ex <- calc_abc2(data_example)
 # ある資源量水準Dにおけるαを求めたいとき、関数の引数にD2alpha=xx（0<xx<1）を加える。(デフォルトはNULLで結果は出力されない)
 abc2_ex <- calc_abc2(data_example,D2alpha=0.155)
