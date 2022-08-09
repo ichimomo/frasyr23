@@ -21,8 +21,8 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
 
 # 主な関数
 - 2系の計算
-   - calc_abc2 ABCの計算
-   - plot_abc2 結果のプロット
+   - calc_abc2 ABCの計算　　　　　　　オプションは[計算オプション](https://github.com/ichimomo/frasyr23#%E8%A8%88%E7%AE%97%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
+   - plot_abc2 結果のプロット オプションは[プロットオプション](https://github.com/ichimomo/frasyr23#%E3%83%97%E3%83%AD%E3%83%83%E3%83%88%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
 
 
 # Rコード例
@@ -52,9 +52,6 @@ graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=0)
 abc4_ex <- calc_abc2(data_example, BT=0.5)
 graph4_ex <- plot_abc2(abc4_ex,fishseason=1,detABC=2, abc4=TRUE)
 # calc_abc2関数でBT=0.5とし、plot_abc2関数でabc4=TRUEとすることで資源量指標値の平均水準（50%水準）と過去最低値を参照する図が描画される
-
-# 現在の資源水準が管理基準を決定する分布のどこに位置するか示したい場合
-graph2_ex <- plot_abc2(abc2_ex,hcrdist=T)
 
 # AAVのちがいを見る	   
 abc2_ex_AAV1 <- calc_abc2(data_example,AAV=1)	     
@@ -168,6 +165,10 @@ graph2_ex <- plot_abc2(abc2_ex,fishseason=1,proposal=FALSE)
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=2,fillarea=TRUE, cpueunit="（トン/網）")
 # 資源量指標値の時系列グラフに目標水準・限界水準を重ね描きしない場合（評価報告書作成用）
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,RP=FALSE)
+
+# 現在の資源水準が管理基準を決定する分布のどこに位置するか示したい場合
+graph2_ex <- plot_abc2(abc2_ex,hcrdist=T)
+
 
 # plot_abc2のHCRについてメモリや補助線の表示オプションを選べます
 # アカガレイデータの解析結果をつかった表示例
