@@ -39,22 +39,14 @@ abc2_ex <- calc_abc2(data_example)
 # ある資源量水準Dにおけるαを求めたいとき、関数の引数にD2alpha=xx（0<xx<1）を加える。(デフォルトはNULLで結果は出力されない)
 abc2_ex <- calc_abc2(data_example,D2alpha=0.155)
 # 保守的なABCを求めたい（βを設定したい）時。（デフォルトはβ=1となっている）
-abc2_ex <- calc_abc2(data_example,beta=0.9)
+abc2_ex_09beta <- calc_abc2(data_example,beta=0.9)
+# BTを0.7、チューニングパラメータδを(0.4,0.7,1.0)にした場合のABC
+abc2_ex_BT07 <- calc_abc2(data_example,BT=0.7,tune.par=c(0.4,0.7,1.0))
 
-# ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
+# 結果のプロット（ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合）　表示文言などプロットのオプションは[プロットオプション]を参照
 graph2_ex <- plot_abc2(abc2_ex,detABC=0)
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=0)
-# ABCが決定できず算定漁獲量を提示する魚種で、かつ漁期が暦の年に一致しない場合
-graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
-# 提案段階のため「漁獲量の予測値」として示す場合で、かつ漁期が暦の年に一致しない場合
-graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=2)
-# 目標水準・限界水準・禁漁水準が確定して案を外す場合
-graph2_ex <- plot_abc2(abc2_ex,fishseason=1,proposal=FALSE)
-# 資源量指標値の時系列グラフの背景に水準を境界とした色を塗りたい場合（かつ資源量指標値に単位を付ける場合）
-graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=2,fillarea=TRUE, cpueunit="（トン/網）")
-# 資源量指標値の時系列グラフに目標水準・限界水準を重ね描きしない場合（評価報告書作成用）
-graph2_ex <- plot_abc2(abc2_ex,fishseason=1,RP=FALSE)
 
 # 2系の水準計算を準用する跨り資源の場合
 abc4_ex <- calc_abc2(data_example, BT=0.5)
@@ -159,20 +151,38 @@ abc2_ex_bt2010 <- calc_abc2(data_example, BTyear=2010)
 
 # プロットオプション
 ```
-# plot_abc2のHCRについて、縦軸の目盛はhcrhscaleオプションで0.2,0.25,0.5刻みがそれぞれhcrhscale="dense","middle","sparse"で選べる
-abc2_aka <- calc_abc2(data_aka)
+# ABC決定しているor試算提示か、漁期は暦かどうかなどで表示文言を変えられます
+# 例データの解析結果をつかった表示例
+
+# ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合
+graph2_ex <- plot_abc2(abc2_ex,detABC=0)
+# ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=0)
+# ABCが決定できず算定漁獲量を提示する魚種で、かつ漁期が暦の年に一致しない場合
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=1)
+# 提案段階のため「漁獲量の予測値」として示す場合で、かつ漁期が暦の年に一致しない場合
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=2)
+# 目標水準・限界水準・禁漁水準が確定して案を外す場合
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,proposal=FALSE)
+# 資源量指標値の時系列グラフの背景に水準を境界とした色を塗りたい場合（かつ資源量指標値に単位を付ける場合）
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=2,fillarea=TRUE, cpueunit="（トン/網）")
+# 資源量指標値の時系列グラフに目標水準・限界水準を重ね描きしない場合（評価報告書作成用）
+graph2_ex <- plot_abc2(abc2_ex,fishseason=1,RP=FALSE)
+
+# plot_abc2のHCRについてメモリや補助線の表示オプションを選べます
+# アカガレイデータの解析結果をつかった表示例
+
+# 縦軸の目盛はhcrhscaleオプションで0.2,0.25,0.5刻みがそれぞれhcrhscale="dense","middle","sparse"で選べる
 graph_aka <- plot_abc2(abc2_aka, hcrhscale="sparse")
-
-# plot_abc2のHCRについて、縦軸の補助線をhcrhlineオプション("none","one","hscale")で選べる
+# 縦軸の補助線をhcrhlineオプション("none","one","hscale")で選べる
 graph_aka <- plot_abc2(abc2_aka, hcrhscale="dense", hcrhline="one")
-
-# plot_abc2のHCRについて、縦軸横軸の0をプロット枠ぴったりにする
+# 縦軸横軸の0をプロット枠ぴったりにする
 graph_aka <- plot_abc2(abc2_aka, hcrhscale="sparse", hcrhline="hscale", plotexactframe=T)
 
-# plot_hcr2においてvlineオプションで横軸の管理基準値補助線をつけるか否か選べる
+# plot_hcr2のHCRについて表示オプションを選べます
+# vlineオプションで横軸の管理基準値補助線をつけるか否か選べる
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vline=F)
-
-# plot_hcr2において現在の資源量水準に興味がなく、HCRの曲線のみ表示したい場合、is_pointオプションをFにする
+# 現在の資源量水準に興味がなく、HCRの曲線のみ表示したい場合、is_pointオプションをFにする
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),is_point=F)
 
 # 複数のABC算出結果オブジェクトをHCR,ABCのプロットで同時に出力し比較する（ただし、最大５つまで）
