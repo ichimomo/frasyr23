@@ -41,7 +41,7 @@ data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 abc2_ex <- calc_abc2(data_example)
 # 保守的なABCを求めたい（βを設定したい）時。（デフォルトはβ=1となっている）
 abc2_ex_09beta <- calc_abc2(data_example,beta=0.9)
-# BTを0.7、調整パラメータδを(0.4,0.7,1.0)にした場合
+# 目標水準BTを0.7、調整パラメータδを(0.4,0.7,1.0)にした場合
 abc2_ex_BT07 <- calc_abc2(data_example,BT=0.7,tune.par=c(0.4,0.7,1.0))
 
 # 結果のプロット（ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合）　表示文言などプロットのオプションは後述の[プロットオプション]を参照
