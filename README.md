@@ -34,7 +34,7 @@ catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
 cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
 data_example <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
-# 2系
+# 2系としてABC算出(デフォルトのパラメータは目標水準BT=0.8、限界水準BL=BT*PL=0.8*0.7=0.56、禁漁水準=0、調整パラメータtune.par=c(0.5,0.4,0.4))　様々なオプションは[計算オプション]を参照
 abc2_ex <- calc_abc2(data_example)
 # ある資源量水準Dにおけるαを求めたいとき、関数の引数にD2alpha=xx（0<xx<1）を加える。(デフォルトはNULLで結果は出力されない)
 abc2_ex <- calc_abc2(data_example,D2alpha=0.155)
@@ -43,7 +43,7 @@ abc2_ex_09beta <- calc_abc2(data_example,beta=0.9)
 # BTを0.7、チューニングパラメータδを(0.4,0.7,1.0)にした場合のABC
 abc2_ex_BT07 <- calc_abc2(data_example,BT=0.7,tune.par=c(0.4,0.7,1.0))
 
-# 結果のプロット（ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合）　表示文言などプロットのオプションは[プロットオプション](https://github.com/fshin3/frasyr23/blob/master/README.md#%E3%83%97%E3%83%AD%E3%83%83%E3%83%88%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
+# 結果のプロット（ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合）　表示文言などプロットのオプションは[プロットオプション]を参照
 graph2_ex <- plot_abc2(abc2_ex,detABC=0)
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=0)
@@ -125,7 +125,7 @@ plot_hcr2(list(abc2_aka,abc2_aka_conservABC),hscale="dense")
 
 ```
 # 資源量指標値をCPUEデータそのものを利用するのではなく平滑化したり、
-# 水準計算に正規分布ではなく経験分布を使ったり、さらには水準を計算する年を固定するオプションがあります
+# 水準計算に正規分布ではなく経験分布を使ったり、さらには水準を計算する年を固定するオプションがあります(MSEでのパフォーマンスは公式に評価していません)
 
 # 例データ
 catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
