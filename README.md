@@ -43,7 +43,7 @@ abc2_ex_09beta <- calc_abc2(data_example,beta=0.9)
 # BTを0.7、チューニングパラメータδを(0.4,0.7,1.0)にした場合のABC
 abc2_ex_BT07 <- calc_abc2(data_example,BT=0.7,tune.par=c(0.4,0.7,1.0))
 
-# 結果のプロット（ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合）　表示文言などプロットのオプションは[プロットオプション]を参照
+# 結果のプロット（ABCが決定できる魚種で、かつ漁期が暦の年に一致する場合）　表示文言などプロットのオプションは[プロットオプション](https://github.com/fshin3/frasyr23/blob/master/README.md#%E3%83%97%E3%83%AD%E3%83%83%E3%83%88%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
 graph2_ex <- plot_abc2(abc2_ex,detABC=0)
 # ABCが決定できる魚種で、かつ漁期が暦の年に一致しない場合
 graph2_ex <- plot_abc2(abc2_ex,fishseason=1,detABC=0)
