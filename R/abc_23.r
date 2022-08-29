@@ -30,7 +30,7 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' @param simple.empir CPUEの分布に経験分布を用いるときに旧2系的に分布を仮定する（デフォルトはFALSE）empir.dist==Tとした上で追加。
 #' @param BTyear 管理目標水準を計算するときのCPUE時系列最終年を手動で決める（デフォルトはNULLでccdata$cpueの最終年）
 #' @param timelag0 入力データ最終年の翌年のABCとして算出できるケース（デフォルトはFALSE）
-#' @param resp
+#' @param resp 変動緩和措置をとるとき、前年漁獲量を1としたときの指数
 #' @examples
 #' library(frasyr23)
 #' catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
@@ -314,8 +314,8 @@ calc_abc2 <- function(
         }else{
           cat(stringr::str_c("ABC in ",max(ccdata$year,na.rm=T)+1,": ",round(ABC,3),"\n"))
         }
-        if(resp_flag==1) cat(stringr::str_c("ABC was replaced by ",(1+resp)*100,"% of the latest Catch \n"))
-        if(resp_flag==2) cat(stringr::str_c("ABC was replaced by ",(1-resp)*100,"% of the latest Catch \n"))
+        if(resp_flag==1) cat(stringr::str_c("ABC was replaced by ",(1+resp)*100,"% of the Latest catch \n"))
+        if(resp_flag==2) cat(stringr::str_c("ABC was replaced by ",(1-resp)*100,"% of the Latest catch \n"))
         cat(stringr::str_c("CPUE Level and alpha: 0.1  and  ",round(alphafromD01,3),"\n",
                        "CPUE Level and alpha: 0.05 and  ",round(alphafromD005,3),"\n"))
     if(!is.null(D2alpha)) cat("alpha at CPUE Level=",round(D2alpha,3),": ",round(alphafromD,3),"\n")
