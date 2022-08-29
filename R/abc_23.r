@@ -1331,7 +1331,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, is_point=TRUE){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, is_point=TRUE,change_ps=NULL,one_point=FALSE){
 
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(proposal==TRUE){
@@ -1421,10 +1421,28 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
       }
   }
 
-  if(is_point){
+  if(one_point){
+    points.size.magnify <- c(1)
+    for(k in 2:nrow(Currentalphas)){
+      points.size.magnify <- c(points.size.magnify,NA)
+    }
+    g.hcr <- g.hcr +
+      geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4*points.size.magnify) +
+      scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+  }else if(is_point){
+    if(is.null(change_ps)){
       g.hcr <- g.hcr +
         geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4) +
-          scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+        scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+    }else{
+      points.size.magnify <- c(1)
+      for(k in 2:nrow(Currentalphas)){
+        points.size.magnify <- c(points.size.magnify,points.size.magnify*change_ps)
+      }
+      g.hcr <- g.hcr +
+        geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4*points.size.magnify) +
+        scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+    }
   }else{
     g.hcr <- g.hcr + scale_color_manual(name="",values=rev(c(col.BRP)),guide="none")
   }
