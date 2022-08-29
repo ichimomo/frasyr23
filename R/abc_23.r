@@ -30,6 +30,7 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #' @param simple.empir CPUEの分布に経験分布を用いるときに旧2系的に分布を仮定する（デフォルトはFALSE）empir.dist==Tとした上で追加。
 #' @param BTyear 管理目標水準を計算するときのCPUE時系列最終年を手動で決める（デフォルトはNULLでccdata$cpueの最終年）
 #' @param timelag0 入力データ最終年の翌年のABCとして算出できるケース（デフォルトはFALSE）
+#' @param resp
 #' @examples
 #' library(frasyr23)
 #' catch <- c(15,20,13,14,11,10,5,10,3,2,1,3)
@@ -60,6 +61,7 @@ calc_abc2 <- function(
   D2alpha = NULL,
   BTyear = NULL,
   timelag0 = FALSE,
+  resp = NULL,
   summary_abc = TRUE # 浜辺加筆（'20/07/10）
 ){
     argname <- ls() # 引数をとっておいて再現できるようにする
@@ -255,6 +257,17 @@ calc_abc2 <- function(
     alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
 
     ABC <- mean.catch * alpha
+    resp_flag<-0
+    if(!is.null(resp)) {
+      if( ABC > (1+resp)*catch[n] ) {
+        ABC <- catch[n]*(1+resp)
+        resp_flag<-1
+      }
+      if( ABC < (1-resp)*catch[n] ) {
+        ABC <- catch[n]*(1-resp)
+        resp_flag<-2
+      }
+    }
 
     Obs_BRP <- c(icum.cpue(BT), icum.cpue(BL), icum.cpue(BB))
     Obs_percent <- icum.cpue(c(0.05,seq(from=0.1,to=0.9,by=0.1),0.95))
@@ -301,6 +314,8 @@ calc_abc2 <- function(
         }else{
           cat(stringr::str_c("ABC in ",max(ccdata$year,na.rm=T)+1,": ",round(ABC,3),"\n"))
         }
+        if(resp_flag==1) cat(stringr::str_c("ABC was replaced by ",(1+resp)*100,"% of the latest Catch \n"))
+        if(resp_flag==2) cat(stringr::str_c("ABC was replaced by ",(1-resp)*100,"% of the latest Catch \n"))
         cat(stringr::str_c("CPUE Level and alpha: 0.1  and  ",round(alphafromD01,3),"\n",
                        "CPUE Level and alpha: 0.05 and  ",round(alphafromD005,3),"\n"))
     if(!is.null(D2alpha)) cat("alpha at CPUE Level=",round(D2alpha,3),": ",round(alphafromD,3),"\n")
