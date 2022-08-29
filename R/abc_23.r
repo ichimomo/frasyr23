@@ -1331,7 +1331,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, is_point=TRUE,change_ps=NULL,one_point=FALSE){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, vlineBan=TRUE,is_point=TRUE,change_ps=NULL,one_point=FALSE){
 
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(proposal==TRUE){
@@ -1340,6 +1340,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
     legend.labels.hcr <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
   }
   linetype.set <- c("22","41","solid")
+
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
   Currentalphas<-c()
@@ -1365,8 +1366,10 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
 
       for(i in 1:length(res.list)){
           res <- res.list[[i]]
-          data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
+          if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
                            value_ratio=res$BRP)
+          else data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
+                                  value_ratio=res$BRP[-3])
           BT <- res$arglist$BT
           PL <- res$arglist$PL
           PB <- res$arglist$PB
@@ -1401,6 +1404,16 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
   if(hline=="dense") hcrAuxiliaryhline <- c(0,0.2,0.4,0.6,0.8,1.0)
   if(hline=="hscale") hcrAuxiliaryhline <- hlinebreaks
 
+  if(vlineBan==FALSE) {
+    if(proposal==TRUE){
+      legend.labels.hcr <- c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案")
+    }else{
+      legend.labels.hcr <- c("目標管理基準値（目標水準）","限界管理基準値（限界水準）")
+    }
+    linetype.set <- c("22","41")
+    col.BRP <- c("#00533E","#edb918")
+  }
+
   if(!plotexactframe) g.hcr <- g.hcr + scale_y_continuous(breaks = hlinebreaks)
   else g.hcr <- g.hcr + scale_x_continuous(expand = c(0,0),limits = c(0,100)) + scale_y_continuous(expand = c(0,0),breaks = hlinebreaks)
 
@@ -1408,10 +1421,17 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
 
   if(vline==TRUE){
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+        if(vlineBan){
           g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-              ggrepel::geom_label_repel(data=data_BRP,
-                                mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr,family=font_MAC),
-                                box.padding=0.5)
+            ggrepel::geom_label_repel(data=data_BRP,
+                                      mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr,family=font_MAC),
+                                      box.padding=0.5)
+        }else{
+          g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+            ggrepel::geom_label_repel(data=data_BRP,
+                                      mapping=aes(x=value_ratio*100, y=c(1.15,0.8), label=legend.labels.hcr,family=font_MAC),
+                                      box.padding=0.5)
+        }
 
       }else{
           g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
