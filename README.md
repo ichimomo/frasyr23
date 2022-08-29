@@ -189,6 +189,12 @@ graph_aka <- plot_abc2(abc2_aka, hcrhscale="sparse", hcrhline="hscale", plotexac
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vline=F)
 # 現在の資源量水準に興味がなく、HCRの曲線のみ表示したい場合、is_pointオプションをFにする
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),is_point=F)
+# 禁漁水準を非表示とするために、vlineBanオプションをFにする
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vlineBan=F)
+# 現在の資源量水準のポイントが重なるなど、表示に難がある場合、change_psオプションで縮小倍率x(0<x<1)を選ぶ
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),change_ps=0.8)
+# 現在の資源量水準のポイントについては結果オブジェクトリストの一つ目だけ表示したい場合、one_pointオプションをTにする
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),one_point=T)
 
 
 # 複数のABC算出結果オブジェクトをHCR,ABCのプロットで同時に出力し比較する（ただし、最大５つまで）
