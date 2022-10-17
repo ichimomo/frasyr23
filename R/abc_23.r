@@ -1350,12 +1350,24 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
 
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(vline.listnum>length(res.list)) stop("vline.listnum must not be larger than length(res.list).\n")
+
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
   }else{
     legend.labels.hcr <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
   }
   linetype.set <- c("22","41","solid")
+
+  if(vlineBan==FALSE) {
+    if(proposal==TRUE){
+      legend.labels.hcr <- c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案")
+    }else{
+      legend.labels.hcr <- c("目標管理基準値（目標水準）","限界管理基準値（限界水準）")
+    }
+    linetype.set <- c("22","41")
+    col.BRP <- c("#00533E","#edb918")
+  }
+
 
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -1420,27 +1432,19 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
   if(hline=="dense") hcrAuxiliaryhline <- c(0,0.2,0.4,0.6,0.8,1.0)
   if(hline=="hscale") hcrAuxiliaryhline <- hlinebreaks
 
-  if(vlineBan==FALSE) {
-    if(proposal==TRUE){
-      legend.labels.hcr <- c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案")
-    }else{
-      legend.labels.hcr <- c("目標管理基準値（目標水準）","限界管理基準値（限界水準）")
-    }
-    linetype.set <- c("22","41")
-    col.BRP <- c("#00533E","#edb918")
-  }
-
   if(!plotexactframe) g.hcr <- g.hcr + scale_y_continuous(breaks = hlinebreaks)
   else g.hcr <- g.hcr + scale_x_continuous(expand = c(0,0),limits = c(0,100)) + scale_y_continuous(expand = c(0,0),breaks = hlinebreaks)
 
   g.hcr <-  g.hcr + geom_hline(yintercept=hcrAuxiliaryhline,color="gray",linetype=2)
 
   if(vline==TRUE){
-    res <- res.list[[vline.listnum]]
-    if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
-                                          value_ratio=res$BRP)
-    else data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
-                            value_ratio=res$BRP[-3])
+    if(vline.listnum!=0){
+      vline.num<-vline.listnum
+      res <- res.list[[vline.num]]
+      if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
+                                            value_ratio=res$BRP)
+      else data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
+                              value_ratio=res$BRP[-3])
 
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         if(vlineBan){
@@ -1456,11 +1460,53 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
         }
 
       }else{
-          g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
-              ggrepel::geom_label_repel(data=data_BRP,
-                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr),
-                                        box.padding=0.5)
+        g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
+          ggrepel::geom_label_repel(data=data_BRP,
+                                    mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr),
+                                    box.padding=0.5)
       }
+    }else{ # vline.listnum==NULL
+      vline.frag<-T
+      vline.num<-1
+      legend.labels.hcr0<-list()
+      while(vline.frag){
+        res <- res.list[[vline.num]]
+        #legend.labels.hcr0[[vline.num]]<-paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr)))
+        if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
+                                              value_ratio=res$BRP)
+        else data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
+                                value_ratio=res$BRP[-3])
+
+        if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+          if(vlineBan){
+            g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
+              ggrepel::geom_label_repel(data=data_BRP,
+                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr))),family=font_MAC),
+                                        box.padding=0.5)
+          }else{
+            g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
+              ggrepel::geom_label_repel(data=data_BRP,
+                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15), label=paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr))),family=font_MAC),
+                                        box.padding=0.5)
+          }
+
+        }else{
+          if(vlineBan){
+          g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
+            ggrepel::geom_label_repel(data=data_BRP,
+                                      mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr)))),
+                                      box.padding=0.5)}else{
+                                        g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
+                                          ggrepel::geom_label_repel(data=data_BRP,
+                                                                    mapping=aes(x=value_ratio*100, y=c(0.5,1.15), label=paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr)))),
+                                                                    box.padding=0.5)
+                                      }
+        }
+
+        if(vline.num==length(res.list)) vline.frag<-F
+        vline.num <- vline.num+1
+      }
+    }
   }
 
   if(one_point){
