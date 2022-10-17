@@ -1465,13 +1465,13 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
                                     mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr),
                                     box.padding=0.5)
       }
-    }else{ # vline.listnum==NULL
+    }else{ # vline.listnum==0
       vline.frag<-T
       vline.num<-1
       legend.labels.hcr0<-list()
       while(vline.frag){
         res <- res.list[[vline.num]]
-        #legend.labels.hcr0[[vline.num]]<-paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr)))
+
         if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
                                               value_ratio=res$BRP)
         else data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
@@ -1481,12 +1481,12 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
           if(vlineBan){
             g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
               ggrepel::geom_label_repel(data=data_BRP,
-                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr))),family=font_MAC),
+                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=ifelse(vline.num==length(res.list),legend.labels.hcr,""),family=font_MAC),
                                         box.padding=0.5)
           }else{
             g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
               ggrepel::geom_label_repel(data=data_BRP,
-                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15), label=paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr))),family=font_MAC),
+                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15), label=ifelse(vline.num==length(res.list),legend.labels.hcr,""),family=font_MAC),
                                         box.padding=0.5)
           }
 
@@ -1494,11 +1494,11 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
           if(vlineBan){
           g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
             ggrepel::geom_label_repel(data=data_BRP,
-                                      mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr)))),
+                                      mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=ifelse(vline.num==length(res.list),legend.labels.hcr,"")),
                                       box.padding=0.5)}else{
                                         g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
                                           ggrepel::geom_label_repel(data=data_BRP,
-                                                                    mapping=aes(x=value_ratio*100, y=c(0.5,1.15), label=paste0(legend.labels.hcr,rep(vline.num,length(legend.labels.hcr)))),
+                                                                    mapping=aes(x=value_ratio*100, y=c(0.5,1.15), label=ifelse(vline.num==length(res.list),legend.labels.hcr,"")),
                                                                     box.padding=0.5)
                                       }
         }
