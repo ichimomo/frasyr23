@@ -1455,7 +1455,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
         }else{
           g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
             ggrepel::geom_label_repel(data=data_BRP,
-                                      mapping=aes(x=value_ratio*100, y=c(1.15,0.8), label=legend.labels.hcr,family=font_MAC),
+                                      mapping=aes(x=value_ratio*100, y=c(0.5,1.15), label=legend.labels.hcr,family=font_MAC),
                                       box.padding=0.5)
         }
 
