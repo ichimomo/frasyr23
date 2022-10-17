@@ -108,7 +108,7 @@ graph2_aka <- plot_abc2(abc2_aka, detABC=2, fillarea=FALSE, RP=FALSE, cpueunit="
 abc2_aka <- calc_abc2(data_aka,beta=1)
 # 保守的なABC
 abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
-# 上記２つの比較
+# 上記２つの比較（管理水準の線はデフォルトでlistの1番目）
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),hscale="dense")
 # グラフをセーブする場合
 # ggsave(file="hcr2_compare.png",width=5,height=5)
@@ -200,6 +200,9 @@ plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vlineBan=F)
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),change_ps=0.8)
 # 現在の資源量水準のポイントについては結果オブジェクトリストの一つ目だけ表示したい場合、one_pointオプションをTにする
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),one_point=T)
+# 比較するhcrのうち、listの何番目の管理水準を表示させるかのオプションを選べます（デフォルトは1番目）
+abc2_aka_BT07<-calc_abc2(data_aka,BT=0.7,tune.par=c(0.4,0.7,1.0))
+plot_hcr2(list(abc2_aka,abc2_aka_BT07),vline.listnum=2)
 
 
 # 複数のABC算出結果オブジェクトをHCR,ABCのプロットで同時に出力し比較する（ただし、最大５つまで）

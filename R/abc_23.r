@@ -1346,9 +1346,10 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, vlineBan=TRUE,is_point=TRUE,change_ps=NULL,one_point=FALSE){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, vline.listnum=1,vlineBan=TRUE,is_point=TRUE,change_ps=NULL,one_point=FALSE){
 
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
+  if(vline.listnum>length(res.list)) stop("vline.listnum must not be larger than length(res.list).\n")
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
   }else{
@@ -1435,6 +1436,12 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
   g.hcr <-  g.hcr + geom_hline(yintercept=hcrAuxiliaryhline,color="gray",linetype=2)
 
   if(vline==TRUE){
+    res <- res.list[[vline.listnum]]
+    if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
+                                          value_ratio=res$BRP)
+    else data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
+                            value_ratio=res$BRP[-3])
+
       if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
         if(vlineBan){
           g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.9, linetype = linetype.set)+
