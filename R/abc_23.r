@@ -256,16 +256,28 @@ calc_abc2 <- function(
     alphafromD01 <- type2_func(0.1,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
     alphafromD005 <- type2_func(0.05,cpue[n],BT=BT,PL=PL,PB=PB,AAV=AAV,tune.par=tune.par,beta)
 
+    # ABC
     ABC <- mean.catch * alpha
     resp_flag<-0
-    if(!is.null(resp)) {
-      if( ABC > (1+resp)*catch[n] ) {
-        ABC <- catch[n]*(1+resp)
-        resp_flag<-1
-      }
-      if( ABC < (1-resp)*catch[n] ) {
-        ABC <- catch[n]*(1-resp)
-        resp_flag<-2
+    if(!is.null(resp)) { # resp != NULL
+      if(!is.na(catch[n])){
+        if( ABC > (1+resp)*catch[n] ) {
+          ABC <- catch[n]*(1+resp)
+          resp_flag<-1
+        }
+        if( ABC < (1-resp)*catch[n] ) {
+          ABC <- catch[n]*(1-resp)
+          resp_flag<-2
+        }
+      }else{ # if latest catch == NA
+        if( ABC > (1+resp)*catch[n-1] ) {
+          ABC <- catch[n-1]*(1+resp)
+          resp_flag<-1
+        }
+        if( ABC < (1-resp)*catch[n-1] ) {
+          ABC <- catch[n-1]*(1-resp)
+          resp_flag<-2
+        }
       }
     }
 
