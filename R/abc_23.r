@@ -1380,7 +1380,6 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
     col.BRP <- c("#00533E","#edb918")
   }
 
-
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
   Currentalphas<-c()
@@ -1389,6 +1388,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
   }
   col.hcr.points <- seq(2,1+length(res.list))
 
+  # 枠設定
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
     g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
       theme_bw(base_family = font_MAC)+theme_custom()+
@@ -1404,35 +1404,37 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
       theme(legend.position="top",legend.justification = c(1,0))
     }
 
-      for(i in 1:length(res.list)){
-          res <- res.list[[i]]
-          if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
+  # HCR曲線
+  for(i in 1:length(res.list)){
+    res <- res.list[[i]]
+    if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
                            value_ratio=res$BRP)
-          else data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
+    else data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
                                   value_ratio=res$BRP[-3])
-          BT <- res$arglist$BT
-          PL <- res$arglist$PL
-          PB <- res$arglist$PB
-          tune.par <- res$arglist$tune.par
-          beta <- res$arglist$beta
-          empir.dist<- res$arglist$empir.dist
-          simple.empir<-res$arglist$simple.empir
-          if(is.null(res$arglist$BTyear)) ccdata.plot<-res$arglist$ccdata
-          else ccdata.plot<-res$arglist$ccdata[which(res$arglist$ccdata$year <= res$arglist$BTyear),]
+    BT <- res$arglist$BT
+    PL <- res$arglist$PL
+    PB <- res$arglist$PB
+    tune.par <- res$arglist$tune.par
+    beta <- res$arglist$beta
+    empir.dist<- res$arglist$empir.dist
+    simple.empir<-res$arglist$simple.empir
+    if(is.null(res$arglist$BTyear)) ccdata.plot<-res$arglist$ccdata
+    else ccdata.plot<-res$arglist$ccdata[which(res$arglist$ccdata$year <= res$arglist$BTyear),]
 
-          if(!empir.dist) g.hcr <- g.hcr +
+    if(!empir.dist) g.hcr <- g.hcr +
           #            stat_function(fun=type2_func_wrapper,
           #                          args=list(BT=BT,PL=0,PB=PB,tune.par=tune.par,AAV=res$AAV,type="%"),
           #                       color="gray")+
-          stat_function(fun=type2_func_wrapper,
+    stat_function(fun=type2_func_wrapper,
                         args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,type="%"),
                         color="black",size=1,linetype=i)
-          else g.hcr <- g.hcr +
+    else g.hcr <- g.hcr +
             stat_function(fun=type2_func_empir_wrapper,
                           args=list(BT=BT,PL=PL,PB=PB,tune.par=tune.par,beta=beta,AAV=res$AAV,cpue=ccdata.plot$cpue,simple=simple.empir,type="%"),
                           color="black",size=1,linetype=i)
-      }
+  }
 
+  # 目盛設定
   if(hscale=="sparse") hlinebreaks <- c(0,0.5,1.0)
   if(hscale=="middle") hlinebreaks <- c(0,0.25,0.5,0.75,1.0)
   if(hscale=="dense") hlinebreaks <- c(0,0.2,0.4,0.6,0.8,1.0)
@@ -1449,7 +1451,9 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
 
   g.hcr <-  g.hcr + geom_hline(yintercept=hcrAuxiliaryhline,color="gray",linetype=2)
 
+  # 管理水準縦線描画
   if(vline==TRUE){
+    # 一つのHCRの水準線を選択
     if(vline.listnum!=0){
       vline.num<-vline.listnum
       res <- res.list[[vline.num]]
@@ -1477,47 +1481,62 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
                                     mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=legend.labels.hcr),
                                     box.padding=0.5)
       }
-    }else{ # vline.listnum==0
-      vline.frag<-T
-      vline.num<-1
-      legend.labels.hcr0<-list()
-      while(vline.frag){
-        res <- res.list[[vline.num]]
+    }else{ # 複数の水準線を同時描画 vline.listnum==0
 
-        if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
-                                              value_ratio=res$BRP)
-        else data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
+      data_BRPs <-list()
+      legend.labels<-list()
+      linetype.sets<-list()
+      line.sizes<-list()
+      col.BRPs <- list()
+      label.hlevels<-list()
+      data_BRP<-c()
+      if(vlineBan) label.hlevel<-c(0.8,0.4,1.15) #rep
+      else label.hlevel<-c(0.8,0.4) #rep
+      for(i in 1:length(res.list)){
+        res<-res.list[[i]]
+        if(vlineBan==T) data_BRPs[[i]] <- tibble(reslist=i,BRP=names(res$BRP),value_obs=res$Obs_BRP,
+                                           value_ratio=res$BRP)
+        else data_BRPs[[i]] <- tibble(reslist=i,BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
                                 value_ratio=res$BRP[-3])
-
-        if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
-          if(vlineBan){
-            g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
-              ggrepel::geom_label_repel(data=data_BRP,
-                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=ifelse(vline.num==length(res.list),legend.labels.hcr,""),family=font_MAC),
-                                        box.padding=0.5)
-          }else{
-            g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
-              ggrepel::geom_label_repel(data=data_BRP,
-                                        mapping=aes(x=value_ratio*100, y=c(0.5,1.15), label=ifelse(vline.num==length(res.list),legend.labels.hcr,""),family=font_MAC),
-                                        box.padding=0.5)
-          }
-
-        }else{
-          if(vlineBan){
-          g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
-            ggrepel::geom_label_repel(data=data_BRP,
-                                      mapping=aes(x=value_ratio*100, y=c(0.5,1.15,0.8), label=ifelse(vline.num==length(res.list),legend.labels.hcr,"")),
-                                      box.padding=0.5)}else{
-                                        g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = 0.5*(length(res.list)/vline.num), linetype = linetype.set)+
-                                          ggrepel::geom_label_repel(data=data_BRP,
-                                                                    mapping=aes(x=value_ratio*100, y=c(0.5,1.15), label=ifelse(vline.num==length(res.list),legend.labels.hcr,"")),
-                                                                    box.padding=0.5)
-                                      }
-        }
-
-        if(vline.num==length(res.list)) vline.frag<-F
-        vline.num <- vline.num+1
+        legend.labels[[i]] <-paste0(legend.labels.hcr,i)
+        linetype.sets[[i]] <- rep(i,nrow(data_BRPs[[i]]))
+        line.sizes[[i]]<- rep(0.5*length(res.list)/i,nrow(data_BRPs[[i]]))
+        col.BRPs[[i]]<-col.BRP
+        label.hlevels[[i]]<-label.hlevel-0.1*(i-1)
+        data_BRP<-rbind(data_BRP,data_BRPs[[i]])
       }
+      #data_BRP<-unlist(data_BRPs)
+      legend.labels.hcr<-unlist(legend.labels)
+      linetype.set<-unlist(linetype.sets)
+      line.size <- unlist(line.sizes)
+      label.hlevel <- unlist(label.hlevels)
+      boxpaddings<-0.5 #resごとに1ずつずらす
+      if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # for mac
+        if(vlineBan){
+            g.hcr <- g.hcr +
+              geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = line.size, linetype = linetype.set) +
+              ggrepel::geom_label_repel(data=data_BRP,
+                                        mapping=aes(x=value_ratio*100, y=label.hlevel,label=legend.labels.hcr,family=font_MAC),
+                                        box.padding=boxpaddings)
+          }else{
+            g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = line.size, linetype = linetype.set)+
+              ggrepel::geom_label_repel(data=data_BRP,
+                                        mapping=aes(x=value_ratio*100, y=label.hlevel, label=legend.labels.hcr,family=font_MAC),
+                                        box.padding=boxpaddings)
+          }
+      }else{ # for !mac
+        if(vlineBan){
+          g.hcr <- g.hcr +
+            geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = line.size, linetype = linetype.set) +
+            ggrepel::geom_label_repel(data=data_BRP,
+                                      mapping=aes(x=value_ratio*100, y=label.hlevel,label=legend.labels.hcr),
+                                      box.padding=boxpaddings)
+        }else{
+          g.hcr <- g.hcr + geom_vline(data=data_BRP,mapping=aes(xintercept=value_ratio*100,color=BRP), size = line.size, linetype = linetype.set)+
+            ggrepel::geom_label_repel(data=data_BRP,
+                                      mapping=aes(x=value_ratio*100, y=label.hlevel, label=legend.labels.hcr),
+                                      box.padding=boxpaddings)
+        }      }
     }
   }
 
