@@ -1506,13 +1506,25 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
         else data_BRPs[[i]] <- tibble(reslist=i,BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
                                 value_ratio=res$BRP[-3])
         legend.labels[[i]] <-paste0(legend.labels.hcr,i)
-        linetype.sets[[i]] <- rep(i,nrow(data_BRPs[[i]]))
+        linetype.sets[[i]] <- rep((i+1),nrow(data_BRPs[[i]]))
         line.sizes[[i]]<- rep(0.5*length(res.list)/i,nrow(data_BRPs[[i]]))
         col.BRPs[[i]]<-col.BRP
         label.hlevels[[i]]<-label.hlevel-0.1*(i-1)
         data_BRP<-rbind(data_BRP,data_BRPs[[i]])
       }
-      #data_BRP<-unlist(data_BRPs)
+      if(vlineBan==T) {
+        flagBan<-c()
+        for(i in 1:length(res.list)){
+          flagBan <- c(flagBan, data_BRPs[[i]]$value_ratio[3])
+        }
+        if(sum(flagBan)==0){
+          legend.labels[[1]][3]<-legend.labels.hcr[3]
+          linetype.sets[[1]][3] <-1
+          for(i in 2:length(res.list)){
+            legend.labels[[i]][3]<-""
+          }
+        }
+      }
       legend.labels.hcr<-unlist(legend.labels)
       linetype.set<-unlist(linetype.sets)
       line.size <- unlist(line.sizes)
