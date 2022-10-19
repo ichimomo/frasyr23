@@ -203,6 +203,12 @@ plot_hcr2(list(abc2_aka,abc2_aka_conservABC),one_point=T)
 # 比較するHCRのうち、listの何番目の管理水準を表示させるかをオプションvline.listnumに入れて選ぶ（デフォルトは1番目）
 abc2_aka_BT07<-calc_abc2(data_aka,BT=0.7,tune.par=c(0.4,0.7,1.0))
 plot_hcr2(list(abc2_aka,abc2_aka_BT07),vline.listnum=2)
+# 管理水準のラベルにリストごとの名前を頭につける場合、label.listにベクトルで指定する (デフォルトはNULLで名前の区別なし)
+plot_hcr2(list(abc2_aka,abc2_aka_BT07),vline.listnum=2,label.list=c("Default","BT07"))
+# 比較するHCRのすべての管理水準を表示させる場合、vline.listnumを0とする
+#ラベルに名前をつける場合、label.listオプションにベクトルで入れる(デフォルトではリストの番号)
+abc2_aka_BT06<-calc_abc2(data_aka,BT=0.6,tune.par=c(0.3,0.7,1.0))
+plot_hcr2(list(abc2_aka,abc2_aka_BT07,,abc2_aka_BT07),vline.listnum=0,label.list=c("default","BT07","BT06"),vlineBan=F)
 
 
 # 複数のABC算出結果オブジェクトをHCR,ABCのプロットで同時に出力し比較する（ただし、最大５つまで）
