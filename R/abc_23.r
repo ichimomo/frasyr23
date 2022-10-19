@@ -1358,10 +1358,11 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, vline.listnum=1,vlineBan=TRUE,is_point=TRUE,change_ps=NULL,one_point=FALSE){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, vline.listnum=1,vlineBan=TRUE,label.list=NULL,is_point=TRUE,change_ps=NULL,one_point=FALSE){
 
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(vline.listnum>length(res.list)) stop("vline.listnum must not be larger than length(res.list).\n")
+  if(!is.null(label.list) & length(res.list)!=length(label.list)) stop("length(label.list) must be identical to length(res.list).\n")
 
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
@@ -1456,6 +1457,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
     # 一つのHCRの水準線を選択
     if(vline.listnum!=0){
       vline.num<-vline.listnum
+      if(!is.null(label.list)) legend.labels.hcr <-paste0(label.list[vline.num]," ",legend.labels.hcr)
       res <- res.list[[vline.num]]
       if(vlineBan==TRUE) data_BRP <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP,
                                             value_ratio=res$BRP)
@@ -1505,7 +1507,8 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
                                            value_ratio=res$BRP)
         else data_BRPs[[i]] <- tibble(reslist=i,BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],
                                 value_ratio=res$BRP[-3])
-        legend.labels[[i]] <-paste0(legend.labels.hcr,i)
+        if(is.null(label.list)) legend.labels[[i]] <-paste0(legend.labels.hcr,i)
+        else legend.labels[[i]] <-paste0(label.list[i]," ",legend.labels.hcr)
         linetype.sets[[i]] <- rep((i+1),nrow(data_BRPs[[i]]))
         line.sizes[[i]]<- rep(0.5*length(res.list)/i,nrow(data_BRPs[[i]]))
         col.BRPs[[i]]<-col.BRP
