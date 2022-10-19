@@ -200,7 +200,7 @@ plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vlineBan=F)
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),change_ps=0.8)
 # 現在の資源量水準のポイントについては結果オブジェクトリストの一つ目だけ表示したい場合、one_pointオプションをTにする
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),one_point=T)
-# 比較するhcrのうち、listの何番目の管理水準を表示させるかのオプションを選べます（デフォルトは1番目）
+# 比較するHCRのうち、listの何番目の管理水準を表示させるかをオプションvline.listnumに入れて選ぶ（デフォルトは1番目）
 abc2_aka_BT07<-calc_abc2(data_aka,BT=0.7,tune.par=c(0.4,0.7,1.0))
 plot_hcr2(list(abc2_aka,abc2_aka_BT07),vline.listnum=2)
 
