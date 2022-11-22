@@ -1351,18 +1351,35 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
 intersection_hcrs <- function(res.list){
 
   if(length(res.list)>2)stop("This function calculates the instersection between 2 hcrs, so length(res.list) must be 2.\n")
+  out <- NULL
 
-     BT1 <- res.list[[1]]$arglist$BT
-     BL1 <- res.list[[1]]$arglist$PL*BT1
-     BB1 <- res.list[[1]]$arglist$PB*BT1
-     delta1 <- res.list[[1]]$arglist$tune.par
-     AAV1<-res.list[[1]]$AAV
+  BT1 <- res.list[[1]]$arglist$BT
+  BL1 <- res.list[[1]]$arglist$PL*BT1
+  BB1 <- res.list[[1]]$arglist$PB*BT1
+  delta1 <- res.list[[1]]$arglist$tune.par
+  AAV1<-res.list[[1]]$AAV
+  beta1 <- res.list[[1]]$arglist$beta
 
-     BT2 <- res.list[[2]]$arglist$BT
-     BL2 <- res.list[[2]]$arglist$PL*BT2
-     BB2 <- res.list[[2]]$arglist$PB*BT2
-     delta2 <- res.list[[2]]$arglist$tune.par
-     AAV2<-res.list[[2]]$AAV
+  BT2 <- res.list[[2]]$arglist$BT
+  BL2 <- res.list[[2]]$arglist$PL*BT2
+  BB2 <- res.list[[2]]$arglist$PB*BT2
+  delta2 <- res.list[[2]]$arglist$tune.par
+  AAV2<-res.list[[2]]$AAV
+  beta2 <- res.list[[2]]$arglist$beta
+
+  if( (beta1==1 && beta2!=1) || (beta1!=1 && beta2==1)) cat("This function works if both betas==1 or betas!=1.\n")
+
+  D.larger.BL <-alpha.larger.BL <-NULL
+  if(beta1==beta2){
+    if((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1])>min(BL1,BL2)){
+      D.larger.BL <- ((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1]))
+    }
+  }else if(beta1!=1 && beta2!=1){ #beta1!=beta2
+    if((BT2*log(beta2)*delta2[1]-BT1*log(beta1)*delta1[1])/(log(beta2)*delta2[1]-log(beta1)*delta1[1])>min(BL1,BL2)){
+      D.larger.BL <- ((BT2*log(beta2)*delta2[1]-BT1*log(beta1)*delta1[1])/(log(beta2)*delta2[1]-log(beta1)*delta1[1]))
+    }
+  }
+  alpha.larger.BL <-calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = 0, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D.larger.BL, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
 
   if(BB1==0 && BB2==0){
 
@@ -1378,34 +1395,32 @@ intersection_hcrs <- function(res.list){
       C1<- -1*Delta2.1*BT1*BL1
       C2<- -1*Delta2.2*BT2*BL2
 
-    if(res.list[[1]]$arglist$beta==res.list[[2]]$arglist$beta){
-
+    if(beta1==beta2){
       A<-A1-A2
       B<-B1-B2
       C<-C1-C2
-
-    }else{
-
-      A<-log(res.list[[1]]$arglist$beta)*A1-log(res.list[[2]]$arglist$beta)*A2
-      B<-log(res.list[[1]]$arglist$beta)*B1-log(res.list[[2]]$arglist$beta)*B2
-      C<-log(res.list[[1]]$arglist$beta)*C1-log(res.list[[2]]$arglist$beta)*C2
-
+    }else if(beta1!=1 && beta2!=1){
+      A<-log(beta1)*A1-log(beta2)*A2
+      B<-log(beta1)*B1-log(beta2)*B2
+      C<-log(beta1)*C1-log(beta2)*C2
     }
 
-    D1<-((-B+sqrt(B^2-4*A*C))/(2*A))*100
-    D2<-((-B-sqrt(B^2-4*A*C))/(2*A))*100
+    D1<-((-B+sqrt(B^2-4*A*C))/(2*A))
+    D2<-((-B-sqrt(B^2-4*A*C))/(2*A))
 
-  }
+    alpha1 <- calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = 0, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D1, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
 
-  alpha1 <- calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = 0, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D1/100, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
+    alpha2 <- calc_abc2(ccdata = res.list[[2]]$arglist$ccdata,BT = res.list[[2]]$arglist$BT, PL = res.list[[2]]$arglist$PL, PB = 0, tune.par = res.list[[2]]$arglist$tune.par, AAV = res.list[[2]]$arglist$AAV, n.catch = res.list[[2]]$arglist$n.catch,n.cpue = res.list[[2]]$arglist$n.cpue, smooth.cpue = res.list[[2]]$arglist$smooth.cpue, smooth.dist = res.list[[2]]$arglist$smooth.dist, empir.dist = res.list[[2]]$arglist$empir.dist, simple.empir = res.list[[2]]$arglist$simple.empir, beta = res.list[[2]]$arglist$beta, D2alpha = D2, BTyear = res.list[[2]]$arglist$BTyear, timelag0 = res.list[[2]]$arglist$timelag0,resp = res.list[[2]]$arglist$resp, summary_abc = F)$D2alpha
 
-  alpha2 <- calc_abc2(ccdata = res.list[[2]]$arglist$ccdata,BT = res.list[[2]]$arglist$BT, PL = res.list[[2]]$arglist$PL, PB = 0, tune.par = res.list[[2]]$arglist$tune.par, AAV = res.list[[2]]$arglist$AAV, n.catch = res.list[[2]]$arglist$n.catch,n.cpue = res.list[[2]]$arglist$n.cpue, smooth.cpue = res.list[[2]]$arglist$smooth.cpue, smooth.dist = res.list[[2]]$arglist$smooth.dist, empir.dist = res.list[[2]]$arglist$empir.dist, simple.empir = res.list[[2]]$arglist$simple.empir, beta = res.list[[2]]$arglist$beta, D2alpha = D2/100, BTyear = res.list[[2]]$arglist$BTyear, timelag0 = res.list[[2]]$arglist$timelag0,resp = res.list[[2]]$arglist$resp, summary_abc = F)$D2alpha
-
-
-  if(D1/100 < min(BL1,BL2) && D2/100 < min(BL1,BL2) ){
-    out<- data.frame(D=c(D1,D2),alpha=c(alpha1,alpha2))
-  }else if(D2/100 < min(BL1,BL2)){
-    out <- data.frame(D=c(D2),alpha=c(alpha2))
+    if(D1 < min(BL1,BL2) && D2< min(BL1,BL2) ){
+      if(!is.null(D.larger.BL)) out<- data.frame(D=c(D.larger.BL,D1,D2),alpha=c(alpha.larger.BL,alpha1,alpha2))
+      else out<-data.frame(D=c(D1,D2),alpha=c(alpha1,alpha2))
+    }else if(D2 < min(BL1,BL2)){
+      if(!is.null(D.larger.BL)) out <- data.frame(D=c(D.larger.BL,D2),alpha=c(alpha.larger.BL,alpha2))
+      else out <- data.frame(D=c(D2),alpha=c(alpha2))
+    }else{
+      out <- data.frame(D=c(D.larger.BL),alpha=c(alpha.larger.BL))
+    }
   }
 
   return(out)
@@ -1424,7 +1439,6 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(vline.listnum>length(res.list)) stop("vline.listnum must not be larger than length(res.list).\n")
   if(!is.null(label.list) & length(res.list)!=length(label.list)) stop("length(label.list) must be identical to length(res.list).\n")
-  if(intersection & length(res.list)>2) stop("if instersection=TRUE, length(res.list) must be 2.\n")
 
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
@@ -1624,9 +1638,23 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
     }
   }
   if(intersection){
-    g.hcr <- g.hcr + geom_vline(data=intersection_hcrs(res.list),mapping = aes(xintercept=D),size=0.5,linetype=3)
-    cat(stringr::str_c("intersection between HCRs;D=",round(intersection_hcrs(res.list)$D,3),", alpha=",round(intersection_hcrs(res.list)$alpha,3),"\n"))
-  }
+    list.combn<-combn(x = length(res.list),m=2)
+    for(j in 1:ncol(list.combn)){
+      res.list.inters<-list(res.list[[list.combn[1,j]]],res.list[[list.combn[2,j]]])
+
+      intersect <- intersection_hcrs(res.list.inters)
+      if(nrow(intersect)==0) cat(stringr::str_c("no intersection betweenHCR",list.combn[1,j]," and HCR",list.combn[2,j],"\n"))
+      else cat(stringr::str_c("intersection between HCR",list.combn[1,j]," and HCR",list.combn[2,j],";D=",round(intersect$D,3),", alpha=",round(intersect$alpha,3),"\n"))
+
+      if(!nrow(intersect)==0){
+        if(res.list.inters[[1]]$arglist$BT==res.list.inters[[2]]$arglist$BT) intersect<-intersect[-1,]
+        intersect$D <- intersect$D*100
+        intersect <- intersect[-which(intersect$D > 100),]
+        if(length(which(intersect$D < 0))>0) intersect <- intersect[-which(intersect$D < 0),]
+        g.hcr <- g.hcr + geom_vline(data=intersect,mapping = aes(xintercept=D),size=0.5,linetype=3)
+      }
+    }
+  }#intersection
   if(one_point){
     points.size.magnify <- c(1)
     for(k in 2:nrow(Currentalphas)){
@@ -2495,3 +2523,4 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
     }
   }
 }
+
