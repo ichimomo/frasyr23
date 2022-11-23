@@ -1367,7 +1367,7 @@ intersection_hcrs <- function(res.list){
   AAV2<-res.list[[2]]$AAV
   beta2 <- res.list[[2]]$arglist$beta
 
-  if( beta1!=beta2 ) cat("The intersection_hcrs function works if both beta1==beta2.\n")
+  if( beta1!=beta2 ) cat("The intersection_hcrs function works if beta1==beta2.\n")
 
   D.larger.BL <-alpha.larger.BL <-NULL
   if(beta1==beta2){
@@ -1375,10 +1375,11 @@ intersection_hcrs <- function(res.list){
       D.larger.BL <- ((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1]))
     }
   # }else if(beta1!=1 && beta2!=1){ #beta1!=beta2
-  #   if((BT2*log(beta2/beta1)*delta2[1]-BT1*delta1[1])/(log(beta2/beta1)*delta2[1]-delta1[1])>min(BL1,BL2)){
-  #     D.larger.BL <- ((BT2*log(beta2/beta1)*delta2[1]-BT1*delta1[1])/(log(beta2/beta1)*delta2[1]-delta1[1]))
-  #   }
+  #     if((BT2*log(beta2)*delta2[1]-BT1*log(beta1)*delta1[1])/(log(beta2)*delta2[1]-log(beta1)*delta1[1])>min(BL1,BL2)){
+  #       D.larger.BL <- ((BT2*log(beta2)*delta2[1]-BT1*log(beta1)*delta1[1])/(log(beta2)*delta2[1]-log(beta1)*delta1[1]))
+  #     }
   }
+
   alpha.larger.BL <-calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = 0, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D.larger.BL, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
 
   if(BB1==0 && BB2==0){
@@ -1400,16 +1401,16 @@ intersection_hcrs <- function(res.list){
     #   Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
     #   Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
     #
-    #   A1<-delta1[1]-Delta2.1
-    #   A2<-log(beta2/beta1)*(delta2[1]-Delta2.2)
+    #     A1<-log(beta1)*(delta1[1]-Delta2.1)
+    #     A2<-log(beta2)*(delta2[1]-Delta2.2)
     #
-    #   B1<-Delta2.1*(BT1+BL1)-delta1[1]*BT1
-    #   B2<-log(beta2/beta1)*(Delta2.2*(BT2+BL2)-delta2[1]*BT2)
+    #     B1<-log(beta1)*(Delta2.1*(BT1+BL1)-delta1[1]*BT1)
+    #     B2<-log(beta2)*(Delta2.2*(BT2+BL2)-delta2[1]*BT2)
     #
-    #   C1<- -1*Delta2.1*BT1*BL1
-    #   C2<- log(beta2/beta1)*(-1*Delta2.2*BT2*BL2)
-
-    }else{
+    #     C1<- log(beta1)*(-1*Delta2.1*BT1*BL1)
+    #     C2<- log(beta2)*(-1*Delta2.2*BT2*BL2)
+    #
+      }else{
       A1<-A2<-B1<-B2<-C1<-C2<-NULL
     }
 
