@@ -1422,7 +1422,34 @@ intersection_hcrs <- function(res.list){
   }
 
   return(out)
-}
+  }else{
+    if(beta1==beta2){
+      Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
+      Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
+
+      A1<-delta1[1]-Delta2.1
+      A2<-delta2[1]-Delta2.2
+
+      B1<-Delta2.1*(BT1+BL1+BB2) -delta1[1]*(BT1+BB1+BB2)
+      B2<-Delta2.2*(BT2+BL2+BB1) -delta2[1]*(BT2+BB2+BB1)
+
+      C1<-delta1[1]*(BT1*BB2+BT1*BB1+BB1*BB2)-Delta2.1*(BT1*BB2+BT1*BL1+BL1*BB2)
+      C2<-delta2[1]*(BT2*BB1+BT2*BB2+BB2*BB1)-Delta2.2*(BT2*BB1+BT2*BL2+BL2*BB1)
+
+      D1<-Delta2.1*BT1*BL1*BB2-delta1[1]*BT1*BB1*BB2
+      D2<-Delta2.2*BT2*BL2*BB1-delta2[1]*BT2*BB2*BB1
+
+      a <- A1-A2
+      b <- B1-B2
+      c <- C1-C2
+      d <- D1-D2
+
+      out <- NULL
+    }#else{}
+
+    return(out)
+  }
+
 }
 
 #' 2系のHCRを比較するための関数
