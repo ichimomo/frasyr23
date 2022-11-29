@@ -1458,6 +1458,8 @@ intersection_hcrs <- function(res.list){
         # u^6 + q u^3 − p^3/27=0
         # u^3 = -q/2 +(-) sqrt(q^2/4 p^3/27)
 
+
+
       }else{#a=0
         AA <- B1-B2
         BB <- C1-C2
