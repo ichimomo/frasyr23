@@ -1383,8 +1383,8 @@ intersection_hcrs <- function(res.list){
   beta2 <- res.list[[2]]$arglist$beta
 
   if( BB1!=0 || BB2!=0 ) cat("The intersection_hcrs function works if BB==0.\n")
-
-  D.larger.BL <-alpha.larger.BL <-NULL
+　# max(BL1,BL2) <= x に交点を持つケース
+  D.larger.BL <- alpha.larger.BL <-NULL
   if(beta1==beta2){
     if((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1])>min(BL1,BL2)){
       D.larger.BL <- ((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1]))
@@ -1397,6 +1397,11 @@ intersection_hcrs <- function(res.list){
 
   alpha.larger.BL <-calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D.larger.BL, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
 
+  # min(BL1,BL2) < x < min(BT1,BT2) で交点を持つケース
+  D.middle.BL <- NULL
+  alpha.middle.BL <-calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D.middle.BL, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
+
+  # max(BB1,BB2) < x < min(BL1,BL2) に交点を持つケース
   if(BB1==0 && BB2==0){
     Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
     Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
@@ -1477,14 +1482,14 @@ intersection_hcrs <- function(res.list){
         D1 <- D2 <- D3 <-NULL
         # a x^3 + b x^2 + c x + d = 0を解く
         # 判別式
-        Det = -27*(a^2)*(d^2)+(18*d*c*b*a)-4*((c^3)*a-4*d*(b^3))
-        if(Det>0) sols<-3  # Det >0 then 3 solutions ∈Real
-        else if(Det==0) sols<-2 # Det =0 then multiple root (2 solutions ∈R)
-        else if(Det<0) sols<-1 # Det <0 then a solution ∈R
+        # Det = -27*(a^2)*(d^2)+(18*d*c*b*a)-4*((c^3)*a-4*d*(b^3))
+        # if(Det>0) sols<-3  # Det >0 then 3 solutions ∈Real
+        # else if(Det==0) sols<-2 # Det =0 then multiple root (2 solutions ∈R)
+        # else if(Det<0) sols<-1 # Det <0 then a solution ∈R
         # 立方完成 x^3 + AA x^2 + BB x + CC = X^3 + 3p X + 2q=0
-        AA <- b/a
-        BB <- c/a
-        CC <- d/a
+        # AA <- b/a
+        # BB <- c/a
+        # CC <- d/a
         # https://hooktail.sub.jp/algebra/CubicEquation/
         # X = x + AA/3, X=v+u, (u+v)≠0
         # (u+v)^3+3p(u+v)+2q=0
@@ -1492,25 +1497,37 @@ intersection_hcrs <- function(res.list){
         # u^3 + v^3 + 2q = 0, (uv+p)=0
         # u^6 + 2 q u^3 − p^3 =0
         # u^3 = -q +(-) sqrt(q^2 + p^3)
-        p = (BB - (AA^2)/3)/3
-        q = (CC - (AA*BB)/3 + 2*(AA/3)^3)/2
-
-        # X1 = u1+v1, X2 = u2+v2, X3 = u3+v3
-        # x1 = -AA/3+u1+v1, x2 = -AA/3+u2+v2, x3 = -AA/3+u3+v3
-
-        DD <- q^2 + p^3
-        if(sols==1){
-
+        # p = (BB - (AA^2)/3)/3
+        # q = (CC - (AA*BB)/3 + 2*(AA/3)^3)/2
+        # # X1 = u1+v1, X2 = u2+v2, X3 = u3+v3
+        # # x1 = -AA/3+u1+v1, x2 = -AA/3+u2+v2, x3 = -AA/3+u3+v3
+        #
+        # DD <- q^2 + p^3
+        # u.3 = ( -q + sqrt( DD ) )
+        # v.3 = ( -q - sqrt( DD ) )
+        # 解析的に解くのは難しそうなので、数値計算
+        f <- function(x) a*x^3 + b*x^2 + c*x + d
+        curve(f,c(0,1));abline(h = 0)
+        search_eps<-0.000001
+        search_range<-c(max(BB1,BB2),min(BL1,BL2))
+        DS<-c()
+        for(i in 1:100){
+          delta<-(max(search_range)-min(search_range))
+          if(ifelse(f(min(search_range+(delta/100)*(i-1)))>0,1,-1)*ifelse(f(min(search_range+(delta/100)*i))>0,1,-1) <0 ) DS<-c(DS,uniroot(f,c(min(search_range)+(delta/100)*(i-1),min(search_range)+(delta/100)*i))$root)
         }
-        u.3 = ( -q + sqrt( DD ) )
-        v.3 = ( -q - sqrt( DD ) )
+        D1<-unique(DS)[1]
+        if(length(unique(DS))==2) D2<-order(unique(DS),decreasing = F)[2]
+        if(length(unique(DS))==3) D3<-order(unique(DS),decreasing = F)[3]
 
         alpha1 <- calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D1, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
 
         alpha2 <- calc_abc2(ccdata = res.list[[2]]$arglist$ccdata,BT = res.list[[2]]$arglist$BT, PL = res.list[[2]]$arglist$PL, PB = res.list[[2]]$arglist$PB, tune.par = res.list[[2]]$arglist$tune.par, AAV = res.list[[2]]$arglist$AAV, n.catch = res.list[[2]]$arglist$n.catch,n.cpue = res.list[[2]]$arglist$n.cpue, smooth.cpue = res.list[[2]]$arglist$smooth.cpue, smooth.dist = res.list[[2]]$arglist$smooth.dist, empir.dist = res.list[[2]]$arglist$empir.dist, simple.empir = res.list[[2]]$arglist$simple.empir, beta = res.list[[2]]$arglist$beta, D2alpha = D2, BTyear = res.list[[2]]$arglist$BTyear, timelag0 = res.list[[2]]$arglist$timelag0,resp = res.list[[2]]$arglist$resp, summary_abc = F)$D2alpha
 
+        alpha3 <- calc_abc2(ccdata = res.list[[2]]$arglist$ccdata,BT = res.list[[2]]$arglist$BT, PL = res.list[[2]]$arglist$PL, PB = res.list[[2]]$arglist$PB, tune.par = res.list[[2]]$arglist$tune.par, AAV = res.list[[2]]$arglist$AAV, n.catch = res.list[[2]]$arglist$n.catch,n.cpue = res.list[[2]]$arglist$n.cpue, smooth.cpue = res.list[[2]]$arglist$smooth.cpue, smooth.dist = res.list[[2]]$arglist$smooth.dist, empir.dist = res.list[[2]]$arglist$empir.dist, simple.empir = res.list[[2]]$arglist$simple.empir, beta = res.list[[2]]$arglist$beta, D2alpha = D3, BTyear = res.list[[2]]$arglist$BTyear, timelag0 = res.list[[2]]$arglist$timelag0,resp = res.list[[2]]$arglist$resp, summary_abc = F)$D2alpha
+
         if(!is.null(D1)){
           if(!is.null(D2)){
+
             if(D1 < min(BL1,BL2) && D2< min(BL1,BL2) ){
               if(!is.null(D.larger.BL)) out<- data.frame(D=c(D.larger.BL,D1,D2),alpha=c(alpha.larger.BL,alpha1,alpha2))
               else out<-data.frame(D=c(D1,D2),alpha=c(alpha1,alpha2))
