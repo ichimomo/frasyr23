@@ -1382,8 +1382,6 @@ intersection_hcrs <- function(res.list){
   AAV2<-res.list[[2]]$AAV
   beta2 <- res.list[[2]]$arglist$beta
 
-  if( BB1!=0 || BB2!=0 ) cat("The intersection_hcrs function works if BB==0.\n")
-
 　# max(BL1,BL2) <= x に交点を持つケース
   D.l.BL <- alpha.l.BL <- NULL
   if(beta1==beta2){
