@@ -768,6 +768,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
 
     # PB=0の時の禁漁水準削除設定 ----
+    data_BRP2 <- data_BRP
     if(res$BRP[3] == 0) {
       if(proposal==TRUE){
         legend.labels <- c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案")
@@ -780,7 +781,6 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       }else{
         col.BRP <- c("#00533E","#edb918")
       }
-      data_BRP2 <- data_BRP
       data_BRP <- tibble(BRP=names(res$BRP[-3]),value_obs=res$Obs_BRP[-3],value_ratio=res$BRP[-3])
     }else{
       if(abc4==TRUE){
@@ -1382,62 +1382,153 @@ intersection_hcrs <- function(res.list){
   AAV2<-res.list[[2]]$AAV
   beta2 <- res.list[[2]]$arglist$beta
 
-  if( BB1!=0 || BB2!=0 ) cat("The intersection_hcrs function works if BB==0.\n")
-
-  D.larger.BL <-alpha.larger.BL <-NULL
+　# max(BL1,BL2) <= x に交点を持つケース
+  D.l.BL <- alpha.l.BL <- NULL
   if(beta1==beta2){
-    if((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1])>min(BL1,BL2)){
-      D.larger.BL <- ((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1]))
+    if((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1])>max(BL1,BL2)){
+      D.l.BL <- ((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1]))
     }
   }else if(beta1!=1 && beta2!=1){ #beta1!=beta2
-      if( (BT2*delta2[1]-BT1*delta1[1]+log(beta2/beta1))/(delta2[1]-delta1[1]) > min(BL1,BL2)){
-        D.larger.BL <- ((BT2*delta2[1]-BT1*delta1[1]+log(beta2/beta1))/(delta2[1]-delta1[1]))
+      if( (BT2*delta2[1]-BT1*delta1[1]+log(beta1/beta2))/(delta2[1]-delta1[1]) > max(BL1,BL2)){
+        D.l.BL <- ((BT2*delta2[1]-BT1*delta1[1]+log(beta1/beta2))/(delta2[1]-delta1[1]))
       }
   }
 
-  alpha.larger.BL <-calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = 0, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D.larger.BL, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
+  # min(BL1,BL2) < x < max(BL1,BL2) で交点を持つケース
+  D1.m.BL <- D2.m.BL <- alpha1.m.BL <- alpha2.m.BL <-NULL
 
+  if(BL1>BL2) {
+    Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
+    Delta2.2<-0
+  }
+  if(BL2>BL1){
+    Delta2.1<-0
+    Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
+  }
+
+  A.1<-(delta1[1]-Delta2.1)
+  A.2<-(delta2[1]-Delta2.2)
+
+  B.1<-log(beta1)+(Delta2.1*(BT1+BL1)-delta1[1]*BT1)
+  B.2<-log(beta2)+(Delta2.2*(BT2+BL2)-delta2[1]*BT2)
+
+  C.1<- (-1*Delta2.1*BT1*BL1)
+  C.2<- (-1*Delta2.2*BT2*BL2)
+
+  A<-A.1-A.2
+  B<-B.1-B.2
+  C<-C.1-C.2
+
+  if(A.1!=A.2){
+    if( (B^2-4*A*C)>0){
+      D1.m.BL<-max((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
+      D2.m.BL<-min((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
+    }
+  }else if(B.1!=B.2){
+    D1.m.BL<- -C/B
+  }
+
+  # max(BB1,BB2) < x < min(BL1,BL2) に交点を持つケース
+  D1.s.BL <- D2.s.BL <- D3.s.BL <-NULL
   if(BB1==0 && BB2==0){
     Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
     Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
 
-    A1<-(delta1[1]-Delta2.1)
-    A2<-(delta2[1]-Delta2.2)
+    A.1<-(delta1[1]-Delta2.1)
+    A.2<-(delta2[1]-Delta2.2)
 
-    B1<-log(beta1)+(Delta2.1*(BT1+BL1)-delta1[1]*BT1)
-    B2<-log(beta2)+(Delta2.2*(BT2+BL2)-delta2[1]*BT2)
+    B.1<-log(beta1)+(Delta2.1*(BT1+BL1)-delta1[1]*BT1)
+    B.2<-log(beta2)+(Delta2.2*(BT2+BL2)-delta2[1]*BT2)
 
-    C1<- (-1*Delta2.1*BT1*BL1)
-    C2<- (-1*Delta2.2*BT2*BL2)
+    C.1<- (-1*Delta2.1*BT1*BL1)
+    C.2<- (-1*Delta2.2*BT2*BL2)
 
-    A<-A1-A2
-    B<-B1-B2
-    C<-C1-C2
+    A<-A.1-A.2
+    B<-B.1-B.2
+    C<-C.1-C.2
 
-    D1<-D2<-NULL
-    if( (B^2-4*A*C)>0){
-      D1<-max((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
-      D2<-min((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
+    if(A.1!=A.2){
+      if( (B^2-4*A*C)>0){
+        D1.s.BL<-max((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
+        D2.s.BL<-min((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
+      }
+    }else if(B.1!=B.2){
+      D1.s.BL<- -C/B
     }
 
-    alpha1 <- calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = 0, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D1, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
+  }
+  else{ # Bban!=0
+      Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
+      Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
 
-    alpha2 <- calc_abc2(ccdata = res.list[[2]]$arglist$ccdata,BT = res.list[[2]]$arglist$BT, PL = res.list[[2]]$arglist$PL, PB = 0, tune.par = res.list[[2]]$arglist$tune.par, AAV = res.list[[2]]$arglist$AAV, n.catch = res.list[[2]]$arglist$n.catch,n.cpue = res.list[[2]]$arglist$n.cpue, smooth.cpue = res.list[[2]]$arglist$smooth.cpue, smooth.dist = res.list[[2]]$arglist$smooth.dist, empir.dist = res.list[[2]]$arglist$empir.dist, simple.empir = res.list[[2]]$arglist$simple.empir, beta = res.list[[2]]$arglist$beta, D2alpha = D2, BTyear = res.list[[2]]$arglist$BTyear, timelag0 = res.list[[2]]$arglist$timelag0,resp = res.list[[2]]$arglist$resp, summary_abc = F)$D2alpha
+      A.1<-delta1[1]-Delta2.1
+      A.2<-delta2[1]-Delta2.2
 
-  if(!is.null(D1)){
-    if(D1 < min(BL1,BL2) && D2< min(BL1,BL2) ){
-      if(!is.null(D.larger.BL)) out<- data.frame(D=c(D.larger.BL,D1,D2),alpha=c(alpha.larger.BL,alpha1,alpha2))
-      else out<-data.frame(D=c(D1,D2),alpha=c(alpha1,alpha2))
-    }else if(D2 < min(BL1,BL2)){
-      if(!is.null(D.larger.BL)) out <- data.frame(D=c(D.larger.BL,D2),alpha=c(alpha.larger.BL,alpha2))
-      else out <- data.frame(D=c(D2),alpha=c(alpha2))
-    }else{
-      out <- data.frame(D=c(D.larger.BL),alpha=c(alpha.larger.BL))
+      B.1<-Delta2.1*(BT1+BL1+BB2) -delta1[1]*(BT1+BB1+BB2) + log(beta1)
+      B.2<-Delta2.2*(BT2+BL2+BB1) -delta2[1]*(BT2+BB2+BB1) + log(beta2)
+
+      C.1<-delta1[1]*(BT1*BB2+BT1*BB1+BB1*BB2)-Delta2.1*(BT1*BB2+BT1*BL1+BL1*BB2)
+      -(BB1+BB2)*log(beta1)
+      C.2<-delta2[1]*(BT2*BB1+BT2*BB2+BB2*BB1)-Delta2.2*(BT2*BB1+BT2*BL2+BL2*BB1)-(BB2+BB1)*log(beta2)
+
+      D.1<-Delta2.1*BT1*BL1*BB2-delta1[1]*BT1*BB1*BB2+BB1*BB2*log(beta1)
+      D.2<-Delta2.2*BT2*BL2*BB1-delta2[1]*BT2*BB2*BB1+BB2*BB1*log(beta1)
+
+      a <- A.1-A.2
+      b <- B.1-B.2
+      c <- C.1-C.2
+      d <- D.1-D.2
+
+      if(a!=0){
+        # a x^3 + b x^2 + c x + d = 0を解く
+        # 解析的に解くのは難しそうなので、数値計算
+        f <- function(x) a*x^3 + b*x^2 + c*x + d
+        #curve(f,c(0,1));abline(h = 0)
+        search_eps<-0.000001
+        search_range<-c(max(BB1,BB2),min(BL1,BL2))
+        DS<-c()
+        for(i in 1:100){
+          delta<-(max(search_range)-min(search_range))
+          if(ifelse(f(min(search_range+(delta/100)*(i-1)))>0,1,-1)*ifelse(f(min(search_range+(delta/100)*i))>0,1,-1) <0 ) DS<-c(DS,uniroot(f,c(min(search_range)+(delta/100)*(i-1),min(search_range)+(delta/100)*i))$root)
+        }
+        D1.s.BL<-unique(DS)[1]
+        if(length(unique(DS))==2) D2.s.BL<-order(unique(DS),decreasing = F)[2]
+        if(length(unique(DS))==3) D3.s.BL<-order(unique(DS),decreasing = F)[3]
+
+      }else{#a=0
+        AA <- B.1-B.2
+        BB <- C.1-C.2
+        CC <- D.1-D.2
+
+        if(B.1!=B.2){
+          if( (BB^2-4*AA*CC)>0){
+            D1.s.BL<-max((-BB+sqrt(BB^2-4*AA*CC))/(2*AA),((-BB-sqrt(BB^2-4*AA*CC))/(2*AA)))
+            D2.s.BL<-min((-BB+sqrt(BB^2-4*AA*CC))/(2*AA),((-BB-sqrt(BB^2-4*AA*CC))/(2*AA)))
+          }
+        }else if(C.1!=C.2){
+          D1.s.BL<- -CC/BB
+        }
+      }
+  }
+
+  Dl <- Dm <- Ds <- NULL
+  if(!is.null(D.l.BL) && (D.l.BL > max(BL1,BL2)) ) Dl <- D.l.BL
+  if(!is.null(D1.m.BL)  && (D1.m.BL < max(BL1,BL2)) && (D1.m.BL > min(BL1,BL2)) ) Dm <- D1.m.BL
+  if(!is.null(D2.m.BL)  && (D2.m.BL < max(BL1,BL2)) && (D2.m.BL > min(BL1,BL2)) ) Dm <- c(Dm,D2.m.BL)
+  if(!is.null(D1.s.BL)  && (D1.s.BL > max(BB1,BB2)) && (D1.s.BL < min(BL1,BL2)) ) Ds <- D1.s.BL
+  if(!is.null(D2.s.BL)  && (D2.s.BL > max(BB1,BB2)) && (D2.s.BL < min(BL1,BL2)) ) Ds <- c(Ds,D2.s.BL)
+  if(!is.null(D3.s.BL)  && (D3.s.BL > max(BB1,BB2)) && (D3.s.BL < min(BL1,BL2)) ) Ds <- c(Ds,D3.s.BL)
+
+  D.intersect<-c(Dl,Dm,Ds)
+  alpha.intersect<-c()
+  if(!is.null(D.intersect)){
+    for(i in 1:length(D.intersect)){
+      alpha.intersect<- c(alpha.intersect,calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D.intersect[i], BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha)
     }
   }
 
+  out<- data.frame(D=D.intersect,alpha=alpha.intersect)
   return(out)
-}
 }
 
 #' 2系のHCRを比較するための関数
