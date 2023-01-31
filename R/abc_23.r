@@ -2184,10 +2184,47 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #'
 
 plot_retro2 <- function(res,year=NULL,period=10,stock.name=NULL){
-  if(is.null(year)) year<-res$arglist$ccdata$year[length(res$arglist$ccdata$year)]
+  font_MAC<-"HiraginoSans-W3"#"Japan1GothicBBB"#
+  ccdata <- res$arglist$ccdata
 
+  if(is.null(year)) year<-ccdata$year[length(ccdata$year)]
 
-  return(g.retro)
+  abc2_seq_abc<-abc2_seq_alpha<-c()
+  for(y in (year-period+1):year){
+    ccdata_seq <- ccdata[1:which(ccdata$year==y),]
+
+    abc2_seq<- calc_abc2(ccdata_seq,BT = res$arglist$BT, PL = res$arglist$PL, PB = res$arglist$PB, tune.par = res$arglist$tune.par, AAV = res$arglist$AAV, n.catch = res$arglist$n.catch,n.cpue = res$arglist$n.cpue, smooth.cpue = res$arglist$smooth.cpue, smooth.dist = res$arglist$smooth.dist, empir.dist = res$arglist$empir.dist, simple.empir = res$arglist$simple.empir, beta = res$arglist$beta, D2alpha = res$arglist$D2alpha, BTyear = res$arglist$BTyear, timelag0 = res$arglist$timelag0,resp = res$arglist$resp, summary_abc = F)
+    abc2_seq_abc <- c(abc2_seq_abc, abc2_seq$ABC)
+    abc2_seq_alpha <- c(abc2_seq_alpha ,abc2_seq$alpha)
+  }
+
+  data_retro<-data.frame(year=as.integer(c(year-period+1):year),abc=abc2_seq_abc,alpha=abc2_seq_alpha)
+
+  # sequential abc
+  g.retro.abc <- data_retro %>% ggplot() +
+    geom_path(aes(x=year,y=abc),size=1) +
+    ggtitle("") +
+    theme_custom()+
+    theme(legend.position="top",legend.justification = c(1,0))
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+    g.retro.abc<-g.retro.abc+
+    theme(text = element_text(family = font_MAC))
+  }
+  # sequential alpha
+  g.retro.alpha <- data_retro %>% ggplot() +
+    geom_path(aes(x=year,y=alpha),size=1) +
+    ggtitle("") +
+    theme_custom()+
+    theme(legend.position="top",legend.justification = c(1,0))
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+    g.retro.alpha<-g.retro.alpha+
+      theme(text = element_text(family = font_MAC))
+  }
+
+  # 出力設定
+  graph.component <- list(g.retro.abc,g.retro.alpha)
+  graph.combined <- gridExtra::grid.arrange(g.retro.abc,g.retro.alpha,ncol=2,top=stock.name)
+  return(list(graph.component=graph.component,graph.combined=graph.combined))
 }
 
 #' 2系のABC計算をBTyearオプションありで計算（資源水準導出のためのCPUE時系列制御）した結果をBTyearなしの場合まで連続的に比較してプロットするための関数
