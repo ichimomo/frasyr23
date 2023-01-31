@@ -2173,6 +2173,23 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   }
 }
 
+#' 2系のABCを時系列で表示するための関数
+#'
+#' @param res.list calc_abc2の返り値のリスト
+#' @param period レトロ解析する期間（デフォルトで10年）
+#' @param year レトロ解析の最終年
+#' @param stock.name
+#'
+#' @export
+#'
+
+plot_retro2 <- function(res,year=NULL,period=10,stock.name=NULL){
+  if(is.null(year)) year<-res$arglist$ccdata$year[length(res$arglist$ccdata$year)]
+
+
+  return(g.retro)
+}
+
 #' 2系のABC計算をBTyearオプションありで計算（資源水準導出のためのCPUE時系列制御）した結果をBTyearなしの場合まで連続的に比較してプロットするための関数
 #'
 #' @param res calc_abc2の返り値、ただしBTyear!=NULL
