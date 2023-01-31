@@ -1383,25 +1383,55 @@ intersection_hcrs <- function(res.list){
   beta2 <- res.list[[2]]$arglist$beta
 
   if( BB1!=0 || BB2!=0 ) cat("The intersection_hcrs function works if BB==0.\n")
+
 　# max(BL1,BL2) <= x に交点を持つケース
-  D.larger.BL <- alpha.larger.BL <-NULL
+  D.l.BL <- alpha.l.BL <- NULL
   if(beta1==beta2){
-    if((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1])>min(BL1,BL2)){
-      D.larger.BL <- ((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1]))
+    if((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1])>max(BL1,BL2)){
+      D.l.BL <- ((BT2*delta2[1]-BT1*delta1[1])/(delta2[1]-delta1[1]))
     }
   }else if(beta1!=1 && beta2!=1){ #beta1!=beta2
-      if( (BT2*delta2[1]-BT1*delta1[1]+log(beta2/beta1))/(delta2[1]-delta1[1]) > min(BL1,BL2)){
-        D.larger.BL <- ((BT2*delta2[1]-BT1*delta1[1]+log(beta2/beta1))/(delta2[1]-delta1[1]))
+      if( (BT2*delta2[1]-BT1*delta1[1]+log(beta1/beta2))/(delta2[1]-delta1[1]) > max(BL1,BL2)){
+        D.l.BL <- ((BT2*delta2[1]-BT1*delta1[1]+log(beta1/beta2))/(delta2[1]-delta1[1]))
       }
   }
 
-  alpha.larger.BL <-calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D.larger.BL, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
+  # min(BL1,BL2) < x < max(BL1,BL2) で交点を持つケース
+  D1.m.BL <- D2.m.BL <- alpha1.m.BL <- alpha2.m.BL <-NULL
 
-  # min(BL1,BL2) < x < min(BT1,BT2) で交点を持つケース
-  D.middle.BL <- NULL
-  alpha.middle.BL <-calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D.middle.BL, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
+  if(BL1>BL2) {
+    Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
+    Delta2.2<-0
+  }
+  if(BL2>BL1){
+    Delta2.1<-0
+    Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
+  }
+
+  A.1<-(delta1[1]-Delta2.1)
+  A.2<-(delta2[1]-Delta2.2)
+
+  B.1<-log(beta1)+(Delta2.1*(BT1+BL1)-delta1[1]*BT1)
+  B.2<-log(beta2)+(Delta2.2*(BT2+BL2)-delta2[1]*BT2)
+
+  C.1<- (-1*Delta2.1*BT1*BL1)
+  C.2<- (-1*Delta2.2*BT2*BL2)
+
+  A<-A.1-A.2
+  B<-B.1-B.2
+  C<-C.1-C.2
+
+  if(A.1!=A.2){
+    if( (B^2-4*A*C)>0){
+      D1.m.BL<-max((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
+      D2.m.BL<-min((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
+    }
+  }else if(B.1!=B.2){
+    D1.m.BL<- -C/B
+  }
 
   # max(BB1,BB2) < x < min(BL1,BL2) に交点を持つケース
+  D1.s.BL <- D2.s.BL <- D3.s.BL <-NULL
   if(BB1==0 && BB2==0){
     Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
     Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
@@ -1419,59 +1449,32 @@ intersection_hcrs <- function(res.list){
     B<-B.1-B.2
     C<-C.1-C.2
 
-    D1<-D2<-NULL
     if(A.1!=A.2){
       if( (B^2-4*A*C)>0){
-        D1<-max((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
-        D2<-min((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
+        D1.s.BL<-max((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
+        D2.s.BL<-min((-B+sqrt(B^2-4*A*C))/(2*A),((-B-sqrt(B^2-4*A*C))/(2*A)))
       }
     }else if(B.1!=B.2){
-      D1<- -C/B
+      D1.s.BL<- -C/B
     }
 
-    alpha1 <- calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D1, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
-
-    alpha2 <- calc_abc2(ccdata = res.list[[2]]$arglist$ccdata,BT = res.list[[2]]$arglist$BT, PL = res.list[[2]]$arglist$PL, PB = res.list[[2]]$arglist$PB, tune.par = res.list[[2]]$arglist$tune.par, AAV = res.list[[2]]$arglist$AAV, n.catch = res.list[[2]]$arglist$n.catch,n.cpue = res.list[[2]]$arglist$n.cpue, smooth.cpue = res.list[[2]]$arglist$smooth.cpue, smooth.dist = res.list[[2]]$arglist$smooth.dist, empir.dist = res.list[[2]]$arglist$empir.dist, simple.empir = res.list[[2]]$arglist$simple.empir, beta = res.list[[2]]$arglist$beta, D2alpha = D2, BTyear = res.list[[2]]$arglist$BTyear, timelag0 = res.list[[2]]$arglist$timelag0,resp = res.list[[2]]$arglist$resp, summary_abc = F)$D2alpha
-
-  if(!is.null(D1)){
-    if(!is.null(D2)){
-      if(D1 < min(BL1,BL2) && D2< min(BL1,BL2) ){
-        if(!is.null(D.larger.BL)) out<- data.frame(D=c(D.larger.BL,D1,D2),alpha=c(alpha.larger.BL,alpha1,alpha2))
-        else out<-data.frame(D=c(D1,D2),alpha=c(alpha1,alpha2))
-      }else if(D2 < min(BL1,BL2)){
-        if(!is.null(D.larger.BL)) out <- data.frame(D=c(D.larger.BL,D2),alpha=c(alpha.larger.BL,alpha2))
-        else out <- data.frame(D=c(D2),alpha=c(alpha2))
-      }else{
-        out <- data.frame(D=c(D.larger.BL),alpha=c(alpha.larger.BL))
-      }
-    }else{
-      if(D1 < min(BL1,BL2)){
-        if(!is.null(D.larger.BL)) out<- data.frame(D=c(D.larger.BL,D1),alpha=c(alpha.larger.BL,alpha1))
-        else out<-data.frame(D=c(D1),alpha=c(alpha1))
-      }
-    }
-  }else if(!is.null(D.larger.BL)){
-    out<- data.frame(D=c(D.larger.BL),alpha=c(alpha.larger.BL))
   }
-
-  return(out)
-  }else{ # Bban!=0
-    out <- NULL
-    if(beta1==beta2){
+  else{ # Bban!=0
       Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
       Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
 
       A.1<-delta1[1]-Delta2.1
       A.2<-delta2[1]-Delta2.2
 
-      B.1<-Delta2.1*(BT1+BL1+BB2) -delta1[1]*(BT1+BB1+BB2)
-      B.2<-Delta2.2*(BT2+BL2+BB1) -delta2[1]*(BT2+BB2+BB1)
+      B.1<-Delta2.1*(BT1+BL1+BB2) -delta1[1]*(BT1+BB1+BB2) + log(beta1)
+      B.2<-Delta2.2*(BT2+BL2+BB1) -delta2[1]*(BT2+BB2+BB1) + log(beta2)
 
       C.1<-delta1[1]*(BT1*BB2+BT1*BB1+BB1*BB2)-Delta2.1*(BT1*BB2+BT1*BL1+BL1*BB2)
-      C.2<-delta2[1]*(BT2*BB1+BT2*BB2+BB2*BB1)-Delta2.2*(BT2*BB1+BT2*BL2+BL2*BB1)
+      -(BB1+BB2)*log(beta1)
+      C.2<-delta2[1]*(BT2*BB1+BT2*BB2+BB2*BB1)-Delta2.2*(BT2*BB1+BT2*BL2+BL2*BB1)-(BB2+BB1)*log(beta2)
 
-      D.1<-Delta2.1*BT1*BL1*BB2-delta1[1]*BT1*BB1*BB2
-      D.2<-Delta2.2*BT2*BL2*BB1-delta2[1]*BT2*BB2*BB1
+      D.1<-Delta2.1*BT1*BL1*BB2-delta1[1]*BT1*BB1*BB2+BB1*BB2*log(beta1)
+      D.2<-Delta2.2*BT2*BL2*BB1-delta2[1]*BT2*BB2*BB1+BB2*BB1*log(beta1)
 
       a <- A.1-A.2
       b <- B.1-B.2
@@ -1479,35 +1482,10 @@ intersection_hcrs <- function(res.list){
       d <- D.1-D.2
 
       if(a!=0){
-        D1 <- D2 <- D3 <-NULL
         # a x^3 + b x^2 + c x + d = 0を解く
-        # 判別式
-        # Det = -27*(a^2)*(d^2)+(18*d*c*b*a)-4*((c^3)*a-4*d*(b^3))
-        # if(Det>0) sols<-3  # Det >0 then 3 solutions ∈Real
-        # else if(Det==0) sols<-2 # Det =0 then multiple root (2 solutions ∈R)
-        # else if(Det<0) sols<-1 # Det <0 then a solution ∈R
-        # 立方完成 x^3 + AA x^2 + BB x + CC = X^3 + 3p X + 2q=0
-        # AA <- b/a
-        # BB <- c/a
-        # CC <- d/a
-        # https://hooktail.sub.jp/algebra/CubicEquation/
-        # X = x + AA/3, X=v+u, (u+v)≠0
-        # (u+v)^3+3p(u+v)+2q=0
-        # u^3 + v^3 + 2q + 3(uv+p)(u+v)=0
-        # u^3 + v^3 + 2q = 0, (uv+p)=0
-        # u^6 + 2 q u^3 − p^3 =0
-        # u^3 = -q +(-) sqrt(q^2 + p^3)
-        # p = (BB - (AA^2)/3)/3
-        # q = (CC - (AA*BB)/3 + 2*(AA/3)^3)/2
-        # # X1 = u1+v1, X2 = u2+v2, X3 = u3+v3
-        # # x1 = -AA/3+u1+v1, x2 = -AA/3+u2+v2, x3 = -AA/3+u3+v3
-        #
-        # DD <- q^2 + p^3
-        # u.3 = ( -q + sqrt( DD ) )
-        # v.3 = ( -q - sqrt( DD ) )
         # 解析的に解くのは難しそうなので、数値計算
         f <- function(x) a*x^3 + b*x^2 + c*x + d
-        curve(f,c(0,1));abline(h = 0)
+        #curve(f,c(0,1));abline(h = 0)
         search_eps<-0.000001
         search_range<-c(max(BB1,BB2),min(BL1,BL2))
         DS<-c()
@@ -1515,85 +1493,44 @@ intersection_hcrs <- function(res.list){
           delta<-(max(search_range)-min(search_range))
           if(ifelse(f(min(search_range+(delta/100)*(i-1)))>0,1,-1)*ifelse(f(min(search_range+(delta/100)*i))>0,1,-1) <0 ) DS<-c(DS,uniroot(f,c(min(search_range)+(delta/100)*(i-1),min(search_range)+(delta/100)*i))$root)
         }
-        D1<-unique(DS)[1]
-        if(length(unique(DS))==2) D2<-order(unique(DS),decreasing = F)[2]
-        if(length(unique(DS))==3) D3<-order(unique(DS),decreasing = F)[3]
-
-        alpha1 <- calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D1, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
-
-        alpha2 <- calc_abc2(ccdata = res.list[[2]]$arglist$ccdata,BT = res.list[[2]]$arglist$BT, PL = res.list[[2]]$arglist$PL, PB = res.list[[2]]$arglist$PB, tune.par = res.list[[2]]$arglist$tune.par, AAV = res.list[[2]]$arglist$AAV, n.catch = res.list[[2]]$arglist$n.catch,n.cpue = res.list[[2]]$arglist$n.cpue, smooth.cpue = res.list[[2]]$arglist$smooth.cpue, smooth.dist = res.list[[2]]$arglist$smooth.dist, empir.dist = res.list[[2]]$arglist$empir.dist, simple.empir = res.list[[2]]$arglist$simple.empir, beta = res.list[[2]]$arglist$beta, D2alpha = D2, BTyear = res.list[[2]]$arglist$BTyear, timelag0 = res.list[[2]]$arglist$timelag0,resp = res.list[[2]]$arglist$resp, summary_abc = F)$D2alpha
-
-        alpha3 <- calc_abc2(ccdata = res.list[[2]]$arglist$ccdata,BT = res.list[[2]]$arglist$BT, PL = res.list[[2]]$arglist$PL, PB = res.list[[2]]$arglist$PB, tune.par = res.list[[2]]$arglist$tune.par, AAV = res.list[[2]]$arglist$AAV, n.catch = res.list[[2]]$arglist$n.catch,n.cpue = res.list[[2]]$arglist$n.cpue, smooth.cpue = res.list[[2]]$arglist$smooth.cpue, smooth.dist = res.list[[2]]$arglist$smooth.dist, empir.dist = res.list[[2]]$arglist$empir.dist, simple.empir = res.list[[2]]$arglist$simple.empir, beta = res.list[[2]]$arglist$beta, D2alpha = D3, BTyear = res.list[[2]]$arglist$BTyear, timelag0 = res.list[[2]]$arglist$timelag0,resp = res.list[[2]]$arglist$resp, summary_abc = F)$D2alpha
-
-        if(!is.null(D1)){
-          if(!is.null(D2)){
-
-            if(D1 < min(BL1,BL2) && D2< min(BL1,BL2) ){
-              if(!is.null(D.larger.BL)) out<- data.frame(D=c(D.larger.BL,D1,D2),alpha=c(alpha.larger.BL,alpha1,alpha2))
-              else out<-data.frame(D=c(D1,D2),alpha=c(alpha1,alpha2))
-            }else if(D2 < min(BL1,BL2)){
-              if(!is.null(D.larger.BL)) out <- data.frame(D=c(D.larger.BL,D2),alpha=c(alpha.larger.BL,alpha2))
-              else out <- data.frame(D=c(D2),alpha=c(alpha2))
-            }else{
-              out <- data.frame(D=c(D.larger.BL),alpha=c(alpha.larger.BL))
-            }
-          }else{
-            if(D1 < min(BL1,BL2)){
-              if(!is.null(D.larger.BL)) out<- data.frame(D=c(D.larger.BL,D1),alpha=c(alpha.larger.BL,alpha1))
-              else out<-data.frame(D=c(D1),alpha=c(alpha1))
-            }
-          }
-        }else if(!is.null(D.larger.BL)){
-          out<- data.frame(D=c(D.larger.BL),alpha=c(alpha.larger.BL))
-        }
+        D1.s.BL<-unique(DS)[1]
+        if(length(unique(DS))==2) D2.s.BL<-order(unique(DS),decreasing = F)[2]
+        if(length(unique(DS))==3) D3.s.BL<-order(unique(DS),decreasing = F)[3]
 
       }else{#a=0
         AA <- B.1-B.2
         BB <- C.1-C.2
         CC <- D.1-D.2
 
-        D1<-D2<-NULL
         if(B.1!=B.2){
           if( (BB^2-4*AA*CC)>0){
-            D1<-max((-BB+sqrt(BB^2-4*AA*CC))/(2*AA),((-BB-sqrt(BB^2-4*AA*CC))/(2*AA)))
-            D2<-min((-BB+sqrt(BB^2-4*AA*CC))/(2*AA),((-BB-sqrt(BB^2-4*AA*CC))/(2*AA)))
+            D1.s.BL<-max((-BB+sqrt(BB^2-4*AA*CC))/(2*AA),((-BB-sqrt(BB^2-4*AA*CC))/(2*AA)))
+            D2.s.BL<-min((-BB+sqrt(BB^2-4*AA*CC))/(2*AA),((-BB-sqrt(BB^2-4*AA*CC))/(2*AA)))
           }
         }else if(C.1!=C.2){
-          D1<- -CC/BB
+          D1.s.BL<- -CC/BB
         }
-
-        alpha1 <- calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D1, BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha
-
-        alpha2 <- calc_abc2(ccdata = res.list[[2]]$arglist$ccdata,BT = res.list[[2]]$arglist$BT, PL = res.list[[2]]$arglist$PL, PB = res.list[[2]]$arglist$PB, tune.par = res.list[[2]]$arglist$tune.par, AAV = res.list[[2]]$arglist$AAV, n.catch = res.list[[2]]$arglist$n.catch,n.cpue = res.list[[2]]$arglist$n.cpue, smooth.cpue = res.list[[2]]$arglist$smooth.cpue, smooth.dist = res.list[[2]]$arglist$smooth.dist, empir.dist = res.list[[2]]$arglist$empir.dist, simple.empir = res.list[[2]]$arglist$simple.empir, beta = res.list[[2]]$arglist$beta, D2alpha = D2, BTyear = res.list[[2]]$arglist$BTyear, timelag0 = res.list[[2]]$arglist$timelag0,resp = res.list[[2]]$arglist$resp, summary_abc = F)$D2alpha
-
-        if(!is.null(D1)){
-          if(!is.null(D2)){
-            if(D1 < min(BL1,BL2) && D2< min(BL1,BL2) ){
-              if(!is.null(D.larger.BL)) out<- data.frame(D=c(D.larger.BL,D1,D2),alpha=c(alpha.larger.BL,alpha1,alpha2))
-              else out<-data.frame(D=c(D1,D2),alpha=c(alpha1,alpha2))
-            }else if(D2 < min(BL1,BL2)){
-              if(!is.null(D.larger.BL)) out <- data.frame(D=c(D.larger.BL,D2),alpha=c(alpha.larger.BL,alpha2))
-              else out <- data.frame(D=c(D2),alpha=c(alpha2))
-            }else{
-              out <- data.frame(D=c(D.larger.BL),alpha=c(alpha.larger.BL))
-            }
-          }else{
-            if(D1 < min(BL1,BL2)){
-              if(!is.null(D.larger.BL)) out<- data.frame(D=c(D.larger.BL,D1),alpha=c(alpha.larger.BL,alpha1))
-              else out<-data.frame(D=c(D1),alpha=c(alpha1))
-            }
-          }
-        }else if(!is.null(D.larger.BL)){
-          out<- data.frame(D=c(D.larger.BL),alpha=c(alpha.larger.BL))
-        }
-
       }
-
-    }#else{ #beta1!=beta2 }
-
-    return(out)
   }
 
+  Dl <- Dm <- Ds <- NULL
+  if(!is.null(D.l.BL) && (D.l.BL > max(BL1,BL2)) ) Dl <- D.l.BL
+  if(!is.null(D1.m.BL)  && (D1.m.BL < max(BL1,BL2)) && (D1.m.BL > min(BL1,BL2)) ) Dm <- D1.m.BL
+  if(!is.null(D2.m.BL)  && (D2.m.BL < max(BL1,BL2)) && (D2.m.BL > min(BL1,BL2)) ) Dm <- c(Dm,D2.m.BL)
+  if(!is.null(D1.s.BL)  && (D1.s.BL > max(BB1,BB2)) && (D1.s.BL < min(BL1,BL2)) ) Ds <- D1.s.BL
+  if(!is.null(D2.s.BL)  && (D2.s.BL > max(BB1,BB2)) && (D2.s.BL < min(BL1,BL2)) ) Ds <- c(Ds,D2.s.BL)
+  if(!is.null(D3.s.BL)  && (D3.s.BL > max(BB1,BB2)) && (D3.s.BL < min(BL1,BL2)) ) Ds <- c(Ds,D3.s.BL)
+
+  D.intersect<-c(Dl,Dm,Ds)
+  alpha.intersect<-c()
+  if(!is.null(D.intersect)){
+    for(i in 1:length(D.intersect)){
+      alpha.intersect<- c(alpha.intersect,calc_abc2(ccdata = res.list[[1]]$arglist$ccdata,BT = res.list[[1]]$arglist$BT, PL = res.list[[1]]$arglist$PL, PB = res.list[[1]]$arglist$PB, tune.par = res.list[[1]]$arglist$tune.par, AAV = res.list[[1]]$arglist$AAV, n.catch = res.list[[1]]$arglist$n.catch,n.cpue = res.list[[1]]$arglist$n.cpue, smooth.cpue = res.list[[1]]$arglist$smooth.cpue, smooth.dist = res.list[[1]]$arglist$smooth.dist, empir.dist = res.list[[1]]$arglist$empir.dist, simple.empir = res.list[[1]]$arglist$simple.empir, beta = res.list[[1]]$arglist$beta, D2alpha = D.intersect[i], BTyear = res.list[[1]]$arglist$BTyear, timelag0 = res.list[[1]]$arglist$timelag0,resp = res.list[[1]]$arglist$resp, summary_abc = F)$D2alpha)
+    }
+  }
+
+  out<- data.frame(D=D.intersect,alpha=alpha.intersect)
+  return(out)
 }
 
 #' 2系のHCRを比較するための関数
