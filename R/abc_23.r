@@ -2176,7 +2176,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' 2系のABCを時系列で表示するための関数
 #'
 #' @param res.list calc_abc2の返り値のリスト
-#' @param period レトロ解析する期間（デフォルトで10年）
+#' @param period レトロ解析する期間（データ初出年の10年後から）
 #' @param year レトロ解析の最終年
 #' @param timelag0b timelag0=Tで最終年catch=NAの場合
 #' @param stock.name
@@ -2184,14 +2184,31 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' @export
 #'
 
-plot_retro2 <- function(res,year=NULL,period=10,stock.name=NULL,timelag0b=FALSE){
+plot_retro2 <- function(res.list,year=NULL,period=NULL,stock.name=NULL,timelag0b=FALSE,withCatch=FALSE,fishseason=0){
   font_MAC<-"HiraginoSans-W3"#"Japan1GothicBBB"#
-  ccdata <- res$arglist$ccdata
+
+  # 漁期年/年設定
+  ifelse(fishseason==1, year.axis.label <- "漁期年", year.axis.label <- "年")
+
+  if("arglist"%in%names(res.list)) res.list <- list(res.list)
+  data_retro<-c()
+  for(j in 1:length(res.list)){
+    res<-res.list[[j]]
+    ccdata <- res$arglist$ccdata
 
   if(is.null(year)) year<-ccdata$year[length(ccdata$year)]
-
+  if(is.null(period)){
+    ccna <- (!is.na(ccdata$catch))*(!is.na(ccdata$cpue))
+    ccavail<-TRUE
+    i<-0
+    while(ccavail){
+      i<-i+1
+      ccavail<-!as.logical(ccna[i])
+    }
+    period <- ccdata$year[(i+10-1):length(ccdata$year)]
+  }
   abc2_seq_abc<-abc2_seq_alpha<-c()
-  for(y in (year-period+1):year){
+  for(y in period){
     ccdata_seq <- ccdata[1:which(ccdata$year==y),]
     if(timelag0b) ccdata_seq$catch[which(ccdata_seq$year==y)] <- NA
 
@@ -2200,26 +2217,37 @@ plot_retro2 <- function(res,year=NULL,period=10,stock.name=NULL,timelag0b=FALSE)
     abc2_seq_alpha <- c(abc2_seq_alpha ,abc2_seq$alpha)
   }
 
-  data_retro<-data.frame(year=as.integer(c(year-period+1):year),abc=abc2_seq_abc,alpha=abc2_seq_alpha)
-  ccdata_retro<-ccdata[which(ccdata$year==(year-period+1)):which(ccdata$year==year),]
+  data_retro<-rbind(data_retro,data.frame(year=as.integer(period+2),abc=abc2_seq_abc,alpha=abc2_seq_alpha,listnum=j))
+}
+  ccdata_retro<-ccdata[which(ccdata$year==period[1]):which(ccdata$year==period[length(period)]),]
 
   # sequential abc
-  g.retro.abc <- ccdata_retro %>% ggplot() +
-    geom_path(data=ccdata_retro,mapping=aes(x=year,y=catch),lwd=1)+
-    geom_point(data=ccdata_retro,mapping=aes(x=year,y=catch),lwd=2)+
-    geom_point(data=data_retro,mapping=aes(x=year,y=abc),lwd=3,col="red")+
-    #geom_path(aes(x=year,y=catch),size=1) +
-    ggtitle("") +
+  g.retro.abc <- data_retro %>% ggplot() +
+    geom_point(data=data_retro,mapping=aes(x=year,y=abc,color=listnum),lwd=3,col=(data_retro$listnum+1))+
+    geom_line(aes(x=year,y=abc,color=listnum,group=listnum),size=1,col=(data_retro$listnum+1)) +
+    ylab("算定漁獲量（トン）")+xlab(year.axis.label)+
+    ggtitle("")+
+    ylim(0,NA) +
     theme_custom()+
     theme(legend.position="top",legend.justification = c(1,0))
+
+  if(withCatch){
+    g.retro.abc <- g.retro.abc+
+    geom_path(data=ccdata_retro,mapping=aes(x=year,y=catch),lwd=1,col="grey")+
+    geom_point(data=ccdata_retro,mapping=aes(x=year,y=catch),lwd=2,col="grey")
+  }
+
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
     g.retro.abc<-g.retro.abc+
     theme(text = element_text(family = font_MAC))
   }
   # sequential alpha
   g.retro.alpha <- data_retro %>% ggplot() +
-    geom_path(aes(x=year,y=alpha),size=1) +
-    ggtitle("") +
+    geom_point(data=data_retro,mapping=aes(x=year,y=alpha,color=listnum),lwd=3,col=(data_retro$listnum+1))+
+    geom_line(aes(x=year,y=alpha,color=listnum,group=listnum),size=1,col=(data_retro$listnum+1)) +
+    ylab("漁獲を増減させる係数")+xlab(year.axis.label)+
+    ggtitle("")+
+    ylim(0,1.5) +
     theme_custom()+
     theme(legend.position="top",legend.justification = c(1,0))
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
