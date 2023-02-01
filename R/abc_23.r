@@ -2178,12 +2178,13 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' @param res.list calc_abc2の返り値のリスト
 #' @param period レトロ解析する期間（デフォルトで10年）
 #' @param year レトロ解析の最終年
+#' @param timelag0b timelag0=Tで最終年catch=NAの場合
 #' @param stock.name
 #'
 #' @export
 #'
 
-plot_retro2 <- function(res,year=NULL,period=10,stock.name=NULL){
+plot_retro2 <- function(res,year=NULL,period=10,stock.name=NULL,timelag0b=FALSE){
   font_MAC<-"HiraginoSans-W3"#"Japan1GothicBBB"#
   ccdata <- res$arglist$ccdata
 
@@ -2192,6 +2193,7 @@ plot_retro2 <- function(res,year=NULL,period=10,stock.name=NULL){
   abc2_seq_abc<-abc2_seq_alpha<-c()
   for(y in (year-period+1):year){
     ccdata_seq <- ccdata[1:which(ccdata$year==y),]
+    if(timelag0b) ccdata_seq$catch[which(ccdata_seq$year==y)] <- NA
 
     abc2_seq<- calc_abc2(ccdata_seq,BT = res$arglist$BT, PL = res$arglist$PL, PB = res$arglist$PB, tune.par = res$arglist$tune.par, AAV = res$arglist$AAV, n.catch = res$arglist$n.catch,n.cpue = res$arglist$n.cpue, smooth.cpue = res$arglist$smooth.cpue, smooth.dist = res$arglist$smooth.dist, empir.dist = res$arglist$empir.dist, simple.empir = res$arglist$simple.empir, beta = res$arglist$beta, D2alpha = res$arglist$D2alpha, BTyear = res$arglist$BTyear, timelag0 = res$arglist$timelag0,resp = res$arglist$resp, summary_abc = F)
     abc2_seq_abc <- c(abc2_seq_abc, abc2_seq$ABC)
@@ -2199,10 +2201,14 @@ plot_retro2 <- function(res,year=NULL,period=10,stock.name=NULL){
   }
 
   data_retro<-data.frame(year=as.integer(c(year-period+1):year),abc=abc2_seq_abc,alpha=abc2_seq_alpha)
+  ccdata_retro<-ccdata[which(ccdata$year==(year-period+1)):which(ccdata$year==year),]
 
   # sequential abc
-  g.retro.abc <- data_retro %>% ggplot() +
-    geom_path(aes(x=year,y=abc),size=1) +
+  g.retro.abc <- ccdata_retro %>% ggplot() +
+    geom_path(data=ccdata_retro,mapping=aes(x=year,y=catch),lwd=1)+
+    geom_point(data=ccdata_retro,mapping=aes(x=year,y=catch),lwd=2)+
+    geom_point(data=data_retro,mapping=aes(x=year,y=abc),lwd=3,col="red")+
+    #geom_path(aes(x=year,y=catch),size=1) +
     ggtitle("") +
     theme_custom()+
     theme(legend.position="top",legend.justification = c(1,0))
