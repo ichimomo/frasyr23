@@ -65,8 +65,10 @@ graph2_ex_nexty <- plot_abc2(abc2_ex_nexty)
 catch2 <- c(15,20,13,14,11,10,5,10,3,2,1,NA)
 data_example2 <- data.frame(year=2001:2012,cpue=cpue,catch=catch2)
 # この場合は、ABC算出に使う最近年漁獲量は6年を指定（ただし、最終年データはna.rm=Tにより実質最近年5年平均漁獲量になる）
-# plot_abc2では6年の漁獲量がプロットされてしまうので、ignore_naCatch_pointオプションを使用
+# plot_abc2では6年の漁獲量がプロットされてしまうのでlatest_Catch_naオプション（またはignore_naCatch_point）を使用
 abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,timelag0=T)
+graph2_ex_nexty2 <- plot_abc2(abc2_ex_nexty2,latest_Catch_na=T)
+# ignore_naCatch_pointはNAとなる点を除いてn.catch年平均の横棒が表示される
 graph2_ex_nexty2 <- plot_abc2(abc2_ex_nexty2,ignore_naCatch_point=T)
 ```
 
@@ -112,7 +114,10 @@ abc2_aka_conservABC <- calc_abc2(data_aka,beta=0.9)
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),hscale="dense")
 # グラフをセーブする場合
 # ggsave(file="hcr2_compare.png",width=5,height=5)
-
+# 2つ以上のHCRを表示する時に、intersection＝Tで交点を表示する
+# デフォルト設定とBT=0.7,δ=(0.4,0.7,1.0)の場合との交点
+abc2_aka_BT07 <- calc_abc2(data_aka,BT=0.7,tune.par=c(0.4,0.7,1.0))
+plot_hcr2(list(abc2_aka,abc2_aka_BT07),intersection=T)
 ```
 ![](./tools/hcr2_compare.png)
 
