@@ -68,7 +68,7 @@ data_example2 <- data.frame(year=2001:2012,cpue=cpue,catch=catch2)
 # plot_abc2では6年の漁獲量がプロットされてしまうのでlatest_Catch_naオプション（またはignore_naCatch_point）を使用
 abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,timelag0=T)
 graph2_ex_nexty2 <- plot_abc2(abc2_ex_nexty2,latest_Catch_na=T)
-# ignore_naCatch_pointはNAとなる点を除いてn.catch年平均の横棒が表示される
+# ignore_naCatch_pointはNAとなる点を除いてn.catch年平均の横棒が表示される(latest_Catch_naオプションと併用は不可)
 graph2_ex_nexty2 <- plot_abc2(abc2_ex_nexty2,ignore_naCatch_point=T)
 ```
 
