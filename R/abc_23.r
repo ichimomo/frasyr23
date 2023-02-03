@@ -415,6 +415,7 @@ type2_func_empir <- function(cD,cpue,simple=FALSE,BT=0.8,PL=0.7,PB=0,AAV=0.4,tun
     cum.cpue <- simple_ecdf_seq(cpue)
     cpue.prob <- sort(unique(cum.cpue))
   }
+
   trans_empir_prob<-function(prob.seq,cpue.prob){
     empir.prob <- prob.seq
     n <- length(cpue.prob)
@@ -812,8 +813,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       if(BThcr==T) legend.labels2 <- legend.labels2bt
     }
 
-    #資源量指標値のトレンド ----
-
+    # 資源量指標値のトレンド ----
     if(fillarea==TRUE){
       #colfill <- c("olivedrab2", "khaki1", "khaki2", "indianred1")
       colfill <- c("olivedrab2", "khaki1", "white", "white")
@@ -828,7 +828,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       minyears <- min(years)-2
     }
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
       g.cpue <- ccdata %>% ggplot() +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
@@ -912,7 +912,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       g.cpue4 <- g.cpue4 + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
      }
 
-     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
+     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
        g.cpue4 <- ccdata %>% ggplot() +
          geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
          geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
@@ -935,7 +935,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
      }
     }
 
-    #漁獲管理規則案 HCR ----
+    # 漁獲管理規則案 HCR ----
     ifelse(is.null(BTyear),ccdata.plot<-ccdata,
            ccdata.plot<-ccdata_fixedBT)
 　　#プロットの順番；枠、資源量水準vsアルファ、管理水準縦線、ラベル、軸ラベル、abc計算に用いる現状ポイント
@@ -1105,7 +1105,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     if(BThcr==T) CatchABC<-c(1,2,3)
     else CatchABC<-c(1,2)
 
-    if(!ignore_naCatch_point) { #
+    if(!ignore_naCatch_point) {
       g.catch <- ccdata %>% ggplot() +
       geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
       geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)
@@ -1180,7 +1180,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       graph.combined <- gridExtra::grid.arrange(g.cpue,g.hcr,g.catch,ncol=3,top=stock.name)
       return(list(graph.component=graph.component,graph.combined=graph.combined))
     }
-    }
+  }
 }
 
 
@@ -2179,16 +2179,33 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' @param period レトロ解析する期間（データ初出年の10年後から）
 #' @param year レトロ解析の最終年
 #' @param timelag0b timelag0=Tで最終年catch=NAの場合
+#' @param hcrlabel 凡例に表示させるHCR（ベクトルで入れる）
 #' @param stock.name
 #'
 #' @export
 #'
 
-plot_retro2 <- function(res.list,year=NULL,period=NULL,stock.name=NULL,timelag0b=FALSE,withCatch=FALSE,fishseason=0){
+plot_retro2 <- function(res.list,year=NULL,period=NULL,stock.name=NULL,timelag0b=FALSE,withCatch=FALSE,fishseason=0,hcrlabel=NULL){
   font_MAC<-"HiraginoSans-W3"#"Japan1GothicBBB"#
 
   # 漁期年/年設定
   ifelse(fishseason==1, year.axis.label <- "漁期年", year.axis.label <- "年")
+  # 凡例色
+  col.hcr.points <- seq(2,1+length(res.list))
+  # 凡例ラベル
+  if(!is.null(hcrlabel) && length(hcrlabel)!=length(res.list)) {
+    cat(stringr::str_c("Legend Label for HCR does not match res.list.\n"))
+    hcrlabel<-NULL
+  }
+  hcr.labels<-c()
+  if(is.null(hcrlabel)){
+    for(i in 1:length(res.list)){
+      hcr.labels<-c(hcr.labels,paste0("HCR",i))
+    }
+    if(length(res.list)==1) hcr.labels<-""
+  }else{
+    hcr.labels<-hcrlabel
+  }
 
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
   data_retro<-c()
@@ -2223,13 +2240,14 @@ plot_retro2 <- function(res.list,year=NULL,period=NULL,stock.name=NULL,timelag0b
 
   # sequential abc
   g.retro.abc <- data_retro %>% ggplot() +
-    geom_point(data=data_retro,mapping=aes(x=year,y=abc,color=listnum),lwd=3,col=(data_retro$listnum+1))+
-    geom_line(aes(x=year,y=abc,color=listnum,group=listnum),size=1,col=(data_retro$listnum+1)) +
+    geom_point(data=data_retro,mapping=aes(x=year,y=abc,color=as.factor(listnum)),size=3)+
+    geom_line(aes(x=year,y=abc,color=as.factor(listnum),group=listnum),size=1) +
+    scale_color_manual(name="HCR",values=col.hcr.points, labels = hcr.labels, guide="legend")+
     ylab("算定漁獲量（トン）")+xlab(year.axis.label)+
-    ggtitle("")+
+    ggtitle("") +
     ylim(0,NA) +
-    theme_custom()+
-    theme(legend.position="top",legend.justification = c(1,0))
+    theme_custom() +
+    theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
 
   if(withCatch){
     g.retro.abc <- g.retro.abc+
@@ -2243,13 +2261,14 @@ plot_retro2 <- function(res.list,year=NULL,period=NULL,stock.name=NULL,timelag0b
   }
   # sequential alpha
   g.retro.alpha <- data_retro %>% ggplot() +
-    geom_point(data=data_retro,mapping=aes(x=year,y=alpha,color=listnum),lwd=3,col=(data_retro$listnum+1))+
-    geom_line(aes(x=year,y=alpha,color=listnum,group=listnum),size=1,col=(data_retro$listnum+1)) +
+    geom_point(data=data_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum)),lwd=3)+
+    geom_line(aes(x=year,y=alpha,color=as.factor(listnum),group=listnum),size=1) +
+    scale_color_manual(name="HCR",values=col.hcr.points, labels = hcr.labels, guide="legend")+
     ylab("漁獲を増減させる係数")+xlab(year.axis.label)+
     ggtitle("")+
     ylim(0,1.5) +
     theme_custom()+
-    theme(legend.position="top",legend.justification = c(1,0))
+    theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
     g.retro.alpha<-g.retro.alpha+
       theme(text = element_text(family = font_MAC))
@@ -2462,7 +2481,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
       g.cpue4 <- g.cpue4 + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
     }
 
-    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
+    if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ # plot 設定 for mac----
       g.cpue4 <- ccdata %>% ggplot() +
         geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
         geom_text(data=data_percent_even,aes(x=x,y=y*1.05,label=label))+
