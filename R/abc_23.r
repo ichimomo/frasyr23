@@ -2190,7 +2190,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' @param res.list calc_abc2の返り値のリスト
 #' @param period レトロ解析する期間（デフォルトはcatch,cpueデータ初出年のn.catch年後から最終年）
 #' @param onset_year レトロ解析開始年
-#' @param timelag0b timelag0=Tで最終年catch=NAの場合
+#' @param timelagB timelag0=Tで最終年catch=NAの場合
 #' @param hcrlabel 凡例に表示させるHCR（ベクトルで入れる）
 #' @param withCatch ABC算定漁獲の時系列に漁獲実績データを併記
 #' @param all_timeseries ABC時系列を入力漁獲時系列データと同じ期間
@@ -2199,7 +2199,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' @export
 #'
 
-plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelag0=FALSE,timelagB=FALSE,withCatch=FALSE,fishseason=0,hcrlabel=NULL,all_timeseries=FALSE){
+plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelagB=FALSE,withCatch=FALSE,fishseason=0,hcrlabel=NULL,all_timeseries=FALSE){
 
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -2262,6 +2262,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   }
 
   #タイムラグ設定矯正
+  timelag0 <- res.list[[1]]$arglist$timelag0
   if(timelagB) timelag0<-TRUE
 
   data_retro<-c()
@@ -2281,7 +2282,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
 
     abc2_seq_resp <- ifelse(abc2_seq_resp==0,19,ifelse(abc2_seq_resp==1,15,17))
 
-    if(!timelag0)data_retro<-rbind(data_retro,data.frame(year=as.integer(period+2),abc=abc2_seq_abc,alpha=abc2_seq_alpha,resp.pch=abc2_seq_resp,listnum=j))
+    if(!timelag0) data_retro<-rbind(data_retro,data.frame(year=as.integer(period+2),abc=abc2_seq_abc,alpha=abc2_seq_alpha,resp.pch=abc2_seq_resp,listnum=j))
     else data_retro<-rbind(data_retro,data.frame(year=as.integer(period+1),abc=abc2_seq_abc,alpha=abc2_seq_alpha,resp.pch=abc2_seq_resp,listnum=j))
   }
   if(all_timeseries) ccdata_retro<-ccdata[1:which(ccdata$year==period[length(period)]),]
@@ -2292,7 +2293,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     geom_point(data=data_retro,mapping=aes(x=year,y=abc,color=as.factor(listnum)),size=3,pch=data_retro$resp.pch)+
     #scale_shape_manual()
     geom_line(data=data_retro,mapping=aes(x=year,y=abc,color=as.factor(listnum),group=listnum),size=1) +
-    scale_color_manual(name="HCR",values=col.hcr.points, labels = hcr.labels, guide="legend")+
+    scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="legend")+
     ylab("算定漁獲量（トン）")+xlab(year.axis.label)+
     ggtitle("") +
     ylim(0,NA) +
@@ -2315,7 +2316,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   g.retro.alpha <- ccdata_retro %>% ggplot() +
     geom_point(data=data_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum)),lwd=3)+
     geom_line(data=data_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum),group=listnum),size=1) +
-    scale_color_manual(name="HCR",values=col.hcr.points, labels = hcr.labels, guide="legend")+
+    scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="legend")+
     ylab("漁獲量を増減させる係数")+xlab(year.axis.label)+
     ggtitle("")+
     ylim(0,1.5) +
@@ -2327,9 +2328,36 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   }
   if(all_timeseries) g.retro.alpha <- g.retro.alpha+
     scale_x_continuous(limits = c(min(ccdata_retro$year),max(period)+2))
+
+  # 漁獲量とCPUE
+  # 第2y軸調整
+  second_rate<-max(ccdata_retro$catch,na.rm = T)/max(ccdata_retro$cpue,na.rm = T)
+  ccdata_retro$cpue <-
+  g.cc <- ccdata_retro %>% ggplot()+
+  geom_line(data=ccdata_retro,mapping=aes(x=year,y=catch),size=1)+
+    geom_point(data=ccdata_retro,mapping=aes(x=year,y=catch),size=2)+
+  geom_line(data=ccdata_retro,mapping=aes(x=year,y=cpue*second_rate),size=1,col="grey")+
+  geom_point(data=ccdata_retro,mapping=aes(x=year,y=cpue*second_rate),size=2,col="grey")+
+  scale_x_continuous(limits = c(min(ccdata_retro$year),max(period)+2))+
+  scale_y_continuous(
+    limits = c(0, 1.25*max(ccdata_retro$catch)),
+    sec.axis = sec_axis(~ ./second_rate, name = "資源量指標値")
+  )+
+  scale_color_manual(name="",values=c("black","grey"), labels = c("漁獲量","資源量指標値(相対値)"), guide="legend")+
+    labs(x = year.axis.label, y = "漁獲量（トン）")+
+    ggtitle("")+
+    theme_custom()+
+    theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
+  if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+    g.cc<-g.cc+
+      theme(text = element_text(family = font_MAC))
+  }
+  if(all_timeseries) g.cc <- g.cc+
+    scale_x_continuous(limits = c(min(ccdata_retro$year),max(period)+2))
+
   # 出力設定
-  graph.component <- list(g.retro.abc,g.retro.alpha)
-  graph.combined <- gridExtra::grid.arrange(g.retro.abc,g.retro.alpha,ncol=2,top=stock.name)
+  graph.component <- list(g.retro.alpha,g.retro.abc)
+  graph.combined <- gridExtra::grid.arrange(g.retro.alpha,g.retro.abc,ncol=1,top=stock.name)
   return(list(graph.component=graph.component,graph.combined=graph.combined))
 }
 
