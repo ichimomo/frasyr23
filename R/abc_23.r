@@ -339,13 +339,13 @@ calc_abc2 <- function(
                    AAV=AAV,tune.par=tune.par,ABC=ABC,arglist=arglist,
                    mean.catch=mean.catch,Obs_percent=Obs_percent,Obs_percent_even=Obs_percent_even,
                    D=D,
-                   alpha=alpha,beta=beta,D2alpha=alphafromD)
+                   alpha=alpha,beta=beta,D2alpha=alphafromD,resp=resp_flag)
 
     if(smooth.cpue==TRUE || smooth.dist==TRUE) output <- list(BRP=BRP,Obs_BRP=Obs_BRP,Current_Status=Recent_Status,
                    AAV=AAV,tune.par=tune.par,ABC=ABC,arglist=arglist,
                    mean.catch=mean.catch,Obs_percent=Obs_percent,Obs_percent_even=Obs_percent_even,
                    D=D,
-                   alpha=alpha,beta=beta,D2alpha=alphafromD)
+                   alpha=alpha,beta=beta,D2alpha=alphafromD,resp=resp_flag)
   return(output)
 }
 
@@ -2188,7 +2188,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' 2系のABCを時系列で表示するための関数
 #'
 #' @param res.list calc_abc2の返り値のリスト
-#' @param period レトロ解析する期間（デフォルトはデータ初出年の10年後から最終年）
+#' @param period レトロ解析する期間（デフォルトはcatch,cpueデータ初出年のn.catch年後から最終年）
 #' @param onset_year レトロ解析開始年
 #' @param timelag0b timelag0=Tで最終年catch=NAの場合
 #' @param hcrlabel 凡例に表示させるHCR（ベクトルで入れる）
@@ -2199,7 +2199,9 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' @export
 #'
 
-plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelag0b=FALSE,withCatch=FALSE,fishseason=0,hcrlabel=NULL,all_timeseries=FALSE){
+plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelag0=FALSE,timelagB=FALSE,withCatch=FALSE,fishseason=0,hcrlabel=NULL,all_timeseries=FALSE){
+
+  if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
   # Mac font 設定
   font_MAC<-"HiraginoSans-W3"#"Japan1GothicBBB"#
@@ -2224,10 +2226,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     hcr.labels<-hcrlabel
   }
 
-  if("arglist"%in%names(res.list)) res.list <- list(res.list)
-
   # レトロ解析期間設定
-
   if(!is.null(onset_year)) {
     if(onset_year>max(res.list[[1]]$arglist$ccdata$year)){
       cat("ignore onset_year and replace it to the last year of period because onset_year > max(ccdata$year).\n")
@@ -2252,39 +2251,46 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
 
     if(period[length(period)]<=min(res.list[[1]]$arglist$ccdata$year)) stop("the first year of period must be < max(ccdata$year).\n")
 
-    if(period[1]<res.list[[1]]$arglist$ccdata$year[availy+res.list[[1]]$arglist$n.cpue+1]){
-      cat("set the first year of period (",period[1] ,") to",res.list[[1]]$arglist$ccdata$year[availy+res.list[[1]]$arglist$n.cpue]+1, "because the first year of ccdata containing both cpue and catch is ",res.list[[1]]$arglist$ccdata$year[availy] ,".\n")
-      period<-period[which(period==res.list[[1]]$arglist$ccdata$year[availy+res.list[[1]]$arglist$n.cpue]+1):length(period)]
+    if(period[1]<res.list[[1]]$arglist$ccdata$year[availy+res.list[[1]]$arglist$n.catch]){
+      cat("set the first year of period (",period[1] ,") to",res.list[[1]]$arglist$ccdata$year[availy+res.list[[1]]$arglist$n.catch], "because the first year of ccdata containing both cpue and catch is ",res.list[[1]]$arglist$ccdata$year[availy] ,".\n")
+      period<-period[which(period==res.list[[1]]$arglist$ccdata$year[availy+res.list[[1]]$arglist$n.catch]):length(period)]
     }
 
-  }else{ #periodの指定がなければcpue & catchともにデータがある初出年+10年までレトロ解析
-    if(is.null(onset_year)) period <- res.list[[1]]$arglist$ccdata$year[(availy+10-1):length(res.list[[1]]$arglist$ccdata$year)]
-    else period <- res.list[[1]]$arglist$ccdata$year[(availy+10-1):which(res.list[[1]]$arglist$ccdata$year==onset_year)]
+  }else{ #periodの指定がなければcpue & catchともにデータがある初出年+n.catch年までレトロ解析
+    if(is.null(onset_year)) period <- res.list[[1]]$arglist$ccdata$year[(availy+res.list[[1]]$arglist$n.catch-1):length(res.list[[1]]$arglist$ccdata$year)]
+    else period <- res.list[[1]]$arglist$ccdata$year[(availy+res.list[[1]]$arglist$n.catch-1):which(res.list[[1]]$arglist$ccdata$year==onset_year)]
   }
+
+  #タイムラグ設定矯正
+  if(timelagB) timelag0<-TRUE
 
   data_retro<-c()
   for(j in 1:length(res.list)){
     res<-res.list[[j]]
     ccdata <- res$arglist$ccdata
 
-    abc2_seq_abc<-abc2_seq_alpha<-c()
+    abc2_seq_abc<-abc2_seq_alpha<-abc2_seq_resp<-c()
     for(y in period){
       ccdata_seq <- ccdata[1:which(ccdata$year==y),]
-      if(timelag0b) ccdata_seq$catch[which(ccdata_seq$year==y)] <- NA
+      if(timelagB) ccdata_seq$catch[which(ccdata_seq$year==y)] <- NA
       abc2_seq<- calc_abc2(ccdata_seq,BT = res$arglist$BT, PL = res$arglist$PL, PB = res$arglist$PB, tune.par = res$arglist$tune.par, AAV = res$arglist$AAV, n.catch = res$arglist$n.catch,n.cpue = res$arglist$n.cpue, smooth.cpue = res$arglist$smooth.cpue, smooth.dist = res$arglist$smooth.dist, empir.dist = res$arglist$empir.dist, simple.empir = res$arglist$simple.empir, beta = res$arglist$beta, D2alpha = res$arglist$D2alpha, BTyear = res$arglist$BTyear, timelag0 = res$arglist$timelag0,resp = res$arglist$resp, summary_abc = F)
       abc2_seq_abc <- c(abc2_seq_abc, abc2_seq$ABC)
       abc2_seq_alpha <- c(abc2_seq_alpha ,abc2_seq$alpha)
+      abc2_seq_resp <- c(abc2_seq_resp ,abc2_seq$resp)
     }
 
-    data_retro<-rbind(data_retro,data.frame(year=as.integer(period+2),abc=abc2_seq_abc,alpha=abc2_seq_alpha,listnum=j))
+    abc2_seq_resp <- ifelse(abc2_seq_resp==0,19,ifelse(abc2_seq_resp==1,15,17))
 
+    if(!timelag0)data_retro<-rbind(data_retro,data.frame(year=as.integer(period+2),abc=abc2_seq_abc,alpha=abc2_seq_alpha,resp.pch=abc2_seq_resp,listnum=j))
+    else data_retro<-rbind(data_retro,data.frame(year=as.integer(period+1),abc=abc2_seq_abc,alpha=abc2_seq_alpha,resp.pch=abc2_seq_resp,listnum=j))
   }
   if(all_timeseries) ccdata_retro<-ccdata[1:which(ccdata$year==period[length(period)]),]
   else ccdata_retro<-ccdata[which(ccdata$year==period[1]):which(ccdata$year==period[length(period)]),]
 
   # sequential abc
   g.retro.abc <- ccdata_retro %>% ggplot() +
-    geom_point(data=data_retro,mapping=aes(x=year,y=abc,color=as.factor(listnum)),size=3)+
+    geom_point(data=data_retro,mapping=aes(x=year,y=abc,color=as.factor(listnum)),size=3,pch=data_retro$resp.pch)+
+    #scale_shape_manual()
     geom_line(data=data_retro,mapping=aes(x=year,y=abc,color=as.factor(listnum),group=listnum),size=1) +
     scale_color_manual(name="HCR",values=col.hcr.points, labels = hcr.labels, guide="legend")+
     ylab("算定漁獲量（トン）")+xlab(year.axis.label)+
@@ -2319,7 +2325,8 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     g.retro.alpha<-g.retro.alpha+
       theme(text = element_text(family = font_MAC))
   }
-
+  if(all_timeseries) g.retro.alpha <- g.retro.alpha+
+    scale_x_continuous(limits = c(min(ccdata_retro$year),max(period)+2))
   # 出力設定
   graph.component <- list(g.retro.abc,g.retro.alpha)
   graph.combined <- gridExtra::grid.arrange(g.retro.abc,g.retro.alpha,ncol=2,top=stock.name)
