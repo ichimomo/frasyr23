@@ -860,7 +860,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       if(leftalign==TRUE){
         g.cpue <- g.cpue + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
       }
-    }else{
+    }else{ #!Mac
       g.cpue <- ccdata %>% ggplot() +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
@@ -2371,12 +2371,11 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   # sequential abc
   g.retro.abc <- alldata_retro %>% ggplot() +
     geom_point(data=alldata_retro,mapping=aes(x=year,y=abc_msd,color=as.factor(listnum)),size=3,pch=alldata_retro$resp.pch)+
-    #scale_shape_manual()
     geom_line(data=alldata_retro,mapping=aes(x=year,y=abc_msd,color=as.factor(listnum),group=listnum),size=1) +
     scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="legend")+
-    ylab(paste0("算定漁獲量（",data_retro_msd,"トン）"))+xlab(year.axis.label)+
+    ylab(paste0("算定漁獲量（",data_retro_msd,"トン）"))+
+    xlab(year.axis.label) +
     ggtitle("") +
-    ylim(0,NA) +
     theme_custom() +
     theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
 
@@ -2388,10 +2387,15 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   }
   if(all_timeseries) g.retro.abc <- g.retro.abc+
     scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))
+
+  g.retro.abc <- g.retro.abc+
+    scale_y_continuous(labels=scales::number_format(accuracy=0.1),sec.axis = sec_axis(~ ., labels=scales::number_format(accuracy=0.1), name = " "), limits = c(0, 1.25*max(alldata_retro$catch_msd)))
+
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
     g.retro.abc<-g.retro.abc+
     theme(text = element_text(family = font_MAC))
   }
+
   # sequential alpha
   g.retro.alpha <- alldata_retro %>% ggplot() +
     geom_point(data=alldata_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum)),lwd=3)+
@@ -2399,7 +2403,6 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="legend")+
     ylab("漁獲量を増減させる係数")+xlab(year.axis.label)+
     ggtitle("")+
-    ylim(0,1.5) +
     theme_custom()+
     theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
@@ -2408,6 +2411,8 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   }
   if(all_timeseries) g.retro.alpha <- g.retro.alpha+
     scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))
+  g.retro.alpha <- g.retro.alpha+
+    scale_y_continuous(sec.axis = sec_axis(~ ., name = " "), limits = c(0,1.5))
 
   # 漁獲量とCPUE
   # 第2y軸調整
@@ -2418,13 +2423,14 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     geom_point(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=2)+
   geom_line(data=alldata_retro,mapping=aes(x=year,y=cpue_scaled*second_rate),size=1,col="grey")+
   geom_point(data=alldata_retro,mapping=aes(x=year,y=cpue_scaled*second_rate),size=2,col="grey")+
+  scale_color_manual(name="", values="grey", labels = "資源量指標値(相対値)", guide="legend")+
     scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))+
-    scale_y_continuous(
+  scale_y_continuous(
     limits = c(0, 1.25*max(alldata_retro$catch_msd)),
-    sec.axis = sec_axis(~ ./second_rate, name = "資源量指標値(相対値)")
+    sec.axis = sec_axis(~ ./second_rate, name = "資源量指標値(相対値)"),
+    labels=scales::number_format(accuracy=0.1)
   )+
-  scale_color_manual(name="",values=c("black","grey"), labels = c("漁獲量","資源量指標値(相対値)"), guide="legend")+
-    labs(x = year.axis.label, y = paste0("漁獲量（",ccdata_retro_msd,"トン）"))+
+  labs(x = year.axis.label, y = paste0("漁獲量（",ccdata_retro_msd,"トン）"))+
     ggtitle("")+
     theme_custom()+
     theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
