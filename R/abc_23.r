@@ -2198,7 +2198,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' @export
 #'
 
-calc_retro2 <- function(res,onset_year=NULL,period=NULL,stock.name=NULL,timelagB=FALSE,output=FALSE){
+calc_retro2 <- function(res,onset_year=NULL,period=NULL,stock.name=NULL,timelagB=FALSE,output=FALSE,filename=NULL){
 
   # レトロ解析期間設定
   if(!is.null(onset_year)) {
@@ -2323,8 +2323,8 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   }
 
   period <- sort(unique(abc2_seq$year),decreasing = F)
-  if(all_timeseries) ccdata_retro<-ccdata[1:which(ccdata$year==period[length(period)]),]
-  else ccdata_retro<-ccdata[which(ccdata$year==period[1]):which(ccdata$year==period[length(period)]),]
+  if(all_timeseries) ccdata_retro<-res.list[[1]]$arglist$ccdata[1:which(res.list[[1]]$arglist$ccdata$year==period[length(period)]),]
+  else ccdata_retro<-res.list[[1]]$arglist$ccdata[which(res.list[[1]]$arglist$ccdata$year==period[1]):which(res.list[[1]]$arglist$ccdata$year==period[length(period)]),]
 
   # 表示桁数合わせ
   data_retro$abc_msd <- data_retro$abc / (10^floor(log10(max(data_retro$abc))))
