@@ -2276,7 +2276,7 @@ calc_retro2 <- function(res,onset_year=NULL,period=NULL,stock.name=NULL,timelagB
 #' @export
 #'
 
-plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelagB=FALSE,withCatch=FALSE,fishseason=0,hcrlabel=NULL,all_timeseries=TRUE,cc_plot=FALSE,calc_year=FALSE){
+plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelagB=FALSE,fishseason=0,hcrlabel=NULL,all_timeseries=TRUE,calc_year=FALSE,cc_plot=FALSE,withCatch=FALSE){
 
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -2377,30 +2377,39 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     xlab(year.axis.label) +
     ggtitle("") +
     theme_custom() +
-    theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
+    theme(legend.position=c(1,0),legend.justification = c(1,0), legend.direction="horizontal",legend.background = element_rect(fill = NA, colour = NA),legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
 
-  if(withCatch){
-    g.retro.abc <- g.retro.abc+
-    geom_path(data=alldata_retro,mapping=aes(x=year,y=catch_msd),lwd=1,col="grey")+
-    geom_point(data=alldata_retro,mapping=aes(x=year,y=catch_msd),lwd=2,col="grey")#+
-     #geom_text(data=ccdata_retro,mapping=aes(x=max(years)-1,y=min(catch),label="漁獲量"),size=4,col="grey")
-  }
   if(all_timeseries) g.retro.abc <- g.retro.abc+
     scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))
 
   g.retro.abc <- g.retro.abc+
-    scale_y_continuous(labels=scales::number_format(accuracy=0.1),sec.axis = sec_axis(~ ., labels=scales::number_format(accuracy=0.1), name = " "), limits = c(0, 1.25*max(alldata_retro$catch_msd)))
+    scale_y_continuous(labels=scales::number_format(accuracy=0.1),sec.axis = sec_axis(~ ., labels=scales::number_format(accuracy=0.1), name = " "), limits = c(-1, 1.25*max(alldata_retro$catch_msd,na.rm = T)),breaks=seq(0,round(1.25*max(alldata_retro$catch_msd,na.rm = T),digits = 0),length=round(1.25*max(alldata_retro$catch_msd,na.rm = T),digits = 0)+1) )
 
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
     g.retro.abc<-g.retro.abc+
     theme(text = element_text(family = font_MAC))
   }
 
+  if(withCatch){
+    if(all_timeseries) catch.legend.xposit <- min(alldata_retro$year,na.rm = T)+1
+    else catch.legend.xposit <- min(data_retro$year,na.rm = T)+1
+    g.retro.abc <- g.retro.abc+
+      geom_path(data=alldata_retro,mapping=aes(x=year,y=catch_msd),lwd=1,col="grey")+
+      geom_point(data=alldata_retro,mapping=aes(x=year,y=catch_msd),lwd=2,col="grey")
+    if(!isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+    g.retro.abc <- g.retro.abc+
+      geom_text(aes(x=catch.legend.xposit,y=-1,label="漁獲量"),size=4,col="grey")
+    }else{
+      g.retro.abc <- g.retro.abc+
+        geom_text(aes(x=catch.legend.xposit,y=-1,label="漁獲量",family=font_MAC),size=4,col="grey")
+    }
+  }
+
   # sequential alpha
   g.retro.alpha <- alldata_retro %>% ggplot() +
     geom_point(data=alldata_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum)),lwd=3)+
     geom_line(data=alldata_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum),group=listnum),size=1) +
-    scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="legend")+
+    scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="none")+
     ylab("漁獲量を増減させる係数")+xlab(year.axis.label)+
     ggtitle("")+
     theme_custom()+
@@ -2426,7 +2435,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   scale_color_manual(name="", values="grey", labels = "資源量指標値(相対値)", guide="legend")+
     scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))+
   scale_y_continuous(
-    limits = c(0, 1.25*max(alldata_retro$catch_msd)),
+    limits = c(-1, 1.25*max(alldata_retro$catch_msd,na.rm = T)),breaks=seq(0,round(1.25*max(alldata_retro$catch_msd,na.rm = T),digits = 0),length=round(1.25*max(alldata_retro$catch_msd,na.rm = T),digits = 0)+1),
     sec.axis = sec_axis(~ ./second_rate, name = "資源量指標値(相対値)"),
     labels=scales::number_format(accuracy=0.1)
   )+
