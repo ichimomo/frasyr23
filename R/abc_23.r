@@ -2446,7 +2446,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     cpue.legend.xposit <- ccdata_retro_preiod$year[which(ccdata_retro_preiod$catch==max(ccdata_retro_preiod$catch,na.rm = T))]
   }
 
-  cc.labels <-c("漁獲量","資源量指標値（相対値）")
+  cc.labels <-c("漁獲量","資源量指標値")
   cc.labels.col <- c("black","darkslategrey")
   data_CC <- tibble(CC=cc.labels,Val_obs_max=c(max(alldata_retro$catch,na.rm = T),max(alldata_retro$cpue,na.rm = T)),Xaxes_plot=c(catch.legend.xposit,cpue.legend.xposit),Yaxes_plot=c(break_max-1,-1))
 
@@ -2455,7 +2455,6 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     geom_point(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=2)+
   geom_line(data=alldata_retro,mapping=aes(x=year,y=cpue_scaled*second_rate),size=1,col="lightslategrey")+
   geom_point(data=alldata_retro,mapping=aes(x=year,y=cpue_scaled*second_rate),size=2,col="lightslategrey")+
-  scale_color_manual(name="", values="lightslategrey", labels = "資源量指標値(相対値)", guide="legend")+
     scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))+
   scale_y_continuous(
     labels=scales::number_format(accuracy=0.1),
