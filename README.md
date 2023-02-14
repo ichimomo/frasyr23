@@ -136,7 +136,7 @@ graph_retro2_compare <- plot_retro2(list(abc2_aka,abc2_aka_BT07))
 # 2つ以上の算定漁獲量と漁獲を増減させる係数のほか、漁獲量とし減量指標値も同じ時系列分表示する
 graph_retro2_cc <- plot_retro2(list(abc2_aka,abc2_aka_BT07),cc_plot=T)
 ```
-![](./tools/retro_aka2.png)
+![](./tools/retro2_aka.png)
 
 # 計算オプション
 
