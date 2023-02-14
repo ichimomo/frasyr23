@@ -133,7 +133,7 @@ abc2_aka_BT07 <- calc_abc2(data_aka,BT = 0.7,tune.par = c(0.4,0.7,1.0))
 graph_retro2_compare <- plot_retro2(list(abc2_aka,abc2_aka_BT07))
 # グラフをセーブする場合
 # ggsave(file="retro2_compare.png",width=5,height=5)
-# 2つ以上の算定漁獲量と漁獲を増減させる係数のほか、漁獲量とし減量指標値も同じ時系列分表示する
+# 2つ以上の算定漁獲量と漁獲を増減させる係数のほか、漁獲量と資源量指標値も同じ期間表示する
 graph_retro2_cc <- plot_retro2(list(abc2_aka,abc2_aka_BT07),cc_plot=T)
 ```
 ![](./tools/retro2_aka.png)
