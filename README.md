@@ -131,10 +131,10 @@ graph_retro2 <- plot_retro2(abc2_aka)
 # 目標水準BTを0.7に引き下げる場合と過去の算定漁獲量を比較
 abc2_aka_BT07 <- calc_abc2(data_aka,BT = 0.7,tune.par = c(0.4,0.7,1.0))
 graph_retro2_compare <- plot_retro2(list(abc2_aka,abc2_aka_BT07))
-# グラフをセーブする場合
-# ggsave(file="retro2_compare.png",width=5,height=5)
 # 2つ以上の算定漁獲量と漁獲を増減させる係数のほか、漁獲量と資源量指標値も同じ期間表示する
 graph_retro2_cc <- plot_retro2(list(abc2_aka,abc2_aka_BT07),cc_plot=T)
+# グラフをセーブする場合
+# ggsave(width=200,height=200,dpi=200,units="mm", graph_retro2_cc[[2]], file="retro2_aka.png")
 ```
 ![](./tools/retro2_aka.png)
 
