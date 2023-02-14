@@ -6,7 +6,7 @@
 #' @import magrittr
 #' @import ggrepel
 #' @import ggplot2
-#'
+#' @import patchwork
 #'
 
 col.BRP <- c("#00533E","#edb918","#C73C2E")
@@ -860,7 +860,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       if(leftalign==TRUE){
         g.cpue <- g.cpue + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
       }
-    }else{
+    }else{ #!Mac
       g.cpue <- ccdata %>% ggplot() +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x,y=y), fill=colfill[1]) +
         geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
@@ -2185,21 +2185,98 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   }
 }
 
-#' 2系のABCを時系列で表示するための関数
+#' 2系のABCを過去に遡って時系列で計算するための関数
 #'
-#' @param res.list calc_abc2の返り値のリスト
-#' @param period レトロ解析する期間（デフォルトはcatch,cpueデータ初出年のn.catch年後から最終年）
+#' @param res calc_abc2の返り値のリスト
+#' @param period レトロ解析する期間（デフォルトはcatch,cpue両データ初出年のn.catch年後から最終年）
 #' @param onset_year レトロ解析開始年
-#' @param timelag0b timelag0=Tで最終年catch=NAの場合
-#' @param hcrlabel 凡例に表示させるHCR（ベクトルで入れる）
-#' @param withCatch ABC算定漁獲の時系列に漁獲実績データを併記
-#' @param all_timeseries ABC時系列を入力漁獲時系列データと同じ期間
+#' @param timelagB timelag0=Tで最終年catch=NAの場合
+#' @param output csvファイル出力（出力年はABCを算出した年で、ABC対象年ではないことに注意）
+#' @param filename ファイル名指定（デフォルトはres_"stock.name_"retro2.csv）
 #' @param stock.name
 #'
 #' @export
 #'
 
-plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelag0=FALSE,timelagB=FALSE,withCatch=FALSE,fishseason=0,hcrlabel=NULL,all_timeseries=FALSE){
+calc_retro2 <- function(res,onset_year=NULL,period=NULL,stock.name=NULL,timelagB=FALSE,output=FALSE,filename=NULL){
+
+  # レトロ解析期間設定
+  if(!is.null(onset_year)) {
+    if(onset_year>max(res$arglist$ccdata$year)){
+      cat("ignore onset_year and replace it to the last year of period because onset_year > max(ccdata$year).\n")
+      onset_year<-NULL
+    }
+  }
+  if(!is.null(onset_year) && !is.null(period)){
+    cat("ignore onset_year and use period.\n")
+    onset_year<-NULL
+  }
+  # cpue & catchともにデータがある初出年探索
+  ccna <- (!is.na(res$arglist$ccdata$catch))*(!is.na(res$arglist$ccdata$cpue))
+  ccavail<-TRUE
+  availy<-0
+  while(ccavail){
+    availy<-availy+1
+    ccavail<-!as.logical(ccna[availy])
+  }
+
+  if(!is.null(period)){
+    if(period[length(period)]>max(res$arglist$ccdata$year)) stop("the last year of period must be < max(ccdata$year).\n")
+
+    if(period[length(period)]<=min(res$arglist$ccdata$year)) stop("the first year of period must be < max(ccdata$year).\n")
+
+    if(period[1]<res$arglist$ccdata$year[availy+res$arglist$n.catch]){
+      cat("set the first year of period (",period[1] ,") to",res$arglist$ccdata$year[availy+res$arglist$n.catch], "because the first year of ccdata containing both cpue and catch is ",res$arglist$ccdata$year[availy] ,".\n")
+      period<-period[which(period==res$arglist$ccdata$year[availy+res$arglist$n.catch]):length(period)]
+    }
+
+  }else{ #periodの指定がなければcpue & catchともにデータがある初出年+n.catch年までレトロ解析
+    if(is.null(onset_year)) period <- res$arglist$ccdata$year[(availy+res$arglist$n.catch-1):length(res$arglist$ccdata$year)]
+    else period <- res$arglist$ccdata$year[(availy+res$arglist$n.catch-1):which(res$arglist$ccdata$year==onset_year)]
+  }
+
+  ccdata <- res$arglist$ccdata
+
+  abc2_seq_abc<-abc2_seq_alpha<-abc2_seq_resp<-c()
+  for(y in period){
+    ccdata_seq <- ccdata[1:which(ccdata$year==y),]
+    if(timelagB) ccdata_seq$catch[which(ccdata_seq$year==y)] <- NA
+    abc2_seq<- calc_abc2(ccdata_seq,BT = res$arglist$BT, PL = res$arglist$PL, PB = res$arglist$PB, tune.par = res$arglist$tune.par, AAV = res$arglist$AAV, n.catch = res$arglist$n.catch,n.cpue = res$arglist$n.cpue, smooth.cpue = res$arglist$smooth.cpue, smooth.dist = res$arglist$smooth.dist, empir.dist = res$arglist$empir.dist, simple.empir = res$arglist$simple.empir, beta = res$arglist$beta, D2alpha = res$arglist$D2alpha, BTyear = res$arglist$BTyear, timelag0 = res$arglist$timelag0,resp = res$arglist$resp, summary_abc = F)
+    abc2_seq_abc <- c(abc2_seq_abc, abc2_seq$ABC)
+    abc2_seq_alpha <- c(abc2_seq_alpha ,abc2_seq$alpha)
+    abc2_seq_resp <- c(abc2_seq_resp ,abc2_seq$resp)
+  }
+
+  out<-data.frame(year=period,abc=abc2_seq_abc,alpha=abc2_seq_alpha,resp=abc2_seq_resp)
+
+  # ファイル出力
+  if(is.null(filename)) {
+    if(is.null(stock.name)) filename<-"res_retro2.csv"
+    else filename<-paste0("res_",stock.name,"_retro2.csv")
+  }else{
+    if(substr(filename,(nchar(filename)-4+1),nchar(filename)) != ".csv") filename <- paste0(filename,".csv")
+  }
+  if(output) write.csv(out,file = filename)
+
+  return(out)
+}
+
+#' 2系のABCを時系列で表示するための関数
+#'
+#' @param res.list calc_abc2の返り値のリスト
+#' @param period レトロ解析する期間（デフォルトはcatch,cpueともデータ初出年のn.catch年後から最終年）
+#' @param onset_year レトロ解析開始年
+#' @param timelagB timelag0=Tで最終年catch=NAの場合
+#' @param hcrlabel 凡例に表示させるHCR（ベクトルで入れる）
+#' @param withCatch ABC算定漁獲の時系列に漁獲実績データを併記
+#' @param all_timeseries ABC時系列を入力漁獲時系列データと同じ期間
+#' @param calc_year 算定漁獲量・ABCの対象年を横軸に取る(FALSE)かABCを計算した年を横軸に取るか(TRUE)（デフォルトはFALSE）
+#' @param stock.name
+#'
+#' @export
+#'
+
+plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelagB=FALSE,fishseason=0,hcrlabel=NULL,all_timeseries=FALSE,calc_year=FALSE,cc_plot=FALSE,withCatch=FALSE){
 
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -2226,99 +2303,121 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     hcr.labels<-hcrlabel
   }
 
-  # レトロ解析期間設定
-  if(!is.null(onset_year)) {
-    if(onset_year>max(res.list[[1]]$arglist$ccdata$year)){
-      cat("ignore onset_year and replace it to the last year of period because onset_year > max(ccdata$year).\n")
-      onset_year<-NULL
-    }
-  }
-  if(!is.null(onset_year) && !is.null(period)){
-    cat("ignore onset_year and use period.\n")
-    onset_year<-NULL
-  }
-  # cpue & catchともにデータがある初出年探索
-  ccna <- (!is.na(res.list[[1]]$arglist$ccdata$catch))*(!is.na(res.list[[1]]$arglist$ccdata$cpue))
-  ccavail<-TRUE
-  availy<-0
-  while(ccavail){
-    availy<-availy+1
-    ccavail<-!as.logical(ccna[availy])
-  }
-
-  if(!is.null(period)){
-    if(period[length(period)]>max(res.list[[1]]$arglist$ccdata$year)) stop("the last year of period must be < max(ccdata$year).\n")
-
-    if(period[length(period)]<=min(res.list[[1]]$arglist$ccdata$year)) stop("the first year of period must be < max(ccdata$year).\n")
-
-    if(period[1]<res.list[[1]]$arglist$ccdata$year[availy+res.list[[1]]$arglist$n.catch]){
-      cat("set the first year of period (",period[1] ,") to",res.list[[1]]$arglist$ccdata$year[availy+res.list[[1]]$arglist$n.catch], "because the first year of ccdata containing both cpue and catch is ",res.list[[1]]$arglist$ccdata$year[availy] ,".\n")
-      period<-period[which(period==res.list[[1]]$arglist$ccdata$year[availy+res.list[[1]]$arglist$n.catch]):length(period)]
-    }
-
-  }else{ #periodの指定がなければcpue & catchともにデータがある初出年+n.catch年までレトロ解析
-    if(is.null(onset_year)) period <- res.list[[1]]$arglist$ccdata$year[(availy+res.list[[1]]$arglist$n.catch-1):length(res.list[[1]]$arglist$ccdata$year)]
-    else period <- res.list[[1]]$arglist$ccdata$year[(availy+res.list[[1]]$arglist$n.catch-1):which(res.list[[1]]$arglist$ccdata$year==onset_year)]
-  }
-
   #タイムラグ設定矯正
+  timelag0 <- res.list[[1]]$arglist$timelag0
   if(timelagB) timelag0<-TRUE
+  if(timelag0) cat("plot based on the ABC calculation for next year.\n")
 
   data_retro<-c()
   for(j in 1:length(res.list)){
     res<-res.list[[j]]
-    ccdata <- res$arglist$ccdata
 
-    abc2_seq_abc<-abc2_seq_alpha<-abc2_seq_resp<-c()
-    for(y in period){
-      ccdata_seq <- ccdata[1:which(ccdata$year==y),]
-      if(timelagB) ccdata_seq$catch[which(ccdata_seq$year==y)] <- NA
-      abc2_seq<- calc_abc2(ccdata_seq,BT = res$arglist$BT, PL = res$arglist$PL, PB = res$arglist$PB, tune.par = res$arglist$tune.par, AAV = res$arglist$AAV, n.catch = res$arglist$n.catch,n.cpue = res$arglist$n.cpue, smooth.cpue = res$arglist$smooth.cpue, smooth.dist = res$arglist$smooth.dist, empir.dist = res$arglist$empir.dist, simple.empir = res$arglist$simple.empir, beta = res$arglist$beta, D2alpha = res$arglist$D2alpha, BTyear = res$arglist$BTyear, timelag0 = res$arglist$timelag0,resp = res$arglist$resp, summary_abc = F)
-      abc2_seq_abc <- c(abc2_seq_abc, abc2_seq$ABC)
-      abc2_seq_alpha <- c(abc2_seq_alpha ,abc2_seq$alpha)
-      abc2_seq_resp <- c(abc2_seq_resp ,abc2_seq$resp)
-    }
+    abc2_seq<-calc_retro2(res,onset_year=onset_year,period=period,timelagB=timelagB,stock.name=stock.name)
 
-    abc2_seq_resp <- ifelse(abc2_seq_resp==0,19,ifelse(abc2_seq_resp==1,15,17))
+    abc2_seq$resp_pch <- ifelse(abc2_seq$resp==0,19,ifelse(abc2_seq$resp==1,15,17))
 
-    if(!timelag0)data_retro<-rbind(data_retro,data.frame(year=as.integer(period+2),abc=abc2_seq_abc,alpha=abc2_seq_alpha,resp.pch=abc2_seq_resp,listnum=j))
-    else data_retro<-rbind(data_retro,data.frame(year=as.integer(period+1),abc=abc2_seq_abc,alpha=abc2_seq_alpha,resp.pch=abc2_seq_resp,listnum=j))
+    if(!calc_year){ #算定漁獲を計算した対象年で表示
+      if(!timelag0) data_retro<-rbind(data_retro,data.frame(year=as.integer(abc2_seq$year+2),abc=abc2_seq$abc,alpha=abc2_seq$alpha,resp.pch=abc2_seq$resp_pch,listnum=j))
+      else data_retro<-rbind(data_retro,data.frame(year=as.integer(abc2_seq$year+1),abc=abc2_seq$abc,alpha=abc2_seq$alpha,resp.pch=abc2_seq$resp_pch,listnum=j))
+    }else data_retro<-rbind(data_retro,data.frame(year=as.integer(abc2_seq$year),abc=abc2_seq$abc,alpha=abc2_seq$alpha,resp.pch=abc2_seq$resp_pch,listnum=j)) #算定漁獲を計算した年で表示
   }
-  if(all_timeseries) ccdata_retro<-ccdata[1:which(ccdata$year==period[length(period)]),]
-  else ccdata_retro<-ccdata[which(ccdata$year==period[1]):which(ccdata$year==period[length(period)]),]
+
+  period <- sort(unique(abc2_seq$year),decreasing = F)
+  if(all_timeseries) ccdata_retro<-res.list[[1]]$arglist$ccdata[1:which(res.list[[1]]$arglist$ccdata$year==period[length(period)]),]
+  else ccdata_retro<-res.list[[1]]$arglist$ccdata[which(res.list[[1]]$arglist$ccdata$year==period[1]):which(res.list[[1]]$arglist$ccdata$year==period[length(period)]),]
+
+  # 表示桁数合わせ
+  data_retro$abc_msd <- data_retro$abc / (10^floor(log10(max(data_retro$abc,na.rm = T))))
+  data_retro_msd <- 10^floor(log10(max(data_retro$abc,na.rm = T)))
+  ccdata_retro$catch_msd <- ccdata_retro$catch / (10^floor(log10(max(ccdata_retro$catch,na.rm = T))))
+  ccdata_retro_msd <- 10^floor(log10(max(ccdata_retro$catch,na.rm = T)))
+  # cpue規準化
+  ccdata_retro$cpue_scaled <- ccdata_retro$cpue/mean(ccdata_retro$cpue)
+
+  # all data for plot
+  alldata_retro<-data.frame(year=rep(c(min(ccdata_retro$year):max(data_retro$year)),length(res.list)))
+  alldata_retro$catch<-rep(NA,nrow(alldata_retro))
+  alldata_retro$catch_msd=rep(NA,nrow(alldata_retro))
+  alldata_retro$cpue=rep(NA,nrow(alldata_retro))
+  alldata_retro$cpue_scaled=rep(NA,nrow(alldata_retro))
+  alldata_retro$abc=rep(NA,nrow(alldata_retro))
+  alldata_retro$abc_msd=rep(NA,nrow(alldata_retro))
+  alldata_retro$alpha=rep(NA,nrow(alldata_retro))
+  alldata_retro$resp=rep(NA,nrow(alldata_retro))
+  alldata_retro$resp.pch=rep(NA,nrow(alldata_retro))
+  listnum<-c()
+  for(i in 1:length(res.list)){
+    listnum<-c(listnum,rep(i,length(c(min(ccdata_retro$year):max(data_retro$year)))))
+  }
+  alldata_retro$listnum<-listnum
+
+  for(y in (ccdata_retro$year)){
+    alldata_retro$catch[which(alldata_retro$year==y)]<-ccdata_retro$catch[which(ccdata_retro$year==y)]
+    alldata_retro$catch_msd[which(alldata_retro$year==y)]<-ccdata_retro$catch_msd[which(ccdata_retro$year==y)]
+    alldata_retro$cpue[which(alldata_retro$year==y)]<-ccdata_retro$cpue[which(ccdata_retro$year==y)]
+    alldata_retro$cpue_scaled[which(alldata_retro$year==y)]<-ccdata_retro$cpue_scaled[which(ccdata_retro$year==y)]
+  }
+
+  for(y in (data_retro$year)){
+    for(i in 1:length(res.list)){
+      alldata_retro$abc[which(alldata_retro$year==y & alldata_retro$listnum==i)]<-data_retro$abc[which(data_retro$year==y & data_retro$listnum==i)]
+      alldata_retro$abc_msd[which(alldata_retro$year==y & alldata_retro$listnum==i)]<-data_retro$abc_msd[which(data_retro$year==y & data_retro$listnum==i)]
+      alldata_retro$alpha[which(alldata_retro$year==y & alldata_retro$listnum==i)]<-data_retro$alpha[which(data_retro$year==y & data_retro$listnum==i)]
+      alldata_retro$resp[which(alldata_retro$year==y & alldata_retro$listnum==i)]<-data_retro$resp[which(data_retro$year==y & data_retro$listnum==i)]
+      alldata_retro$resp.pch[which(alldata_retro$year==y & alldata_retro$listnum==i)]<-data_retro$resp.pch[which(data_retro$year==y & data_retro$listnum==i)]
+    }
+  }
+  #if(withCatch) alldata_retro <- rbind()
+
+  # setting for y axis breaks (catch & abc)
+  break_max <- round(1.25*max(alldata_retro$catch_msd,na.rm = T),digits = 0)
+  if(mod(break_max,3)==0){break_num <- 4
+  }else if(mod(break_max,4)==0){break_num <- 5
+  }else if(mod(break_max,5)==0) {
+    break_max <- break_max-1
+    break_num <- 3
+  }else if(mod(break_max,2)==1){
+    break_max <- break_max-1
+    break_num <- 3
+  }else{
+    break_num <- 4
+  }
+  abc_catch_breaks=seq(0,break_max,length=break_num)
 
   # sequential abc
-  g.retro.abc <- ccdata_retro %>% ggplot() +
-    geom_point(data=data_retro,mapping=aes(x=year,y=abc,color=as.factor(listnum)),size=3,pch=data_retro$resp.pch)+
-    #scale_shape_manual()
-    geom_line(data=data_retro,mapping=aes(x=year,y=abc,color=as.factor(listnum),group=listnum),size=1) +
-    scale_color_manual(name="HCR",values=col.hcr.points, labels = hcr.labels, guide="legend")+
-    ylab("算定漁獲量（トン）")+xlab(year.axis.label)+
+  g.retro.abc <- alldata_retro %>% ggplot() +
+    geom_point(data=alldata_retro,mapping=aes(x=year,y=abc_msd,color=as.factor(listnum)),size=3,pch=alldata_retro$resp.pch)+
+    geom_line(data=alldata_retro,mapping=aes(x=year,y=abc_msd,color=as.factor(listnum),group=listnum),size=1) +
+    scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="legend")+
+    ylab(paste0("算定漁獲量（",data_retro_msd,"トン）"))+
+    xlab(year.axis.label) +
     ggtitle("") +
-    ylim(0,NA) +
     theme_custom() +
-    theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
+    theme(legend.position=c(1,1),legend.justification = c(1,0), legend.direction="horizontal",legend.background = element_rect(fill = NA, colour = NA),legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
 
-  if(withCatch){
-    g.retro.abc <- g.retro.abc+
-    geom_path(data=ccdata_retro,mapping=aes(x=year,y=catch),lwd=1,col="grey")+
-    geom_point(data=ccdata_retro,mapping=aes(x=year,y=catch),lwd=2,col="grey")#+
-     #geom_text(data=ccdata_retro,mapping=aes(x=max(years)-1,y=min(catch),label="漁獲量"),size=4,col="grey")
-  }
   if(all_timeseries) g.retro.abc <- g.retro.abc+
-    scale_x_continuous(limits = c(min(ccdata_retro$year),max(period)+2))
+    scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))
+
+  g.retro.abc <- g.retro.abc+
+    scale_y_continuous(labels=scales::number_format(accuracy=0.1),sec.axis = sec_axis(~ ., labels=scales::number_format(accuracy=0.1), name = " "), limits = c(-1, 1.25*max(alldata_retro$catch_msd,na.rm = T)),breaks=abc_catch_breaks)
+
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
     g.retro.abc<-g.retro.abc+
     theme(text = element_text(family = font_MAC))
   }
+
+  if(withCatch){
+    g.retro.abc <- g.retro.abc+
+      geom_path(data=alldata_retro,mapping=aes(x=year,y=catch_msd),lwd=0.75,col="grey",lty=2)
+  }
+
   # sequential alpha
-  g.retro.alpha <- ccdata_retro %>% ggplot() +
-    geom_point(data=data_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum)),lwd=3)+
-    geom_line(data=data_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum),group=listnum),size=1) +
-    scale_color_manual(name="HCR",values=col.hcr.points, labels = hcr.labels, guide="legend")+
+  g.retro.alpha <- alldata_retro %>% ggplot() +
+    geom_point(data=alldata_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum)),lwd=3)+
+    geom_line(data=alldata_retro,mapping=aes(x=year,y=alpha,color=as.factor(listnum),group=listnum),size=1) +
+    scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="none")+
     ylab("漁獲量を増減させる係数")+xlab(year.axis.label)+
     ggtitle("")+
-    ylim(0,1.5) +
     theme_custom()+
     theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
@@ -2326,10 +2425,64 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
       theme(text = element_text(family = font_MAC))
   }
   if(all_timeseries) g.retro.alpha <- g.retro.alpha+
-    scale_x_continuous(limits = c(min(ccdata_retro$year),max(period)+2))
+    scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))
+  g.retro.alpha <- g.retro.alpha+
+    scale_y_continuous(sec.axis = sec_axis(~ ., name = " "), limits = c(0,1.5))
+
+  # 漁獲量とCPUE
+  # 第2y軸調整
+  second_rate<-max(alldata_retro$catch_msd,na.rm = T)/max(alldata_retro$cpue_scaled,na.rm = T)
+  if(all_timeseries) {
+    catch.legend.xposit <- alldata_retro$year[which(alldata_retro$catch==min(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
+    catch.legend.yposit <- alldata_retro$catch[which(alldata_retro$catch==min(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
+    cpue.legend.xposit <- alldata_retro$year[which(alldata_retro$catch==max(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
+    cpue.legend.yposit <- alldata_retro$cpue[which(alldata_retro$catch==max(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
+  }else{
+    ccdata_retro_preiod <- ccdata_retro[which(ccdata_retro$year==period[1]):which(ccdata_retro$year==period[length(period)]),]
+    catch.legend.xposit <- ccdata_retro_preiod$year[which(ccdata_retro_preiod$catch==min(ccdata_retro_preiod$catch,na.rm = T))]
+    catch.legend.yposit <- ccdata_retro_preiod$catch[which(ccdata_retro_preiod$catch==min(ccdata_retro_preiod$catch,na.rm = T))]
+    cpue.legend.xposit <- ccdata_retro_preiod$year[which(ccdata_retro_preiod$catch==max(ccdata_retro_preiod$catch,na.rm = T))]
+    cpue.legend.yposit <- ccdata_retro_preiod$cpue[which(ccdata_retro_preiod$catch==max(ccdata_retro_preiod$catch,na.rm = T))]
+  }
+
+  cc.labels <-c("漁獲量","資源量指標値")
+  cc.labels.col <- c("black","darkslategrey")
+  data_CC <- tibble(CC=cc.labels,Val_obs_max=c(max(alldata_retro$catch,na.rm = T),max(alldata_retro$cpue,na.rm = T)),Xaxes_plot=c(catch.legend.xposit,cpue.legend.xposit),Yaxes_plot=c(break_max-1,-1))#c(catch.legend.yposit,cpue.legend.yposit))
+
+  g.cc <- alldata_retro %>% ggplot()+
+  geom_line(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=1)+
+    geom_point(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=2)+
+  geom_line(data=alldata_retro,mapping=aes(x=year,y=cpue_scaled*second_rate),size=1,col="lightslategrey")+
+  geom_point(data=alldata_retro,mapping=aes(x=year,y=cpue_scaled*second_rate),size=2,col="lightslategrey")+
+    scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))+
+  scale_y_continuous(
+    labels=scales::number_format(accuracy=0.1),
+    limits = c(-1, 1.25*max(alldata_retro$catch_msd,na.rm = T)),breaks=abc_catch_breaks,
+    sec.axis = sec_axis(~ ./second_rate, name = "資源量指標値(相対値)",labels=scales::number_format(accuracy=0.1))
+  )+
+  labs(x = year.axis.label, y = paste0("漁獲量（",ccdata_retro_msd,"トン）"))+
+    ggtitle("")+
+    theme_custom()+
+    theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
+  if(!isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
+  g.cc<-g.cc+
+    ggrepel::geom_label_repel(data=data_CC,mapping=aes(x=Xaxes_plot, y=Yaxes_plot), label=cc.labels,col=cc.labels.col)#, box.padding=1.5)
+  }else{
+    g.cc<-g.cc+
+      theme(text = element_text(family = font_MAC))
+    g.cc<-g.cc+
+      ggrepel::geom_label_repel(data=data_CC,mapping=aes(x=Xaxes_plot, y=Yaxes_plot), label=cc.labels,col=cc.labels.col,family=font_MAC)#,box.padding=1.5)
+  }
+
+
   # 出力設定
-  graph.component <- list(g.retro.abc,g.retro.alpha)
-  graph.combined <- gridExtra::grid.arrange(g.retro.abc,g.retro.alpha,ncol=2,top=stock.name)
+  if(!cc_plot){
+    graph.component <- list(g.retro.alpha,g.retro.abc)
+    graph.combined <- gridExtra::grid.arrange(g.retro.alpha,g.retro.abc,ncol=1,top=stock.name)
+  }else{
+    graph.component <- list(g.cc,g.retro.alpha,g.retro.abc)
+    graph.combined <- gridExtra::grid.arrange(g.cc,g.retro.alpha,g.retro.abc,ncol=1,top=stock.name)
+  }
   return(list(graph.component=graph.component,graph.combined=graph.combined))
 }
 

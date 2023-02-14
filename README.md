@@ -27,7 +27,8 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
       - オプションは[プロットオプション](https://github.com/ichimomo/frasyr23#%E3%83%97%E3%83%AD%E3%83%83%E3%83%88%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
    - plot_hcr2 HCRの図のみプロット、複数の結果の比較も可能
       - 詳細は[HCRのみ描画し、比較する](https://github.com/ichimomo/frasyr23#hcr%E3%81%AE%E3%81%BF%E6%8F%8F%E7%94%BB%E3%81%97%E6%AF%94%E8%BC%83%E3%81%99%E3%82%8B)を参照 
-
+   - plot_retro2 過去に遡ってABC算定した結果をプロット
+      - 詳細は[過去の算定漁獲量を時系列プロットする](https://github.com/ichimomo/frasyr23#hcr%E3%81%AE%E3%81%BF%E6%8F%8F%E7%94%BB%E3%81%97%E6%AF%94%E8%BC%83%E3%81%99%E3%82%8B)を参照 
 # Rコード例
 ```
 help(calc_abc2) # helpを見ると引数の説明などが見れます
@@ -121,6 +122,21 @@ plot_hcr2(list(abc2_aka,abc2_aka_BT07),intersection=T)
 ```
 ![](./tools/hcr2_compare.png)
 
+# 過去の算定漁獲量を時系列プロットする
+```
+# 2系のデフォルトのパラメータ
+abc2_aka <- calc_abc2(data_aka)
+# 過去の算定漁獲量をプットする
+graph_retro2 <- plot_retro2(abc2_aka)
+# 目標水準BTを0.7に引き下げる場合と過去の算定漁獲量を比較
+abc2_aka_BT07 <- calc_abc2(data_aka,BT = 0.7,tune.par = c(0.4,0.7,1.0))
+graph_retro2_compare <- plot_retro2(list(abc2_aka,abc2_aka_BT07))
+# グラフをセーブする場合
+# ggsave(file="retro2_compare.png",width=5,height=5)
+# 2つ以上の算定漁獲量と漁獲を増減させる係数のほか、漁獲量とし減量指標値も同じ時系列分表示する
+graph_retro2_cc <- plot_retro2(list(abc2_aka,abc2_aka_BT07),cc_plot=T)
+```
+![](./tools/retro2_aka.png)
 
 # 計算オプション
 
