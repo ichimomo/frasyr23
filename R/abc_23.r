@@ -2408,12 +2408,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
 
   if(withCatch){
     g.retro.abc <- g.retro.abc+
-      geom_path(data=alldata_retro,mapping=aes(x=year,y=catch_msd),lwd=0.75,col=1,lty=2)
-      #geom_point(data=alldata_retro,mapping=aes(x=year,y=catch_msd),lwd=1,col=1,show.legend = T)
-      #scale_color_manual(name="",values=c(1), labels = "漁獲量", guide="legend")+
-      #theme(legend.position=c(0,1),legend.justification = c(0,0))
-    #geom_hline(yintercept=abc_catch_breaks,color="grey",lwd=0.75,linetype=2)+
-    #geom_text(aes(x=catch.legend.xposit,y=break_max,family=font_MAC,label="(漁獲量)"),size=4)
+      geom_path(data=alldata_retro,mapping=aes(x=year,y=catch_msd),lwd=0.75,col="grey",lty=2)
   }
 
   # sequential alpha
@@ -2439,16 +2434,20 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   second_rate<-max(alldata_retro$catch_msd,na.rm = T)/max(alldata_retro$cpue_scaled,na.rm = T)
   if(all_timeseries) {
     catch.legend.xposit <- alldata_retro$year[which(alldata_retro$catch==min(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
+    catch.legend.yposit <- alldata_retro$catch[which(alldata_retro$catch==min(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
     cpue.legend.xposit <- alldata_retro$year[which(alldata_retro$catch==max(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
+    cpue.legend.yposit <- alldata_retro$cpue[which(alldata_retro$catch==max(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
   }else{
     ccdata_retro_preiod <- ccdata_retro[which(ccdata_retro$year==period[1]):which(ccdata_retro$year==period[length(period)]),]
     catch.legend.xposit <- ccdata_retro_preiod$year[which(ccdata_retro_preiod$catch==min(ccdata_retro_preiod$catch,na.rm = T))]
+    catch.legend.yposit <- ccdata_retro_preiod$catch[which(ccdata_retro_preiod$catch==min(ccdata_retro_preiod$catch,na.rm = T))]
     cpue.legend.xposit <- ccdata_retro_preiod$year[which(ccdata_retro_preiod$catch==max(ccdata_retro_preiod$catch,na.rm = T))]
+    cpue.legend.yposit <- ccdata_retro_preiod$cpue[which(ccdata_retro_preiod$catch==max(ccdata_retro_preiod$catch,na.rm = T))]
   }
 
   cc.labels <-c("漁獲量","資源量指標値")
   cc.labels.col <- c("black","darkslategrey")
-  data_CC <- tibble(CC=cc.labels,Val_obs_max=c(max(alldata_retro$catch,na.rm = T),max(alldata_retro$cpue,na.rm = T)),Xaxes_plot=c(catch.legend.xposit,cpue.legend.xposit),Yaxes_plot=c(break_max-1,-1))
+  data_CC <- tibble(CC=cc.labels,Val_obs_max=c(max(alldata_retro$catch,na.rm = T),max(alldata_retro$cpue,na.rm = T)),Xaxes_plot=c(catch.legend.xposit,cpue.legend.xposit),Yaxes_plot=c(break_max-1,-1))#c(catch.legend.yposit,cpue.legend.yposit))
 
   g.cc <- alldata_retro %>% ggplot()+
   geom_line(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=1)+
@@ -2467,12 +2466,12 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
   if(!isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
   g.cc<-g.cc+
-    ggrepel::geom_label_repel(data=data_CC,mapping=aes(x=Xaxes_plot, y=Yaxes_plot), label=cc.labels,col=cc.labels.col, box.padding=0.5)
+    ggrepel::geom_label_repel(data=data_CC,mapping=aes(x=Xaxes_plot, y=Yaxes_plot), label=cc.labels,col=cc.labels.col)#, box.padding=1.5)
   }else{
     g.cc<-g.cc+
       theme(text = element_text(family = font_MAC))
     g.cc<-g.cc+
-      ggrepel::geom_label_repel(data=data_CC,mapping=aes(x=Xaxes_plot, y=Yaxes_plot), label=cc.labels,col=cc.labels.col,family=font_MAC,box.padding=0.5)
+      ggrepel::geom_label_repel(data=data_CC,mapping=aes(x=Xaxes_plot, y=Yaxes_plot), label=cc.labels,col=cc.labels.col,family=font_MAC)#,box.padding=1.5)
   }
 
 
