@@ -2223,8 +2223,6 @@ calc_retro2 <- function(res,onset_year=NULL,period=NULL,stock.name=NULL,timelagB
   if(!is.null(period)){
     if(period[length(period)]>max(res$arglist$ccdata$year)) stop("the last year of period must be < max(ccdata$year).\n")
 
-    if(period[length(period)]<=min(res$arglist$ccdata$year)) stop("the first year of period must be < max(ccdata$year).\n")
-
     if(period[1]<res$arglist$ccdata$year[availy+res$arglist$n.catch]){
       cat("set the first year of period (",period[1] ,") to",res$arglist$ccdata$year[availy+res$arglist$n.catch], "because the first year of ccdata containing both cpue and catch is ",res$arglist$ccdata$year[availy] ,".\n")
       period<-period[which(period==res$arglist$ccdata$year[availy+res$arglist$n.catch]):length(period)]
@@ -2270,7 +2268,7 @@ calc_retro2 <- function(res,onset_year=NULL,period=NULL,stock.name=NULL,timelagB
 #' @param hcrlabel 凡例に表示させるHCR（ベクトルで入れる）
 #' @param withCatch ABC算定漁獲の時系列に漁獲実績データを併記
 #' @param all_timeseries ABC時系列を入力漁獲時系列データと同じ期間
-#' @param calc_year 算定漁獲量・ABCの対象年を横軸に取る(FALSE)かABCを計算した年を横軸に取るか(TRUE)（デフォルトはFALSE）
+#' @param calc_year 算定漁獲量・ABCの対象年を横軸に取る(FALSE)か入力データ最終年を横軸に取るか(TRUE)（デフォルトはFALSE）
 #' @param stock.name
 #'
 #' @export
@@ -2387,8 +2385,13 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   # sequential abc
   g.retro.abc <- alldata_retro %>% ggplot() +
     geom_point(data=alldata_retro,mapping=aes(x=year,y=abc_msd,color=as.factor(listnum)),size=3,pch=alldata_retro$resp.pch)+
-    geom_line(data=alldata_retro,mapping=aes(x=year,y=abc_msd,color=as.factor(listnum),group=listnum),size=1) +
-    scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="legend")+
+    geom_line(data=alldata_retro,mapping=aes(x=year,y=abc_msd,color=as.factor(listnum),group=listnum),size=1)
+  if(length(res.list)>1) g.retro.abc <- g.retro.abc +
+    scale_color_manual(name="漁獲管理規則",values=col.hcr.points, labels = hcr.labels, guide="legend")
+  else g.retro.abc <- g.retro.abc +
+    scale_color_manual(name="",values=col.hcr.points, labels = hcr.labels, guide="none")
+
+  g.retro.abc <- g.retro.abc +
     ylab(paste0("算定漁獲量（",data_retro_msd,"トン）"))+
     xlab(year.axis.label) +
     ggtitle("") +
@@ -2447,7 +2450,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
 
   cc.labels <-c("漁獲量","資源量指標値")
   cc.labels.col <- c("black","darkslategrey")
-  data_CC <- tibble(CC=cc.labels,Val_obs_max=c(max(alldata_retro$catch,na.rm = T),max(alldata_retro$cpue,na.rm = T)),Xaxes_plot=c(catch.legend.xposit,cpue.legend.xposit),Yaxes_plot=c(break_max-1,-1))#c(catch.legend.yposit,cpue.legend.yposit))
+  data_CC <- tibble(CC=cc.labels,Val_obs_max=c(max(alldata_retro$catch,na.rm = T),max(alldata_retro$cpue,na.rm = T)),Xaxes_plot=c(catch.legend.xposit[1],cpue.legend.xposit[1]),Yaxes_plot=c(break_max-1,-1))#c(catch.legend.yposit,cpue.legend.yposit))
 
   g.cc <- alldata_retro %>% ggplot()+
   geom_line(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=1)+
