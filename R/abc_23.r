@@ -2188,7 +2188,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' 2系のABCを過去に遡って時系列で計算するための関数
 #'
 #' @param res calc_abc2の返り値のリスト
-#' @param period レトロ解析する期間（デフォルトはcatch,cpue両データ初出年のn.catch年後から最終年）
+#' @param period レトロ解析する期間（デフォルトはcatch,cpue両データ初出年のn.catch-1年後から最終年）
 #' @param onset_year レトロ解析開始年
 #' @param timelagB timelag0=Tで最終年catch=NAの場合
 #' @param output csvファイル出力（出力年はABCを算出した年で、ABC対象年ではないことに注意）
@@ -2262,7 +2262,7 @@ calc_retro2 <- function(res,onset_year=NULL,period=NULL,stock.name=NULL,timelagB
 #' 2系のABCを時系列で表示するための関数
 #'
 #' @param res.list calc_abc2の返り値のリスト
-#' @param period レトロ解析する期間（デフォルトはcatch,cpueともデータ初出年のn.catch年後から最終年）
+#' @param period レトロ解析する期間（デフォルトはcatch,cpueともデータ初出年のn.catch-1年後から最終年）
 #' @param onset_year レトロ解析開始年
 #' @param timelagB timelag0=Tで最終年catch=NAの場合
 #' @param hcrlabel 凡例に表示させるHCR（ベクトルで入れる）
