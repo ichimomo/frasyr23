@@ -135,7 +135,7 @@ graph_retro2_compare <- plot_retro2(list(abc2_aka,abc2_aka_BT07))
 graph_retro2_cc <- plot_retro2(list(abc2_aka,abc2_aka_BT07),cc_plot=T)
 # グラフをセーブする場合
 # ggsave(width=200,height=200,dpi=200,units="mm", graph_retro2_cc[[2]], file="retro2_aka.png")
-# 最新年の漁獲量データのみがなく、翌年のABC算定する場合、calc_abc2のオプションtimelag0をT、n.catchを6とするが、この場合にはplot_retro2ではtimelagBオプションをTRUEにする
+# 最新年の漁獲量データのみがなく、翌年のABC算定する場合、calc_abc2のオプションtimelag0をT、n.catchを6とするが、この場合はplot_retro2ではtimelagBオプションをTRUEにする
 abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,timelag0=T)
 graph_retro2_nesty2 <- plot_retro2(abc2_ex_nexty2,timelagB=T)
 ```
@@ -155,7 +155,8 @@ abc2_aka_D0155 <- calc_abc2(data_aka,D2alpha=0.155)
 # 管理水準を求める際、CPUE時系列の最終年ではなく、CPUEデータの初出年から特定の年(BTyear)までの時系列を使う
 abc2_aka_bt2010 <- calc_abc2(data_aka, BTyear=2010)
 
-# 変動緩和措置として、2系ルールで算出されるABCが前年漁獲量の1±respを超える（下回る）ときに、ABCを前年漁獲量×(1±resp)に置き換える場合（前年漁獲量=NAの場合、さらに1年前の漁獲量を参照）
+# 変動緩和措置として、2系ルールで算出されるABCが前年漁獲量の1±respを超える（下回る）ときに、ABCを前年漁獲量×(1±resp)に置き換える場合
+# （前年漁獲量=NAの場合、さらに1年前の漁獲量を参照）
 # ABCが置き換えられたときに、出力結果表示でも置き換えられた結果だと示される
 abc2_aka_resp <- calc_abc2(data_aka,tune.par=c(0.3,0.6,0.3),resp=0.4)
 
@@ -166,7 +167,8 @@ graph_aka_period <- plot_retro2(abc2_aka,period=c(2000:2015))
 # 特定年以前について計算する場合、オプションoneset_yearに入力
 graph_aka_onset_year <- plot_retro2(abc2_aka,onset_year=2015)
 # 最新年漁獲量がNAで翌年のABCを計算する場合、timelagBオプションをTRUEにする
-# 結果をcsvファイルに出力する場合、オプションoutputをTRUEにする。ファイルネームはres_retro2.csv。このとき、stock.nameオプションに文字列を入れると、ファイルネームはres_"stock.name"_retro2.csvに、filenameオプションで名前をつけることもできる
+# 結果をcsvファイルに出力する場合、オプションoutputをTRUEにする。ファイルネームはres_retro2.csv。このとき、stock.nameオプションに文字列を入れると
+# ファイルネームはres_"stock.name"_retro2.csvに、filenameオプションで名前をつけることもできる
 retro2_aka <- calc_retro2(abc2_aka,output=T,stock.name="akagarei")
 retro2_aka <- calc_retro2(abc2_aka,output=T,filename="res_akagarei_retro")
 
@@ -249,7 +251,8 @@ plot_hcr2(list(abc2_aka,abc2_aka_BT07,abc2_aka_BT06),vline.listnum=0,label.list=
 # 時系列横軸を年ではなく漁期年とする場合
 graph_aka <- plot_retro2(abc2_aka,fishseason=1)
 
-# 過去のABC時系列の計算開始はcalc_abc2に入力した漁獲量・資源量指標値データの最新年から遡って、漁獲量・資源量指標値両データが揃った初出年+n.catch年までを対象期間とする
+# 過去のABC時系列の計算開始はcalc_abc2に入力した漁獲量・資源量指標値データの最新年から遡って、
+# 漁獲量・資源量指標値両データが揃った初出年+n.catch-1年までを対象期間とする
 # 特定期間について計算する場合、オプションperiodに入力
 graph_aka_period <- plot_retro2(abc2_aka,period=c(2000:2015))
 # 特定年以前について計算する場合、オプションoneset_yearに入力
