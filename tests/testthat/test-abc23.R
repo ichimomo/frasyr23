@@ -10,7 +10,7 @@ test_that("type23 check",{
 
     # 2系
     example_abc2_check <- calc_abc2(example_data)
-    graph_abc2 <- plot_abc2(example_abc2_check,fishseason = 0,detABC = 1)
+    #graph_abc2 <- plot_abc2(example_abc2_check,fishseason = 0,detABC = 1)
 
     # 上記結果の読み込み
     load(system.file("extdata","res_example_abc2.rda",package = "frasyr23"))
@@ -70,6 +70,28 @@ test_that("alpha check",{
     expect_equal(0, type2_func(0, 1:10))
     expect_equal(1, type2_func(0.8, 1:10))
     expect_equal(1.105171/type2_func(1, 1:10),c(1),tol=1.0e-6)
+})
+
+context("type23 retro2 check")
+
+test_that("type2 retro check",{
+
+    # レトロ解析のテスト
+    # data_akaを使ったテスト
+    data("data_aka")
+    # 2系
+    aka_abc2_check <- calc_abc2(data_aka)
+    aka_retro2_check <- calc_retro2(aka_abc2_check)
+
+    # 上記結果の読み込み
+    load(system.file("extdata","res_aka_retro2.rda",package = "frasyr23"))
+    # テスト内容
+    testcontents<-c("year","abc")
+    # 結果の照合
+    for(i in 1:length(testcontents)){
+        expect_equal(eval(parse(text=paste("aka_retro2_check$",testcontents[i]))), eval(parse(text=paste("aka_retro2$",testcontents[i]))),label=c(testcontents[i]))
+    }
+
 })
 
 context("type23 option check")

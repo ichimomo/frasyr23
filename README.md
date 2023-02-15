@@ -159,6 +159,16 @@ abc2_aka_bt2010 <- calc_abc2(data_aka, BTyear=2010)
 # ABCが置き換えられたときに、出力結果表示でも置き換えられた結果だと示される
 abc2_aka_resp <- calc_abc2(data_aka,tune.par=c(0.3,0.6,0.3),resp=0.4)
 
+# calc_retro2関数で過去に遡って算定漁獲量を計算することができる
+retro2_aka <- calc_retro2(abc2_aka)
+# 特定期間について計算する場合、オプションperiodに入力
+graph_aka_period <- plot_retro2(abc2_aka,period=c(2000:2015))
+# 特定年以前について計算する場合、オプションoneset_yearに入力
+graph_aka_onset_year <- plot_retro2(abc2_aka,onset_year=2015)
+# 最新年漁獲量がNAで翌年のABCを計算する場合、timelagBオプションをTRUEにする
+# 結果をcsvファイルに出力する場合、オプションoutputをTRUEにする。ファイルネームはres_retro2.csv。このとき、stock.nameオプションに文字列を入れると、ファイルネームはres_"stock.name"_retro2.csvに、filenameオプションで名前をつけることもできる
+retro2_aka <- calc_retro2(abc2_aka,output=T,stock.name="akagarei")
+retro2_aka <- calc_retro2(abc2_aka,output=T,filename="res_akagarei_retro")
 
 # 資源量指標値をCPUEデータそのものを利用するのではなく平滑化したり、
 # 水準計算に正規分布ではなく経験分布を使ったり、さらには水準を計算する年を固定するオプションがあります(MSEでのパフォーマンスは公式に評価していません)
