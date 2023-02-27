@@ -1397,11 +1397,11 @@ intersection_hcrs <- function(res.list){
   # min(BL1,BL2) < x < max(BL1,BL2) で交点を持つケース
   D1.m.BL <- D2.m.BL <- alpha1.m.BL <- alpha2.m.BL <-NULL
 
-  if(BL1>BL2) {
+  if(BL1>BL2){
     Delta2.1<-(delta1[2]*exp(delta1[3]*log(AAV1^2+1)))
     Delta2.2<-0
   }
-  if(BL2>BL1){
+  if(BL2>=BL1){
     Delta2.1<-0
     Delta2.2<-(delta2[2]*exp(delta2[3]*log(AAV2^2+1)))
   }
@@ -1492,8 +1492,11 @@ intersection_hcrs <- function(res.list){
           if(ifelse(f(min(search_range+(delta/100)*(i-1)))>0,1,-1)*ifelse(f(min(search_range+(delta/100)*i))>0,1,-1) <0 ) DS<-c(DS,uniroot(f,c(min(search_range)+(delta/100)*(i-1),min(search_range)+(delta/100)*i))$root)
         }
         D1.s.BL<-unique(DS)[1]
-        if(length(unique(DS))==2) D2.s.BL<-order(unique(DS),decreasing = F)[2]
-        if(length(unique(DS))==3) D3.s.BL<-order(unique(DS),decreasing = F)[3]
+        if(length(unique(DS))==2) D2.s.BL<-DS[order(unique(DS),decreasing = F)[2]]
+        if(length(unique(DS))==3) {
+          D2.s.BL<-DS[order(unique(DS),decreasing = F)[2]]
+          D3.s.BL<-DS[order(unique(DS),decreasing = F)[3]]
+          }
 
       }else{#a=0
         AA <- B.1-B.2
