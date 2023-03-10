@@ -2440,20 +2440,20 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   second_rate<-max(alldata_retro$catch_msd,na.rm = T)/max(alldata_retro$cpue_scaled,na.rm = T)
   if(all_timeseries) {
     catch.legend.xposit <- alldata_retro$year[which(alldata_retro$catch==min(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
-    catch.legend.yposit <- alldata_retro$catch[which(alldata_retro$catch==min(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
+    catch.legend.yposit <- alldata_retro$catch[which(alldata_retro$catch==max(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]/ccdata_retro_msd
     cpue.legend.xposit <- alldata_retro$year[which(alldata_retro$catch==max(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
     cpue.legend.yposit <- alldata_retro$cpue[which(alldata_retro$catch==max(alldata_retro$catch,na.rm = T) & alldata_retro$listnum==1)]
   }else{
     ccdata_retro_preiod <- ccdata_retro[which(ccdata_retro$year==period[1]):which(ccdata_retro$year==period[length(period)]),]
     catch.legend.xposit <- ccdata_retro_preiod$year[which(ccdata_retro_preiod$catch==min(ccdata_retro_preiod$catch,na.rm = T))]
-    catch.legend.yposit <- ccdata_retro_preiod$catch[which(ccdata_retro_preiod$catch==min(ccdata_retro_preiod$catch,na.rm = T))]
+    catch.legend.yposit <- ccdata_retro_preiod$catch[which(ccdata_retro_preiod$catch==max(ccdata_retro_preiod$catch,na.rm = T))]/ccdata_retro_msd
     cpue.legend.xposit <- ccdata_retro_preiod$year[which(ccdata_retro_preiod$catch==max(ccdata_retro_preiod$catch,na.rm = T))]
     cpue.legend.yposit <- ccdata_retro_preiod$cpue[which(ccdata_retro_preiod$catch==max(ccdata_retro_preiod$catch,na.rm = T))]
   }
 
   cc.labels <-c("漁獲量","資源量指標値")
   cc.labels.col <- c("black","darkslategrey")
-  data_CC <- tibble(CC=cc.labels,Val_obs_max=c(max(alldata_retro$catch,na.rm = T),max(alldata_retro$cpue,na.rm = T)),Xaxes_plot=c(catch.legend.xposit[1],cpue.legend.xposit[1]),Yaxes_plot=c(break_max-1,-1))#c(catch.legend.yposit,cpue.legend.yposit))
+  data_CC <- tibble(CC=cc.labels,Val_obs_max=c(max(alldata_retro$catch,na.rm = T),max(alldata_retro$cpue,na.rm = T)),Xaxes_plot=c(catch.legend.xposit[1],cpue.legend.xposit[1]),Yaxes_plot=c(catch.legend.yposit[1],0))#c(catch.legend.yposit,cpue.legend.yposit))
 
   g.cc <- alldata_retro %>% ggplot()+
   geom_line(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=1)+
@@ -2463,7 +2463,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))+
   scale_y_continuous(
     labels=scales::number_format(accuracy=0.1),
-    limits = c(-1, 1.25*max(alldata_retro$catch_msd,na.rm = T)),breaks=abc_catch_breaks,
+    limits = c(-0.75, 1.25*max(alldata_retro$catch_msd,na.rm = T)),breaks=abc_catch_breaks,
     sec.axis = sec_axis(~ ./second_rate, name = "資源量指標値(相対値)",labels=scales::number_format(accuracy=0.1))
   )+
   labs(x = year.axis.label, y = paste0("漁獲量（",ccdata_retro_msd,"トン）"))+
