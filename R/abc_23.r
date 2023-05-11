@@ -1778,7 +1778,6 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
     for(k in 2:nrow(Currentalphas)){
       points.size.magnify <- c(points.size.magnify,NA)
     }
-    if(!is.null(select_point)) points.size.magnify<-points.size.magnify*select_point
     g.hcr <- g.hcr +
       geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4*points.size.magnify) +
       scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
@@ -1791,8 +1790,10 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
           g.hcr <- g.hcr + scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
     }else{
       points.size.magnify <- c(1)
-      for(k in 2:nrow(Currentalphas)){
-        points.size.magnify <- c(points.size.magnify,points.size.magnify*change_ps)
+      point.size <- 1
+      for(k in 1:(nrow(Currentalphas)-1)){
+        points.size.magnify <- c(points.size.magnify,point.size*change_ps)
+        point.size<-point.size*change_ps
       }
       if(!is.null(select_point)) points.size.magnify<-points.size.magnify*select_point
       g.hcr <- g.hcr +
