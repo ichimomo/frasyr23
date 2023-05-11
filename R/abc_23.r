@@ -1548,7 +1548,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
   if(vline.listnum>length(res.list)) stop("vline.listnum must not be larger than length(res.list).\n")
   if(!is.null(label.list) & length(res.list)!=length(label.list)) stop("length(label.list) must be identical to length(res.list).\n")
 
-  if(length(res.list)!=length(select_point)) stop("length(list) must be identical to length(select_point).\n")
+  if(!is.null(select_point) && length(res.list)!=length(select_point)) stop("length(list) must be identical to length(select_point).\n")
   if(!is.null(select_point) && one_point==T) warning("one_point and select_point options do not work simulteneously. plot_hcr2 prefers one_point option. \n")
   if(!is.null(select_point) && !is.null(change_ps)) warning("select_point option can change point size by itself. plot_hcr2 enables both select_point and change ps options. \n")
 
