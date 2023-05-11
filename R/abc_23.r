@@ -1542,11 +1542,15 @@ intersection_hcrs <- function(res.list){
 #' @export
 #'
 
-plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, vline.listnum=1,vlineBan=TRUE,vline.text=TRUE,label.list=NULL,is_point=TRUE,change_ps=NULL,one_point=FALSE,intersection=FALSE){
+plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hscale="middle",plotexactframe=FALSE, vline=TRUE, vline.listnum=1,vlineBan=TRUE,vline.text=TRUE,label.list=NULL,is_point=TRUE,select_point=NULL,change_ps=NULL,one_point=FALSE,intersection=FALSE){
 
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
   if(vline.listnum>length(res.list)) stop("vline.listnum must not be larger than length(res.list).\n")
   if(!is.null(label.list) & length(res.list)!=length(label.list)) stop("length(label.list) must be identical to length(res.list).\n")
+
+  if(length(res.list)!=length(select_point)) stop("length(list) must be identical to length(select_point).\n")
+  if(!is.null(select_point) && one_point==T) warning("one_point and select_point options do not work simulteneously. plot_hcr2 prefers one_point option. \n")
+  if(!is.null(select_point) && !is.null(change_ps)) warning("select_point option can change point size by itself. plot_hcr2 enables both select_point and change ps options. \n")
 
   if(proposal==TRUE){
     legend.labels.hcr <-c("目標管理基準値（目標水準）案","限界管理基準値（限界水準）案","禁漁水準案")
@@ -1774,19 +1778,23 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
     for(k in 2:nrow(Currentalphas)){
       points.size.magnify <- c(points.size.magnify,NA)
     }
+    if(!is.null(select_point)) points.size.magnify<-points.size.magnify*select_point
     g.hcr <- g.hcr +
       geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4*points.size.magnify) +
       scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
   }else if(is_point){
     if(is.null(change_ps)){
-      g.hcr <- g.hcr +
-        geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4) +
-        scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
+      if(is.null(select_point)) g.hcr <- g.hcr +
+        geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4)
+      else g.hcr <- g.hcr +
+          geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4*select_point)
+          g.hcr <- g.hcr + scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))
     }else{
       points.size.magnify <- c(1)
       for(k in 2:nrow(Currentalphas)){
         points.size.magnify <- c(points.size.magnify,points.size.magnify*change_ps)
       }
+      if(!is.null(select_point)) points.size.magnify<-points.size.magnify*select_point
       g.hcr <- g.hcr +
         geom_point(data=Currentalphas,aes(x=x,y=y),color=col.hcr.points,size=4*points.size.magnify) +
         scale_color_manual(name="",values=rev(c(col.BRP)),guide="none") #label=rev(legend.labels.hcr))

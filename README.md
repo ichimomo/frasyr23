@@ -197,6 +197,8 @@ graph_aka <- plot_abc2(abc2_aka, hcrhscale="sparse", hcrhline="hscale", plotexac
 # plot_hcr2のHCRについて表示オプションを選べます
 # vlineオプションで横軸の管理基準値補助線をつけるか否か選べる
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vline=F)
+# vline.textオプションで横軸の管理基準値のテキストをつけるか否か選べる
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vline.text=F)
 # 現在の資源量水準に興味がなく、HCRの曲線のみ表示したい場合、is_pointオプションをFにする
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),is_point=F)
 # 禁漁水準を非表示とするために、vlineBanオプションをFにする
@@ -205,6 +207,9 @@ plot_hcr2(list(abc2_aka,abc2_aka_conservABC),vlineBan=F)
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),change_ps=0.8)
 # 現在の資源量水準のポイントについては結果オブジェクトリストの一つ目だけ表示したい場合、one_pointオプションをTにする
 plot_hcr2(list(abc2_aka,abc2_aka_conservABC),one_point=T)
+# 現在の資源量水準のポイントで、任意のHCRを選んで表示させる場合、select_pointオプションでサイズを指定し、非表示にしたいHCRは0とする
+#（数値を変えて表示サイズを変更できるがchange_psオプションに数値を入れれば両方有効で、one_pointオプションとは競合してone_pointが優先）
+plot_hcr2(list(abc2_aka,abc2_aka_conservABC),select_point=c(0,1))
 
 # 比較するHCRのうち、listの何番目の管理水準を表示させるかをオプションvline.listnumに入れて選ぶ（デフォルトは1番目）
 abc2_aka_BT07<-calc_abc2(data_aka,BT=0.7,tune.par=c(0.4,0.7,1.0))
