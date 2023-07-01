@@ -1107,12 +1107,12 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
     if(!ignore_naCatch_point) { #
       g.catch <- ccdata %>% ggplot() +
-      geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-      geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)
+      geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+      geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=3)
     }else{
       g.catch <- ccdata %>% ggplot() +
-        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-        geom_point(data=data_catch2,mapping=aes(x=year,y=catch,color=type),lwd=3)
+        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+        geom_point(data=data_catch2,mapping=aes(x=year,y=catch,color=type),size=3)
     }
 
       #ggrepel::geom_label_repel(data=data_catch,
@@ -1133,12 +1133,12 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){# plot 設定 for mac
       if(!ignore_naCatch_point) { #
         g.catch <- ccdata %>% ggplot() +
-          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-          geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)
+          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+          geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=3)
         }else{
         g.catch <- ccdata %>% ggplot() +
-          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-          geom_point(data=data_catch2,mapping=aes(x=year,y=catch,color=type),lwd=3)
+          geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+          geom_point(data=data_catch2,mapping=aes(x=year,y=catch,color=type),size=3)
         }
           #ggrepel::geom_label_repel(data=data_catch,
           #                          mapping=aes(x=max(year)-5,y=catch[1],label=legend.labels2,family=font_MAC),
@@ -1250,8 +1250,8 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
 
     # 漁獲量トレンドとABC/算定漁獲量 ----
     (g.catch <- ccdata %>% ggplot() +
-        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-        geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+        geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=3)+
         #         geom_point(data=dplyr::filter(data_catch,type=="ABC"),
         #                    mapping=aes(x=year,y=catch),lwd=2,color=1)+
         #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
@@ -1270,8 +1270,8 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
       col.set <- c("#000000","#FF0000",rev(col.BRP))
       g.catch <- ccdata %>% ggplot() +
         theme_bw(base_family = font_MAC)+
-        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-        geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+        geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+        geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=3)+
         #          geom_point(data=dplyr::filter(data_catch,type=="ABC"),
         #                      mapping=aes(x=year,y=catch),lwd=2,color="red")+
         #          geom_line(data=dplyr::filter(data_catch,type!="ABC"),
@@ -2144,14 +2144,14 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   CatchABC<-c(1,rev(seq(2,(length(res.list)+1))))
   if(!ignore_naCatch_point){
     g.catch <- res.list[[1]]$arglist$ccdata %>% ggplot() +
-      geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-      geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+      geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+      geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=3)+
       scale_color_manual(name="",values=rev(CatchABC),labels=rev(legend.labels2))
 
   }else{
     g.catch <- res.list[[1]]$arglist$ccdata %>% ggplot() +
-      geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-      geom_point(data=data_catch2,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+      geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+      geom_point(data=data_catch2,mapping=aes(x=year,y=catch,color=type),size=3)+
       scale_color_manual(name="",values=rev(CatchABC),labels=rev(legend.labels2))
 
   }
@@ -2583,8 +2583,8 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
   CatchABC<-seq((last.year-BTyear+2):1)
   #CatchABC<-c(1,2)
   g.catch <- ccdata %>% ggplot() +
-    geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-    geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+    geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+    geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=3)+
     #ggrepel::geom_label_repel(data=data_catch,
     #                          mapping=aes(x=max(year)-5, y=catch, label=legend.labels2),
     #                          box.padding=0.5, nudge_y=1)+
@@ -2602,8 +2602,8 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
 
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){# plot 設定 for mac
     g.catch <- ccdata %>% ggplot() +
-      geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=2)+
-      geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),lwd=3)+
+      geom_path(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=2)+
+      geom_point(data=data_catch,mapping=aes(x=year,y=catch,color=type),size=3)+
       #ggrepel::geom_label_repel(data=data_catch,
       #                          mapping=aes(x=max(year)-5,y=catch[1],label=legend.labels2,family=font_MAC),
       #                          box.padding=0.5, nudge_y=1)+
