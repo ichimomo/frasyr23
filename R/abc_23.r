@@ -652,6 +652,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @param abc4  北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE）
 #' @param fillarea  資源量指標値の図にkobeプロットに似た色を塗る（TRUEなら塗る、デフォルトはFALSE）
 #' @param cpueunit  資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）
+#' @param catchunit 漁獲量トレンドの縦軸見出しに追記したい単位（例えば"（万トン）"のように指定する、デフォルトは"（トン）"）
 #' @param leftalign  資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）
 #' @param RP  資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）
 #' @param hcrhscale HCRのプロットで縦軸の目盛幅をいくつ刻むか（sparseで0.5刻み、middleで0.25刻み、denseで0.2刻み）
@@ -662,7 +663,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE, BThcr=FALSE,hcrhline="none",hcrhscale="middle",plotexactframe=FALSE,ignore_naCatch_point=FALSE,latest_Catch_na=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", catchunit="(トン)", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE, BThcr=FALSE,hcrhline="none",hcrhscale="middle",plotexactframe=FALSE,ignore_naCatch_point=FALSE,latest_Catch_na=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -1125,7 +1126,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
       #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
       geom_path(aes(x=year,y=catch),size=1)+
-      ylab("漁獲量（トン）")+xlab(year.axis.label)+
+      ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+
       ggtitle("")+
       ylim(0,NA)+ theme_custom()+
       theme(legend.position="top",legend.justification = c(1,0))
@@ -1152,7 +1153,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
       g.catch <- g.catch+
         geom_path(aes(x=year,y=catch),size=1)+
-        ylab("漁獲量（トン）")+xlab(year.axis.label)+
+        ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+
         ggtitle("")+
         ylim(0,NA)+ theme_custom()+
         theme(legend.position="top",legend.justification = c(1,0)) +
@@ -1191,7 +1192,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 #' @export
 #'
 
-plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
+plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE,catchunit="(トン)"){
     # plot
     ccdata <- res$arglist$ccdata
     n.catch <- res$arglist$n.catch
@@ -1259,7 +1260,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
         geom_path(aes(x=year,y=catch),size=1)+
         geom_text(data=data_percent,aes(x=x,y=y,label=label))+
         geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
-        theme_bw()+ylab("漁獲量（トン）")+xlab(year.axis.label)+theme_custom()+
+        theme_bw()+ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+theme_custom()+
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP), size = 0.9*2, linetype = linetype.set)+
         scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2)+
         ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
@@ -1277,7 +1278,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
         #          geom_line(data=dplyr::filter(data_catch,type!="ABC"),
         #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
         geom_path(aes(x=year,y=catch),size=1)+
-        ylab("漁獲量（トン）")+xlab(year.axis.label)+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
+        ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
         geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP), size = 0.9*2, linetype = linetype.set)+
         scale_color_manual(name="",values=col.set,labels=legend.labels2)+
@@ -1909,12 +1910,13 @@ theme_custom <- function(){
 #' @param fishseason  X軸のラベルを変更（0なら年、1なら漁期年）
 #' @param abc4  北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE））
 #' @param cpueunit  資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）
+#' @param catchunit 漁獲量トレンドの縦軸見出しに追記したい単位（例えば"（万トン）"のように指定する、デフォルトは"（トン）"）
 #' @param leftalign  資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）
 #' @param RP  資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）
 #' @param ignore_naCatch_point ABC算出に使う最近年の漁獲量にNAが入っている場合、表示上NAとなる年のポイントと年数を引く
 #' @export
 #'
-plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0, abc4=FALSE, cpueunit="", fillarea=FALSE, RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline="none",hcrhscale="middle",hcrvlineBan=FALSE,plotexactframe=FALSE,ignore_naCatch_point=FALSE,abclegend=NULL){
+plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0, abc4=FALSE, cpueunit="", catchunit="（トン）",fillarea=FALSE, RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE,BThcr=FALSE,hcrhline="none",hcrhscale="middle",hcrvlineBan=FALSE,plotexactframe=FALSE,ignore_naCatch_point=FALSE,abclegend=NULL){
   font_MAC <- "HiraginoSans-W3"#"Japan1GothicBBB"#
 
   #結果比較の限界は５個まで
@@ -2159,7 +2161,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){# plot 設定 for mac
     g.catch <- g.catch +
       geom_path(aes(x=year,y=catch),size=1)+
-      ylab("漁獲量（トン）")+xlab(year.axis.label)+
+      ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+
       ggtitle("")+
       ylim(0,NA)+ theme_custom()+
       theme(legend.position="top",legend.justification = c(1,0)) +
@@ -2167,7 +2169,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   }else{
     g.catch <- g.catch +
       geom_path(aes(x=year,y=catch),size=1)+
-      ylab("漁獲量（トン）")+xlab(year.axis.label)+
+      ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+
       ggtitle("")+
       ylim(0,NA)+ theme_custom()+
       theme(legend.position="top",legend.justification = c(1,0))
@@ -2192,12 +2194,13 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 #' @param abc4  北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE）
 #' @param fillarea  資源量指標値の図にkobeプロットに似た色を塗る（TRUEなら塗る、デフォルトはFALSE）
 #' @param cpueunit  資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）
+#' @param catchunit 漁獲量トレンドの縦軸見出しに追記したい単位（例えば"（万トン）"のように指定する、デフォルトは"（トン）"）
 #' @param leftalign  資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）
 #' @param RP  資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）
 #' @export
 #'
 
-plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, hcrdist=FALSE){
+plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0, abc4=FALSE, fillarea=FALSE, cpueunit="", catchunit="（トン）",RP=TRUE, leftalign=FALSE, hcrdist=FALSE){
   # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
   # 漁期年/年設定 ----
@@ -2595,7 +2598,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
     #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
     #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
     geom_path(aes(x=year,y=catch),size=1)+
-    ylab("漁獲量（トン）")+xlab(year.axis.label)+
+    ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+
     ggtitle("")+
     ylim(0,NA)+ theme_custom()+
     theme(legend.position="top",legend.justification = c(1,0))
@@ -2614,7 +2617,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
       #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
       #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
       geom_path(aes(x=year,y=catch),size=1)+
-      ylab("漁獲量（トン）")+xlab(year.axis.label)+
+      ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+
       ggtitle("")+
       ylim(0,NA)+ theme_custom()+
       theme(legend.position="top",legend.justification = c(1,0)) +
