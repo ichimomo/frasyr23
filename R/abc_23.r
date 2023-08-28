@@ -662,7 +662,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE, BThcr=FALSE,hcrhline="none",hcrhscale="middle",plotexactframe=FALSE,ignore_naCatch_point=FALSE,latest_Catch_na=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", catchunit="(トン)", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE, BThcr=FALSE,hcrhline="none",hcrhscale="middle",plotexactframe=FALSE,ignore_naCatch_point=FALSE,latest_Catch_na=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -1125,7 +1125,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       #         geom_line(data=dplyr::filter(data_catch,type!="ABC"),
       #                    mapping=aes(x=year,y=catch),lwd=2,color="gray")+
       geom_path(aes(x=year,y=catch),size=1)+
-      ylab("漁獲量（トン）")+xlab(year.axis.label)+
+      ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+
       ggtitle("")+
       ylim(0,NA)+ theme_custom()+
       theme(legend.position="top",legend.justification = c(1,0))
@@ -1152,7 +1152,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 
       g.catch <- g.catch+
         geom_path(aes(x=year,y=catch),size=1)+
-        ylab("漁獲量（トン）")+xlab(year.axis.label)+
+        ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+
         ggtitle("")+
         ylim(0,NA)+ theme_custom()+
         theme(legend.position="top",legend.justification = c(1,0)) +
@@ -1191,7 +1191,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
 #' @export
 #'
 
-plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
+plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE,catchunit="(トン)"){
     # plot
     ccdata <- res$arglist$ccdata
     n.catch <- res$arglist$n.catch
@@ -1259,7 +1259,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
         geom_path(aes(x=year,y=catch),size=1)+
         geom_text(data=data_percent,aes(x=x,y=y,label=label))+
         geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,label="(漁獲量水準)"),size=4)+
-        theme_bw()+ylab("漁獲量（トン）")+xlab(year.axis.label)+theme_custom()+
+        theme_bw()+ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+theme_custom()+
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP), size = 0.9*2, linetype = linetype.set)+
         scale_color_manual(name="",values=c(1,2,rev(col.BRP)),labels=legend.labels2)+
         ylim(0,NA)+xlim(min(ccdata$year)-1,NA)+
@@ -1277,7 +1277,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE){
         #          geom_line(data=dplyr::filter(data_catch,type!="ABC"),
         #                      mapping=aes(x=year,y=catch),lwd=3,color="black")+
         geom_path(aes(x=year,y=catch),size=1)+
-        ylab("漁獲量（トン）")+xlab(year.axis.label)+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
+        ylab(paste("漁獲量",catchunit))+xlab(year.axis.label)+theme_custom()+geom_text(data=data_percent,aes(x=x,y=y,label=label),family = font_MAC)+
         geom_text(aes(x=min(ccdata$year)+2,y=min(data_percent$y)*0.75,family=font_MAC,label="(漁獲量水準)"),size=4)+
         geom_hline(data=data_BRP,mapping=aes(yintercept=value_obs,color=BRP), size = 0.9*2, linetype = linetype.set)+
         scale_color_manual(name="",values=col.set,labels=legend.labels2)+
