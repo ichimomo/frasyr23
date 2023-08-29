@@ -720,7 +720,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       }else{ # 1年後ABC算出
         if(latest_Catch_na){ #最新年CatchがNAの時
           data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):(last.year-1),last.year+1),
-                               catch=c(rep(res$mean.catch,res$arglist$n.catch-1),ABC),
+                               catch=c(rep(mean.catch,res$arglist$n.catch-1),ABC),
                                type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch-1),"ABC"))
         }else{
           data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1),
