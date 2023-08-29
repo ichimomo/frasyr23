@@ -663,7 +663,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #' @export
 #'
 
-plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", catchunit="(トン)", RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE, BThcr=FALSE,hcrhline="none",hcrhscale="middle",plotexactframe=FALSE,ignore_naCatch_point=FALSE,latest_Catch_na=FALSE){
+plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, fillarea=FALSE, cpueunit="", catchunit="(トン)", catchdividedegit=NULL, RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE, BThcr=FALSE,hcrhline="none",hcrhscale="middle",plotexactframe=FALSE,ignore_naCatch_point=FALSE,latest_Catch_na=FALSE){
     # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
     # 漁期年/年設定 ----
@@ -674,8 +674,20 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     smooth.cpue <- res$arglist$smooth.cpue
     smooth.dist <- res$arglist$smooth.dist
     # plot
+
     ccdata <- res$arglist$ccdata
     ccdata_fixedBT <- res$arglist$ccdata
+    mean.catch <-res$mean.catch
+
+    if(is.null(catchdividedegit)){
+        ABC <- res$ABC
+    }
+    else{
+      ccdata$catch <- res$arglist$ccdata$catch/(10^catchdividedegit)
+      ccdata_fixedBT$catch <- res$arglist$ccdata$catch/(10^catchdividedegit)
+      ABC <- res$ABC/(10^catchdividedegit)
+      mean.catch <-res$mean.catch/(10^catchdividedegit)
+    }
     BTyear <- res$arglist$BTyear
     if(is.null(BTyear) && BThcr==TRUE) stop("BThcr option works if BTyear is not NULL. See the argments in calc_abc2./n")
     if(!is.null(res$arglist$BTyear)) ccdata_fixedBT <- ccdata[which(ccdata$year <= BTyear),]
@@ -702,16 +714,16 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     if(BThcr==FALSE){
       if(!res$arglist$timelag0){ # 2年後ABC算出
         data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2),
-                                                         catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
+                                                         catch=c(rep(mean.catch,res$arglist$n.catch),ABC),
                                                          type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC"))
       }else{ # 1年後ABC算出
         if(latest_Catch_na){ #最新年CatchがNAの時
           data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):(last.year-1),last.year+1),
-                               catch=c(rep(res$mean.catch,res$arglist$n.catch-1),res$ABC),
+                               catch=c(rep(res$mean.catch,res$arglist$n.catch-1),ABC),
                                type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch-1),"ABC"))
         }else{
           data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1),
-                               catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC),
+                               catch=c(rep(mean.catch,res$arglist$n.catch),ABC),
                                type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC"))
 
         }
@@ -719,14 +731,16 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
     }
     else{
       res.nullBTyear <- calc_abc2(ccdata=res$arglist$ccdata,BT=BT,PL=PL,PB=PB,tune.par = tune.par, AAV=res$arglist$AAV,n.catch=res$arglist$n.catch,n.cpue=res$arglist$n.catch,smooth.cpue = res$arglist$smooth.cpue,smooth.dist = res$arglist$smooth.dist,empir.dist = res$arglist$empir.dist,simple.empir = res$arglist$simple.empir,beta = res$arglist$beta,D2alpha = res$arglist$D2alpha,BTyear = NULL,summary_abc=FALSE)
+      nullBTyearABC<-res.nullBTyear$ABC
+      if(!is.null(catchdividedegit))nullBTyearABC<-nullBTyearABC/(10^catchdividedegit)
       if(!res$arglist$timelag0){
-        data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2,last.year+2),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),res$ABC,res.nullBTyear$ABC,                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
+        data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+2,last.year+2),catch=c(rep(mean.catch,res$arglist$n.catch),ABC,nullBTyearABC),ABC,nullBTyearABC,                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
       }
       else{
         if(latest_Catch_na){
-          data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):(last.year-1),last.year+1,last.year+1),catch=c(rep(res$mean.catch,res$arglist$n.catch-1),res$ABC,res.nullBTyear$ABC),                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch-1),"ABC","入力データ最終年算出ABC"))
+          data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):(last.year-1),last.year+1,last.year+1),catch=c(rep(mean.catch,res$arglist$n.catch-1),ABC,nullBTyearABC),                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch-1),"ABC","入力データ最終年算出ABC"))
         }else{
-          data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1,last.year+1),catch=c(rep(res$mean.catch,res$arglist$n.catch),res$ABC,res.nullBTyear$ABC),                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
+          data_catch <- tibble(year=c((last.year-res$arglist$n.catch+1):last.year,last.year+1,last.year+1),catch=c(rep(mean.catch,res$arglist$n.catch),ABC,nullBTyearABC),                              type=c(rep(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),n.catch),"ABC","入力データ最終年算出ABC"))
         }
       }
     }
