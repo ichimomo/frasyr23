@@ -1943,7 +1943,6 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
   catch.abc.na<-0
   if(ignore_naCatch_point){
     mean.catch.abc <- res.list[[1]]$arglist$ccdata$catch[(length(ccdata$catch)-n.catch+1):length(ccdata$catch)]
-    if(!is.null(catchdividedegit)) mean.catch.abc <- mean.catch.abc/(10^catchdividedegit)
     catch.abc.na <- sum(as.numeric(is.na(mean.catch.abc)))
     if(prod(!is.na(mean.catch.abc))) stop("ignore_naCatch_point option works if catch[lastyear-n.catch+1:lastyear] contains NA.")
   }
