@@ -2349,13 +2349,14 @@ calc_retro2 <- function(res,onset_year=NULL,period=NULL,stock.name=NULL,timelagB
 #' @param hcrlabel 凡例に表示させるHCR（ベクトルで入れる）
 #' @param withCatch ABC算定漁獲の時系列に漁獲実績データを併記
 #' @param all_timeseries ABC時系列を入力漁獲時系列データと同じ期間
+#' @param catchunit 漁獲量を示す左縦軸の単位を決める（catchunit="万トン"など、デフォルトでは漁獲量の軸の桁数を数値で100トンなどのようになる）
 #' @param calc_year 算定漁獲量・ABCの対象年を横軸に取る(FALSE)か入力データ最終年を横軸に取るか(TRUE)（デフォルトはFALSE）
 #' @param stock.name
 #'
 #' @export
 #'
 
-plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelagB=FALSE,fishseason=0,hcrlabel=NULL,all_timeseries=FALSE,calc_year=FALSE,cc_plot=FALSE,withCatch=FALSE){
+plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,timelagB=FALSE,fishseason=0,catchunit=NULL,hcrlabel=NULL,all_timeseries=FALSE,calc_year=FALSE,cc_plot=FALSE,withCatch=FALSE){
 
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
@@ -2472,8 +2473,14 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   else g.retro.abc <- g.retro.abc +
     scale_color_manual(name="",values=col.hcr.points, labels = hcr.labels, guide="none")
 
-  g.retro.abc <- g.retro.abc +
+  if(is.null(catchunit)) g.retro.abc <- g.retro.abc +
     ylab(paste0("算定漁獲量（",data_retro_msd,"トン）"))+
+    xlab(year.axis.label) +
+    ggtitle("") +
+    theme_custom() +
+    theme(legend.position=c(1,1),legend.justification = c(1,0), legend.direction="horizontal",legend.background = element_rect(fill = NA, colour = NA),legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
+  else g.retro.abc <- g.retro.abc +
+    ylab(paste("算定漁獲量",catchunit))+
     xlab(year.axis.label) +
     ggtitle("") +
     theme_custom() +
@@ -2533,7 +2540,7 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
   cc.labels.col <- c("black","darkslategrey")
   data_CC <- tibble(CC=cc.labels,Val_obs_max=c(max(alldata_retro$catch,na.rm = T),max(alldata_retro$cpue,na.rm = T)),Xaxes_plot=c(catch.legend.xposit[1],cpue.legend.xposit[1]),Yaxes_plot=c(catch.legend.yposit[1],0))#c(catch.legend.yposit,cpue.legend.yposit))
 
-  g.cc <- alldata_retro %>% ggplot()+
+  if(is.null(catchunit)) g.cc <- alldata_retro %>% ggplot()+
   geom_line(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=1)+
     geom_point(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=2)+
   geom_line(data=alldata_retro,mapping=aes(x=year,y=cpue_scaled*second_rate),size=1,col="lightslategrey")+
@@ -2548,6 +2555,22 @@ plot_retro2 <- function(res.list,onset_year=NULL,period=NULL,stock.name=NULL,tim
     ggtitle("")+
     theme_custom()+
     theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
+  else g.cc <- alldata_retro %>% ggplot()+
+    geom_line(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=1)+
+    geom_point(data=alldata_retro,mapping=aes(x=year,y=catch_msd),size=2)+
+    geom_line(data=alldata_retro,mapping=aes(x=year,y=cpue_scaled*second_rate),size=1,col="lightslategrey")+
+    geom_point(data=alldata_retro,mapping=aes(x=year,y=cpue_scaled*second_rate),size=2,col="lightslategrey")+
+    scale_x_continuous(limits = c(min(alldata_retro$year),max(alldata_retro$year)))+
+    scale_y_continuous(
+      labels=scales::number_format(accuracy=0.1),
+      limits = c(-0.75, 1.25*max(alldata_retro$catch_msd,na.rm = T)),breaks=abc_catch_breaks,
+      sec.axis = sec_axis(~ ./second_rate, name = "資源量指標値(相対値)",labels=scales::number_format(accuracy=0.1))
+    )+
+    labs(x = year.axis.label, y = paste("漁獲量",catchunit))+
+    ggtitle("")+
+    theme_custom()+
+    theme(legend.position="top",legend.justification = c(1,0), legend.spacing=unit(0.25,'lines'), legend.key.width = unit(2.0, 'lines'))
+
   if(!isTRUE(stringr::str_detect(version$os, pattern="darwin"))){
   g.cc<-g.cc+
     ggrepel::geom_label_repel(data=data_CC,mapping=aes(x=Xaxes_plot, y=Yaxes_plot), label=cc.labels,col=cc.labels.col)#, box.padding=1.5)
