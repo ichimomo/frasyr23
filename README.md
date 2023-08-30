@@ -255,6 +255,9 @@ plot_hcr2(list(abc2_aka,abc2_aka_BT07,abc2_aka_BT06),vline.listnum=0,label.list=
 # plot_retro2について表示オプションを選べます
 # 時系列横軸を年ではなく漁期年とする場合
 graph_aka <- plot_retro2(abc2_aka,fishseason=1)
+# 漁獲量縦軸のラベル単位を任意に与える場合
+#（デフォルトでは漁獲量の軸の桁数を100トンのように数字で表示）
+graph_aka <- plot_retro2(abc2_aka,catchunit="(万トン)")
 
 # 過去のABC時系列の計算開始はcalc_abc2に入力した漁獲量・資源量指標値データの最新年から遡って、
 # 漁獲量・資源量指標値両データが揃った初出年+n.catch-1年までを対象期間とする
