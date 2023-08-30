@@ -27,7 +27,8 @@ library(tidyverse) # こちらのパッケージを使うので呼び出して�
       - オプションは[プロットオプション](https://github.com/ichimomo/frasyr23#%E3%83%97%E3%83%AD%E3%83%83%E3%83%88%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3)を参照
    - plot_hcr2 HCRの図のみプロット、複数の結果の比較も可能
       - 詳細は[HCRのみ描画し、比較する](https://github.com/ichimomo/frasyr23#hcr%E3%81%AE%E3%81%BF%E6%8F%8F%E7%94%BB%E3%81%97%E6%AF%94%E8%BC%83%E3%81%99%E3%82%8B)を参照 
-
+   - plot_retro2 過去に遡ってABC算定した結果をプロット
+      - 詳細は[過去の算定漁獲量を時系列プロットする](https://github.com/ichimomo/frasyr23#hcr%E3%81%AE%E3%81%BF%E6%8F%8F%E7%94%BB%E3%81%97%E6%AF%94%E8%BC%83%E3%81%99%E3%82%8B)を参照 
 # Rコード例
 ```
 help(calc_abc2) # helpを見ると引数の説明などが見れます
@@ -121,6 +122,24 @@ plot_hcr2(list(abc2_aka,abc2_aka_BT07),intersection=T)
 ```
 ![](./tools/hcr2_compare.png)
 
+# 過去の算定漁獲量を時系列プロットする
+```
+# 2系のデフォルトのパラメータ
+abc2_aka <- calc_abc2(data_aka)
+# 過去の算定漁獲量をプットする
+graph_retro2 <- plot_retro2(abc2_aka)
+# 目標水準BTを0.7に引き下げる場合と過去の算定漁獲量を比較
+abc2_aka_BT07 <- calc_abc2(data_aka,BT = 0.7,tune.par = c(0.4,0.7,1.0))
+graph_retro2_compare <- plot_retro2(list(abc2_aka,abc2_aka_BT07))
+# 2つ以上の算定漁獲量と漁獲を増減させる係数のほか、漁獲量と資源量指標値も同じ期間表示する
+graph_retro2_cc <- plot_retro2(list(abc2_aka,abc2_aka_BT07),cc_plot=T)
+# グラフをセーブする場合
+# ggsave(width=200,height=200,dpi=200,units="mm", graph_retro2_cc[[2]], file="retro2_aka.png")
+# 最新年の漁獲量データのみがなく、翌年のABC算定する場合、calc_abc2のオプションtimelag0をT、n.catchを6とするが、この場合はplot_retro2ではtimelagBオプションをTRUEにする
+abc2_ex_nexty2 <- calc_abc2(data_example2,n.catch=6,timelag0=T)
+graph_retro2_nesty2 <- plot_retro2(abc2_ex_nexty2,timelagB=T)
+```
+![](./tools/retro2_aka.png)
 
 # 計算オプション
 
@@ -136,10 +155,22 @@ abc2_aka_D0155 <- calc_abc2(data_aka,D2alpha=0.155)
 # 管理水準を求める際、CPUE時系列の最終年ではなく、CPUEデータの初出年から特定の年(BTyear)までの時系列を使う
 abc2_aka_bt2010 <- calc_abc2(data_aka, BTyear=2010)
 
-# 変動緩和措置として、2系ルールで算出されるABCが前年漁獲量の1±respを超える（下回る）ときに、ABCを前年漁獲量×(1±resp)に置き換える場合（前年漁獲量=NAの場合、さらに1年前の漁獲量を参照）
+# 変動緩和措置として、2系ルールで算出されるABCが前年漁獲量の1±respを超える（下回る）ときに、ABCを前年漁獲量×(1±resp)に置き換える場合
+# （前年漁獲量=NAの場合、さらに1年前の漁獲量を参照）
 # ABCが置き換えられたときに、出力結果表示でも置き換えられた結果だと示される
 abc2_aka_resp <- calc_abc2(data_aka,tune.par=c(0.3,0.6,0.3),resp=0.4)
 
+# calc_retro2関数で過去に遡って算定漁獲量を計算することができる
+retro2_aka <- calc_retro2(abc2_aka)
+# 特定期間について計算する場合、オプションperiodに入力
+graph_aka_period <- plot_retro2(abc2_aka,period=c(2000:2015))
+# 特定年以前について計算する場合、オプションoneset_yearに入力
+graph_aka_onset_year <- plot_retro2(abc2_aka,onset_year=2015)
+# 最新年漁獲量がNAで翌年のABCを計算する場合、timelagBオプションをTRUEにする
+# 結果をcsvファイルに出力する場合、オプションoutputをTRUEにする。ファイルネームはres_retro2.csv。このとき、stock.nameオプションに文字列を入れると
+# ファイルネームはres_"stock.name"_retro2.csvに、filenameオプションで名前をつけることもできる
+retro2_aka <- calc_retro2(abc2_aka,output=T,stock.name="akagarei")
+retro2_aka <- calc_retro2(abc2_aka,output=T,filename="res_akagarei_retro")
 
 # 資源量指標値をCPUEデータそのものを利用するのではなく平滑化したり、
 # 水準計算に正規分布ではなく経験分布を使ったり、さらには水準を計算する年を固定するオプションがあります(MSEでのパフォーマンスは公式に評価していません)
@@ -221,6 +252,33 @@ plot_hcr2(list(abc2_aka,abc2_aka_BT07),vline.listnum=2,label.list=c("Default","B
 abc2_aka_BT06<-calc_abc2(data_aka,BT=0.6,tune.par=c(0.3,0.7,1.0))
 plot_hcr2(list(abc2_aka,abc2_aka_BT07,abc2_aka_BT06),vline.listnum=0,label.list=c("Default","BT07","BT06"),vlineBan=F)
 
+# plot_retro2について表示オプションを選べます
+# 時系列横軸を年ではなく漁期年とする場合
+graph_aka <- plot_retro2(abc2_aka,fishseason=1)
+
+# 過去のABC時系列の計算開始はcalc_abc2に入力した漁獲量・資源量指標値データの最新年から遡って、
+# 漁獲量・資源量指標値両データが揃った初出年+n.catch-1年までを対象期間とする
+# 特定期間について計算する場合、オプションperiodに入力
+graph_aka_period <- plot_retro2(abc2_aka,period=c(2000:2015))
+# 特定年以前について計算する場合、オプションoneset_yearに入力
+graph_aka_onset_year <- plot_retro2(abc2_aka,onset_year=2015)
+# オプションall_timeseriesで表示する期間を入力する漁獲量・資源量指標値データの初出年から算定漁獲対象年までにする
+graph_aka_period <- plot_retro2(abc2_aka,all_timeseries=T)
+
+# 算定漁獲量の時系列表示に漁獲量も重ねて表示する
+graph_aka_period <- plot_retro2(abc2_aka,withCatch=T)
+# 算定漁獲量・漁獲を増減させる係数の時系列に合わせて漁獲量と資源量指標値の時系列も表示する
+graph_aka_cc <- plot_retro2(abc2_aka,cc_plot=T)
+# 時系列横軸を年ではなく漁期年とする場合
+graph_aka_season1 <- plot_retro2(abc2_aka,fishseason=1)
+# 複数のHCR算定漁獲量を表示するとき凡例に漁獲管理規則の名前をつける
+graph_aka_labels <- plot_retro2(list(abc2_aka,abc2_aka_BT07),hcrlabel=c("BT08","BT07"))
+
+# calc_abc2のオプションtimelag0=Tで最新年漁獲量がNAの場合、オプションtimelagBをTRUEにする
+ccdata_aka_timelag0B <- data_aka
+ccdata_aka_timelag0B$catch[length(ccdata_aka_timelag0B$catch)] <- NA
+abc2_aka_timelag0B <- calc_abc2(ccdata_aka_timelag0B,timelag0=T,n.catch=6)
+graph_aka_timelagB <- plot_retro2(abc2_aka_timelag0B,timelagB=T)
 
 # 複数のABC算出結果オブジェクトをHCR,ABCのプロットで同時に出力し比較する（ただし、最大５つまで）
 ## デフォルトのパラメータ
