@@ -4,10 +4,29 @@
 \alias{plot_hcr2}
 \title{2系のHCRを比較するための関数}
 \usage{
-plot_hcr2(res.list, stock.name = NULL, proposal = TRUE)
+plot_hcr2(
+  res.list,
+  stock.name = NULL,
+  proposal = TRUE,
+  hline = "none",
+  hscale = "middle",
+  plotexactframe = FALSE,
+  vline = TRUE,
+  vline.listnum = 1,
+  vlineBan = TRUE,
+  vline.text = TRUE,
+  label.list = NULL,
+  is_point = TRUE,
+  select_point = NULL,
+  change_ps = NULL,
+  one_point = FALSE,
+  intersection = FALSE
+)
 }
 \arguments{
 \item{res.list}{calc_abc2の返り値のリスト}
+
+\item{stock.name}{}
 }
 \description{
 2系のHCRを比較するための関数

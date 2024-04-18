@@ -11,12 +11,20 @@ plot_abc2_multires(
   detABC = 0,
   abc4 = FALSE,
   cpueunit = "",
+  catchunit = "（トン）",
+  catchdividedegit = NULL,
   fillarea = FALSE,
   RP = TRUE,
   leftalign = FALSE,
   proposal = TRUE,
   hcrdist = FALSE,
-  BThcr = FALSE
+  BThcr = FALSE,
+  hcrhline = "none",
+  hcrhscale = "middle",
+  hcrvlineBan = FALSE,
+  plotexactframe = FALSE,
+  ignore_naCatch_point = FALSE,
+  abclegend = NULL
 )
 }
 \arguments{
@@ -28,9 +36,13 @@ plot_abc2_multires(
 
 \item{cpueunit}{資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）}
 
+\item{catchunit}{漁獲量トレンドの縦軸見出しに追記したい単位（例えば"（万トン）"のように指定する、デフォルトは"（トン）"）}
+
 \item{RP}{資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）}
 
 \item{leftalign}{資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）}
+
+\item{ignore_naCatch_point}{ABC算出に使う最近年の漁獲量にNAが入っている場合、表示上NAとなる年のポイントと年数を引く}
 }
 \description{
 複数の2系ABC計算結果を同時プロットするための関数
