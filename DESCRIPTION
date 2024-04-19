@@ -7,7 +7,7 @@ Depends: R (>= 4.0.0)
 License: GPL(>=3)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests: 
     testthat
 Imports: 
