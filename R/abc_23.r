@@ -768,7 +768,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
   #label.y.position<-c(0.5,0.4,0.8)
   #label.y.nudge<-c(0.1,-0.1,0.1)
 
-  linetype.set <- c("dashed","longdash","solid")
+  linetype.set <- c("dashed","dotdash","solid")
+
   legend.labels2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"ABC")
   legend.labels2bt <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"ABC","最終年データ利用のABC")
   legend.labels2.1 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"算定漁獲量")
@@ -1231,7 +1232,7 @@ plot_abc3 <- function(res,stock.name=NULL,fishseason=0,detABC=0,proposal=TRUE,ca
     }else{
       legend.labels <-c("目標水準","限界水準","禁漁水準")
     }
-    linetype.set <- c("22","41","solid")
+    linetype.set <- c("dashed","dotdash","solid")
     legend.labels2 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"ABC",rev(c(legend.labels)))
     legend.labels2.1 <-c(str_c(res$arglist$n.catch,"年平均漁獲量"),"算定漁獲量",rev(c(legend.labels)))
 
@@ -1326,7 +1327,7 @@ plot_hcr3 <- function(res.list,stock.name=NULL,proposal=TRUE){
   }else{
     legend.labels.hcr <-c("目標水準","限界水準","禁漁水準")
   }
-  linetype.set <- c("22","41","solid")
+  linetype.set <- c("dashed","dotdash","solid")
   if("arglist"%in%names(res.list)) res.list <- list(res.list)
 
     (g.hcr <- ggplot(data=data.frame(X=c(0,100)), aes(x=X)) +
@@ -1576,7 +1577,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
   }else{
     legend.labels.hcr <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
   }
-  linetype.set <- c("22","41","solid")
+  linetype.set <- c("dashed","dotdash","solid")
 
   if(vlineBan==FALSE) {
     if(proposal==TRUE){
@@ -1584,7 +1585,7 @@ plot_hcr2 <- function(res.list,stock.name=NULL,proposal=TRUE, hline="none", hsca
     }else{
       legend.labels.hcr <- c("目標管理基準値（目標水準）","限界管理基準値（限界水準）")
     }
-    linetype.set <- c("22","41")
+    linetype.set <- c("dashed","dotdash")
     col.BRP <- c("#00533E","#edb918")
   }
 
@@ -2097,7 +2098,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
     g.catch.abcpoint <- "ABC"
   }
 
-  linetype.set <- c("22","41","solid")
+  linetype.set <- c("dashed","dotdash","solid")
 
   # 資源量指標値のトレンド ----
   if(isTRUE(abc4)){
@@ -2329,7 +2330,8 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
 
   legend.labels <-c("目標管理基準値（目標水準）","限界管理基準値（限界水準）","禁漁水準")
 
-  linetype.set <- c("dashed","longdash","solid")
+  linetype.set <- c("dashed","dotdash","solid")
+
   legend.labels2 <-c(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),"ABC")
   legend.labels2bt <-c(str_c("平均漁獲量(",res$arglist$n.catch,"年平均)"),btlabel,rev(ABClabels))
 
@@ -2341,7 +2343,7 @@ plot_abc2_fixTerminalCPUE_seqOut <- function(res, stock.name=NULL, fishseason=0,
 
     legend.labels <- c("目標管理基準値（目標水準）","限界管理基準値（限界水準）")
 
-    linetype.set <- c("22","41")
+    linetype.set <- c("dashed","dotdash")
     if(abc4==TRUE){
       col.BRP <- c("blue","red")
     }else{
