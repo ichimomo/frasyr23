@@ -9,14 +9,22 @@ plot_abc2(
   stock.name = NULL,
   fishseason = 0,
   detABC = 2,
+  x_right_space = 5,
   abc4 = FALSE,
   fillarea = FALSE,
   cpueunit = "",
+  catchunit = "(トン)",
+  catchdividedegit = NULL,
   RP = TRUE,
   leftalign = FALSE,
   proposal = TRUE,
   hcrdist = FALSE,
-  BThcr = FALSE
+  BThcr = FALSE,
+  hcrhline = "none",
+  hcrhscale = "middle",
+  plotexactframe = FALSE,
+  ignore_naCatch_point = FALSE,
+  latest_Catch_na = FALSE
 )
 }
 \arguments{
@@ -26,15 +34,29 @@ plot_abc2(
 
 \item{detABC}{次漁期の漁獲量の凡例表記を変更（0ならABC、1なら算定漁獲量、2なら予測値）}
 
+\item{x_right_space}{資源量指標値のトレンドの図で、水準の%やラベルを書き込むの幅の設定（デフォルトは5年分）}
+
 \item{abc4}{北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE）}
 
 \item{fillarea}{資源量指標値の図にkobeプロットに似た色を塗る（TRUEなら塗る、デフォルトはFALSE）}
 
 \item{cpueunit}{資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）}
 
+\item{catchunit}{漁獲量トレンドの縦軸見出しに追記したい単位（例えば"（万トン）"のように指定する、デフォルトは"（トン）"）}
+
+\item{catchdividedegit}{漁獲量トレンドの縦軸を任意の桁で割る（例えば"catchdividedegit=2"で100で割るように指定する、デフォルトはNULLでそのまま）}
+
 \item{RP}{資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）}
 
 \item{leftalign}{資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）}
+
+\item{hcrhline}{HCRのプロットで縦軸の漁獲量を増減させる係数に補助線を入れる（noneで補助線なし、oneでy=1、hscaleで縦軸目盛に補助線をひく）}
+
+\item{hcrhscale}{HCRのプロットで縦軸の目盛幅をいくつ刻むか（sparseで0.5刻み、middleで0.25刻み、denseで0.2刻み）}
+
+\item{plotexactframe}{HCRのプロットで縦軸横軸の0をプロット枠とあわせるか、余裕を持たせるか（デフォルトはFALSEで枠いっぱい）}
+
+\item{ignore_naCatch_point}{ABC算出に使う最近年の漁獲量にNAが入っている場合、表示上NAとなる年のポイントと年数を引く}
 }
 \description{
 2系のABC計算結果のをプロットするための関数

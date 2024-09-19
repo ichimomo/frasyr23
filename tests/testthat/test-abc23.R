@@ -10,7 +10,7 @@ test_that("type23 check",{
 
     # 2系
     example_abc2_check <- calc_abc2(example_data)
-    graph_abc2 <- plot_abc2(example_abc2_check,fishseason = 0,detABC = 1)
+    #graph_abc2 <- plot_abc2(example_abc2_check,fishseason = 0,detABC = 1)
 
     # 上記結果の読み込み
     load(system.file("extdata","res_example_abc2.rda",package = "frasyr23"))

@@ -20,6 +20,8 @@ calc_abc2(
   beta = 1,
   D2alpha = NULL,
   BTyear = NULL,
+  timelag0 = FALSE,
+  resp = NULL,
   summary_abc = TRUE
 )
 }
@@ -51,6 +53,10 @@ calc_abc2(
 \item{beta}{保守的なABCのためのパラメータ(デフォルトは1)}
 
 \item{BTyear}{管理目標水準を計算するときのCPUE時系列最終年を手動で決める（デフォルトはNULLでccdata$cpueの最終年）}
+
+\item{timelag0}{入力データ最終年の翌年のABCとして算出できるケース（デフォルトはFALSE）}
+
+\item{resp}{変動緩和措置をとるとき、前年漁獲量を1としたときの指数}
 }
 \description{
 2系のABC計算用の関数
@@ -63,6 +69,6 @@ example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
 # 2系
 example_abc2 <- calc_abc2(example_data,beta=1)
-graph_abc2 <- plot_abc2(example_abc2,fishseason=0,detABC=1,abc4=FALSE,fillarea=FALSE)
+graph_abc2 <- plot_abc2(example_abc2,fishseason=0,detABC=1,x_right_space=5,abc4=FALSE,fillarea=FALSE)
 
 }
