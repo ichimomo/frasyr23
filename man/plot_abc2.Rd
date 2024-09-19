@@ -9,6 +9,7 @@ plot_abc2(
   stock.name = NULL,
   fishseason = 0,
   detABC = 2,
+  x_right_space = 5,
   abc4 = FALSE,
   fillarea = FALSE,
   cpueunit = "",
@@ -32,6 +33,8 @@ plot_abc2(
 \item{fishseason}{X軸のラベルを変更（0なら年、1なら漁期年)}
 
 \item{detABC}{次漁期の漁獲量の凡例表記を変更（0ならABC、1なら算定漁獲量、2なら予測値）}
+
+\item{x_right_space}{資源量指標値のトレンドの図で、水準の%やラベルを書き込むの幅の設定（デフォルトは5年分）}
 
 \item{abc4}{北海道東部の跨り資源で使用する図を描画（TRUEなら使用、デフォルトはFALSE）}
 

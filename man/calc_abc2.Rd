@@ -69,6 +69,6 @@ example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
 # 2系
 example_abc2 <- calc_abc2(example_data,beta=1)
-graph_abc2 <- plot_abc2(example_abc2,fishseason=0,detABC=1,abc4=FALSE,fillarea=FALSE)
+graph_abc2 <- plot_abc2(example_abc2,fishseason=0,detABC=1,x_right_space=5,abc4=FALSE,fillarea=FALSE)
 
 }
