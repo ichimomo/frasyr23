@@ -4,7 +4,9 @@
 \name{col.BRP}
 \alias{col.BRP}
 \title{2,3系のABC計算をするためのパッケージ}
-\format{An object of class \code{character} of length 3.}
+\format{
+An object of class \code{character} of length 3.
+}
 \usage{
 col.BRP
 }

@@ -11,6 +11,7 @@ plot_abc2_fixTerminalCPUE_seqOut(
   abc4 = FALSE,
   fillarea = FALSE,
   cpueunit = "",
+  catchunit = "（トン）",
   RP = TRUE,
   leftalign = FALSE,
   hcrdist = FALSE
@@ -27,9 +28,13 @@ plot_abc2_fixTerminalCPUE_seqOut(
 
 \item{cpueunit}{資源量指標値の縦軸見出しに追記したい指標値の単位（例えば"（トン/網）"のように指定する）}
 
+\item{catchunit}{漁獲量トレンドの縦軸見出しに追記したい単位（例えば"（万トン）"のように指定する、デフォルトは"（トン）"）}
+
 \item{RP}{資源量指標値/年のプロットでReference Point（目標・限界管理基準線）を載せる・載せない（デフォルトはTRUE、FALSEでは直近年の資源量指標値をポイントでハイライトする）}
 
 \item{leftalign}{資源量指標値の時系列の長さが漁獲量に比べて短い時、データが無い範囲の空間を削除する（TRUEなら使用、デフォルトはFALSE）}
+
+\item{catchdividedegit}{漁獲量トレンドの縦軸を任意の桁で割る（例えば"catchdividedegit=2"で100で割るように指定する、デフォルトはNULLでそのまま）}
 }
 \description{
 2系のABC計算をBTyearオプションありで計算（資源水準導出のためのCPUE時系列制御）した結果をBTyearなしの場合まで連続的に比較してプロットするための関数

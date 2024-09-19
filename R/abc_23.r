@@ -112,6 +112,7 @@ calc_abc2 <- function(
   cum.cpue3 <- function(y,x) pnorm(y,mean(x),sd(x)) # cumulative normal distribution
   cum.cpue4 <- ecdf(cpue) # cumulative empirical distribution
 
+
   mean.catch <- mean(ori.catch[(l.catch-n.catch+1):l.catch],na.rm = TRUE)
 
   mean.cpue <- mean(ori.cpue[(l.cpue-n.cpue+1):l.cpue],na.rm = TRUE) # this mean.cpue calculates BT based on BTyear
@@ -666,6 +667,7 @@ diag.plot <- function(dat,res,lwd=3,cex=1.5,legend.location="topleft",main=""){
 #'
 
 plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_space=5, abc4=FALSE, fillarea=FALSE, cpueunit="", catchunit="(トン)", catchdividedegit=NULL, RP=TRUE, leftalign=FALSE, proposal=TRUE, hcrdist=FALSE, BThcr=FALSE,hcrhline="none",hcrhscale="middle",plotexactframe=FALSE,ignore_naCatch_point=FALSE,latest_Catch_na=FALSE){
+
   # abc4は北海道東部海域の「跨り資源」で資源量指標値の平均水準・過去最低値を描画する際に使用する。その際、calc_abc2の引数BTは0.5に設定すること。
 
   # 漁期年/年設定 ----
@@ -785,6 +787,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
   col.BRP.hcr <- col.BRP
   data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
 
+
   # PB=0の時の禁漁水準削除設定 ----
   data_BRP2 <- data_BRP
   if(res$BRP[3] == 0) {
@@ -848,13 +851,16 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
 
   if(isTRUE(stringr::str_detect(version$os, pattern="darwin"))){ ## plot 設定 for mac----
     g.cpue <- ccdata %>% ggplot() +
+
       geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x+x_right_space,y=y), fill=colfill[1]) +
+
       geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
       geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[3],data_BRP2$value_obs[3],data_BRP2$value_obs[2],data_BRP2$value_obs[2])), aes(x=x,y=y), fill=colfill[3]) +
       geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(0,0,data_BRP2$value_obs[3],data_BRP2$value_obs[3])), aes(x=x,y=y), fill=colfill[4]) +
       geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
       geom_text(data=data_percent_even,aes(x=x+x_right_space,y=y*1.05,label=label))+
       geom_text(aes(x=max(years)+x_right_space-5,y=min(data_percent_even$y[data_percent_even$y >= 0])*0.75,family=font_MAC,label="(資源水準)"),size=4)
+
     if(RP==TRUE){
       g.cpue <- g.cpue +
         geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=rev(col.BRP), linetype=rev(linetype.set)), size = 0.9*1.5)+
@@ -880,6 +886,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
     }
   }else{
     g.cpue <- ccdata %>% ggplot() +
+
       geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[1],data_BRP2$value_obs[1],max(ccdata$cpue,na.rm=T)*1.05,max(ccdata$cpue,na.rm=T)*1.05)), aes(x=x+x_right_space,y=y), fill=colfill[1]) +
       geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[2],data_BRP2$value_obs[2],data_BRP2$value_obs[1],data_BRP2$value_obs[1])), aes(x=x,y=y), fill=colfill[2]) +
       geom_polygon(data=tibble(x=c(minyears,max(years)+4,max(years)+4,minyears), y=c(data_BRP2$value_obs[3],data_BRP2$value_obs[3],data_BRP2$value_obs[2],data_BRP2$value_obs[2])), aes(x=x,y=y), fill=colfill[3]) +
@@ -887,6 +894,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
       geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
       geom_text(data=data_percent_even, aes(x=x+x_right_space,y=y*1.05,label=label))+
       geom_text(aes(x=max(years)+x_right_space-5,y=min(data_percent_even$y[data_percent_even$y >= 0])*0.75,label="(資源水準)"),size=4)
+
     if(RP==TRUE){
       g.cpue <- g.cpue +
         geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs, color=rev(col.BRP), linetype=rev(linetype.set)), size = 0.9*1.5)+
@@ -935,6 +943,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
         geom_hline(yintercept=res$Obs_percent_even,color="gray",linetype=2)+
         geom_text(data=data_percent_even,aes(x=x+x_right_space,y=y*1.05,label=label))+
         geom_text(aes(x=max(years)+x_right_space-5,y=min(data_percent_even$y)*0.75,family=font_MAC,label="(指標値の水準)"),size=4)+
+
         geom_hline(data=data_BRP, mapping=aes(yintercept=value_obs[1], color=col.BRP[2]), size = 0.9*1.5, linetype = 2)+
         geom_hline(mapping=aes(yintercept=min(cpue, na.rm=TRUE), color=col.BRP[1]), size = 0.9*2, linetype = 4)+
         #ggrepel::geom_label_repel(mapping=aes(x=c(min(years, na.rm=TRUE)+0.5,min(years, na.rm=TRUE)+0.5), y=c(min(cpue, na.rm=TRUE),data_BRP$value_obs[1]), label=rev(c("平均水準","過去最低値"))),
@@ -999,6 +1008,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
   if(hcrhline=="middle") hcrAuxiliaryhline <- c(0,0.25,0.5,0.75,1.0)
   if(hcrhline=="dense") hcrAuxiliaryhline <- c(0,0.2,0.4,0.6,0.8,1.0)
   if(hcrhline=="hscale") hcrAuxiliaryhline <- hlinebreaks
+
 
   g.hcr <- g.hcr +
     geom_hline(yintercept=hcrAuxiliaryhline,color="gray",linetype=2)
