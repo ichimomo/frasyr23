@@ -949,7 +949,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, abc4=FALSE, 
       if(leftalign==TRUE){
         g.cpue4 <- g.cpue4 + xlim(minyears,max(ccdata[!is.na(ccdata$cpue),]$year)+4)
       }
-      g.cpue4 <- g.cpue4 %>% apply_minor_ticks_type2()}
+    }
+    g.cpue4 <- g.cpue4 %>% apply_minor_ticks_type2()
   }
 
   #漁獲管理規則案 HCR ----
