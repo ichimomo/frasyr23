@@ -915,7 +915,8 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
     if(leftalign==TRUE){
       g.cpue <- g.cpue + xlim(minyears, max(ccdata[!is.na(ccdata$cpue),]$year)+4)
     }
-    g.cpue <- g.cpue %>% apply_minor_ticks_type2()}
+}
+  g.cpue <- g.cpue %>% apply_minor_ticks_type2()
 
   if(isTRUE(abc4)){
     hanrei_label <- rev(c(paste(min(ccdata[!is.na(ccdata$cpue),]$year),"～",max(ccdata[!is.na(ccdata$cpue),]$year),"年", gsub("年","",year.axis.label), "の平均水準",sep=""),"過去最低値"))  ##OS200702
@@ -962,7 +963,6 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
     }
     g.cpue4 <- g.cpue4 %>% apply_minor_ticks_type2()
   }
-
   #漁獲管理規則案 HCR ----
   ifelse(is.null(BTyear),ccdata.plot<-ccdata,
          ccdata.plot<-ccdata_fixedBT)
