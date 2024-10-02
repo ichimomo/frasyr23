@@ -869,7 +869,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
         scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
     }else{
       g.cpue <- g.cpue +
-        geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+        geom_point(mapping=aes(x=rev(year)[1], y=rev(cpue)[1], color="red"),size=4, show.legend =TRUE)+
         scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
     }
     g.cpue <- g.cpue +
@@ -903,7 +903,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
         scale_color_manual(name="",values=rev(c(col.BRP)),labels=rev(c(legend.labels)))
     }else{
       g.cpue <- g.cpue +
-        geom_point(mapping=aes(x=rev(year)[1], y=rev(ccdata$cpue)[1], color="red"),size=4, show.legend =TRUE)+
+        geom_point(mapping=aes(x=rev(year)[1], y=rev(cpue)[1], color="red"),size=4, show.legend =TRUE)+
         scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
     }
     g.cpue <- g.cpue +
