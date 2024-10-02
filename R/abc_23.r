@@ -907,7 +907,7 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
         scale_color_manual(name="",values="red",labels="直近年の資源量指標値")
     }
     g.cpue <- g.cpue +
-      geom_path(data=ccdata, aes(x=year,y=cpue),size=1)+geom_point(aes(x=year,y=cpue),size=4) +
+      geom_path(data=ccdata, aes(x=year,y=cpue),size=1)+geom_point(aes(x=year,y=cpue),size=3) +
       theme_bw()+ylab(paste("資源量指標値",cpueunit))+xlab(year.axis.label)+
       ylim(0,max(ccdata$cpue,na.rm=T)*1.05)+theme_custom()
     g.cpue <- g.cpue +
