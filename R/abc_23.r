@@ -39,8 +39,9 @@ col.BRP <- c("#00533E","#edb918","#C73C2E")
 #'
 #' # 2系
 #' example_abc2 <- calc_abc2(example_data,beta=1)
+#' \dontrun{
 #' graph_abc2 <- plot_abc2(example_abc2,fishseason=0,detABC=1,x_right_space=5,abc4=FALSE,fillarea=FALSE)
-#'
+#' }
 #' @export
 #'
 
@@ -489,8 +490,9 @@ type2_func_empir_wrapper <- function(DL,cpue,simple,type=NULL,...){
 #' example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 #'
 #' example_abc3 <- calc_abc3(example_data)
+#' \dontrun{
 #' graph_abc3 <- plot_abc3(example_abc3)
-#'
+#' }
 #' @export
 #'
 
@@ -779,11 +781,11 @@ plot_abc2 <- function(res, stock.name=NULL, fishseason=0, detABC=2, x_right_spac
   legend.labels2.1 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"算定漁獲量")
   legend.labels2bt.1 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),"算定漁獲量","最終年データ利用の算定")
   if(!res$arglist$timelag0){
-    legend.labels2.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の算定漁獲量",sep=""))
-    legend.labels2bt.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の算定漁獲量",sep=""),"最終年データ利用の算定漁獲量")
+    legend.labels2.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
+    legend.labels2bt.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
   } else{
-    legend.labels2.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の算定漁獲量",sep=""))
-    legend.labels2bt.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の算定漁獲量",sep=""),"最終年データ利用の算定漁獲量")
+    legend.labels2.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
+    legend.labels2bt.2 <-c(str_c(res$arglist$n.catch-catch.abc.na,"年平均漁獲量"),paste(max(years)+1,"年",gsub("年","",year.axis.label),"の予測値",sep=""),"最終年データ利用の予測値")
   }
   col.BRP.hcr <- col.BRP
   data_BRP_hcr <- tibble(BRP=names(res$BRP),value_obs=res$Obs_BRP, value_ratio=res$BRP)
@@ -2066,7 +2068,7 @@ plot_abc2_multires <- function(res.list, stock.name=NULL, fishseason=0, detABC=0
 
     labels2 <- c(labels2,paste0(i,"番目ABC"))
     labels2.1 <- c(labels2.1,paste0(i,"番目算定漁獲量"))
-    labels2.2 <- c(labels2.2,paste(i,"番目",max(years)+2,"年",gsub("年","",year.axis.label),"の算定漁獲量",sep=""))
+    labels2.2 <- c(labels2.2,paste(i,"番目",max(years)+2,"年",gsub("年","",year.axis.label),"の予測値",sep=""))
   }
 
   if(!is.null(abclegend)) labels2<- labels2.1<-labels2.2<-abclegend
