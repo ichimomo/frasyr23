@@ -31,6 +31,7 @@ cpue <- c(10,9,8,4,8,11,10,2,3,2,5,2)
 example_data <- data.frame(year=2001:2012,cpue=cpue,catch=catch)
 
 example_abc3 <- calc_abc3(example_data)
+\dontrun{
 graph_abc3 <- plot_abc3(example_abc3)
-
+}
 }
